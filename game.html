@@ -113,9 +113,6 @@
      Collect 🍜 Cao Lau to win!<br/>
      You have 3 lives. Fly safe!</p>
   <button class="pxbtn" id="start-btn">▶ FLY NOW</button>
-  <!-- REMOVABLE -->
-
-  <!-- REMOVABLE -->
 </div>
 
 <!-- GAME OVER -->
@@ -771,13 +768,6 @@ document.getElementById('start-btn').addEventListener('click',()=>{
   document.getElementById('start-screen').classList.remove('show');
   resetGame(); running=true; playerX=laneX(1);
 });
-
-// REMOVABLE — skips straight to win scene
-document.getElementById('skip-win-btn').addEventListener('click',()=>{
-  document.getElementById('start-screen').classList.remove('show');
-  resetGame(); score=WIN; triggerWin();
-});
-// REMOVABLE
 
 document.getElementById('retry-btn').addEventListener('click',()=>{
   document.getElementById('gameover-screen').classList.remove('show');

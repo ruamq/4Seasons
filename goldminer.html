@@ -498,9 +498,6 @@
       Collect ALL gold to win.<br />
       300 seconds. Good luck Ha Linh. Ehmm I mean Minh Quan!</p>
     <button class="pxbtn" id="start-btn">▶ MINE NOW</button>
-    <!-- REMOVABLE: skip button — delete this block to remove -->
-
-    <!-- REMOVABLE -->
   </div>
 
   <!-- GAME OVER -->
@@ -1350,14 +1347,6 @@
     document.getElementById('next-btn').addEventListener('click', () => {
       window.location.href = 'winter.html';
     });
-
-    // REMOVABLE: skip handler — delete this block to remove
-    document.getElementById('skip-btn').addEventListener('click', () => {
-      document.getElementById('start-screen').classList.remove('show');
-      resetGame();
-      triggerWin();
-    });
-    // REMOVABLE
 
     loop();
   </script>

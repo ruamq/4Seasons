@@ -101,16 +101,10 @@
     #house-canvas{image-rendering:pixelated;border-radius:8px;filter:drop-shadow(0 0 30px #ffd70044);display:block;margin:0 auto;}
     #spring-btn{margin-top:20px;}
 
-    #skip-btn{
-      position:fixed;bottom:16px;right:16px;z-index:50;
-      background:#ffffff22;color:#ffffff88;border:1px solid #ffffff44;
-      padding:8px 18px;font-family:'Press Start 2P',monospace;font-size:7px;
-      cursor:pointer;letter-spacing:1px;transition:all 0.2s;
-    }
-    #skip-btn:hover{background:#ffffff44;color:#fff;}
   </style>
 </head>
 <body>
+
 
 
 <!-- VIDEO -->
@@ -148,7 +142,7 @@
 <canvas id="game-canvas" style="display:none;"></canvas>
 <div id="game-ui" style="display:none;">
   <div class="ui-side">
-    <div class="ui-name" style="color:#ff88cc;">💗 Ha Linh</div>
+    <div class="ui-name" style="color:#ff88cc;">💗 Ha</div>
     <div class="ui-hearts" id="girl-hearts">❤️❤️❤️</div>
   </div>
   <div><div id="turn-banner">YOUR TURN</div></div>
@@ -455,9 +449,9 @@ function updateHUD(){
   const h=n=>'❤️'.repeat(n)+'🖤'.repeat(3-n);
   document.getElementById('girl-hearts').textContent=h(girlHP);
   document.getElementById('boy-hearts').textContent=h(boyHP);
-  document.getElementById('turn-banner').textContent=isGirlTurn?'💗 GIRL\'S TURN':'💙 YOUR TURN';
+  document.getElementById('turn-banner').textContent=isGirlTurn?'💗 YOUR TURN':'💙 BOY\'S TURN';
   const pw=document.getElementById('power-wrap');
-  if(!isGirlTurn && animState==='aiming') pw.classList.add('show'); else pw.classList.remove('show');
+  if(isGirlTurn && animState==='aiming') pw.classList.add('show'); else pw.classList.remove('show');
 }
 
 // ── DRAW BG ──────────────────────────────────────────
@@ -707,8 +701,8 @@ function endGame(winner){
   animState='done';
   document.getElementById('power-wrap').classList.remove('show');
 
-  if(winner==='boy'){
-    // Boy wins → show skating animation
+  if(winner==='girl'){
+    // Girl wins → show skating animation
     canvas.style.display='none';
     document.getElementById('game-ui').style.display='none';
     document.getElementById('skate-screen').classList.add('show');
@@ -1244,16 +1238,7 @@ document.getElementById('spring-btn').onclick=()=>{
   window.location.href='spring.html';
 };
 
-document.getElementById('skip-btn').onclick=()=>{
-  // Hide everything, go straight to skating scene
-  document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));
-  document.getElementById('game-ui').style.display='none';
-  document.getElementById('power-wrap').classList.remove('show');
-  canvas.style.display='none';
-  document.getElementById('skip-btn').style.display='none';
-  document.getElementById('skate-screen').classList.add('show');
-  startSkatingAnim();
-};
+
 
 // ── GAME LOOP ─────────────────────────────────────────
 function gameLoop(){
@@ -1270,23 +1255,23 @@ function gameLoop(){
   requestAnimationFrame(gameLoop);
 }
 
-// ── INPUT (boy = player, fires LEFT toward girl) ─────
+// ── INPUT (girl = player, fires RIGHT toward boy) ─────
 addEventListener('keydown',e=>{
-  if(isGirlTurn||animState!=='aiming') return;
+  if(!isGirlTurn||animState!=='aiming') return;
   if(e.key==='ArrowUp'  ||e.key==='w'||e.key==='W'){ angle=Math.min(85,angle+3); }
   if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){ angle=Math.max(5, angle-3); }
-  if(e.code==='Space'||e.key==='Enter'){ e.preventDefault(); fire(boyX,boyY,angle,power,false); }
+  if(e.code==='Space'||e.key==='Enter'){ e.preventDefault(); fire(girlX,girlY,angle,power,true); }
 });
 
 canvas.addEventListener('mousemove',e=>{
-  if(isGirlTurn||animState!=='aiming') return;
+  if(!isGirlTurn||animState!=='aiming') return;
   angle=Math.max(5,Math.min(85,(1-(e.clientY/canvas.height))*90)|0);
 });
 
 canvas.addEventListener('click',e=>{
-  if(isGirlTurn||animState!=='aiming') return;
+  if(!isGirlTurn||animState!=='aiming') return;
   angle=Math.max(5,Math.min(85,(1-(e.clientY/canvas.height))*90)|0);
-  fire(boyX,boyY,angle,power,false);
+  fire(girlX,girlY,angle,power,true);
 });
 
 addEventListener('resize',()=>{

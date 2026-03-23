@@ -585,27 +585,7 @@
      VICTORY CINEMATIC OVERLAY
 ═══════════════════════════════════════════════════════ -->
     <style>
-        #vic-skip {
-            position: fixed;
-            top: 18px;
-            right: 24px;
-            z-index: 200;
-            padding: 8px 22px;
-            background: rgba(0, 0, 0, 0.55);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: rgba(255, 255, 255, 0.6);
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            letter-spacing: 3px;
-            cursor: pointer;
-            border-radius: 3px;
-            transition: background .2s, color .2s;
-        }
 
-        #vic-skip:hover {
-            background: rgba(255, 80, 0, 0.4);
-            color: #fff;
-        }
 
         #vic-overlay {
             display: none;
@@ -797,7 +777,7 @@
     </style>
 
     <div id="vic-overlay">
-        <button id="vic-skip" onclick="goToEnding()">SKIP ⏭</button>
+
 
         <!-- STAGE 1: Flags -->
         <div id="stage-flags" class="vic-stage">
