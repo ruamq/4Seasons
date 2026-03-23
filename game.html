@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sky Glider - Da Nang 2025</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pacifico&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#0a0a1a; overflow:hidden; width:100vw; height:100vh; font-family:'Press Start 2P',monospace; image-rendering:pixelated; }
+    canvas { display:block; image-rendering:pixelated; image-rendering:crisp-edges; }
+
+    #ui {
+      position:fixed; top:0; left:0; right:0; padding:14px 22px;
+      display:flex; justify-content:space-between; align-items:center;
+      z-index:10; pointer-events:none;
+      background:linear-gradient(to bottom,#000000cc,transparent);
+    }
+    #score-wrap { display:flex; align-items:center; gap:10px; }
+    #score-label { color:#ffdd44; font-size:8px; }
+    #score { color:#fff; font-size:12px; }
+    #progress-wrap { display:flex; flex-direction:column; align-items:center; gap:5px; }
+    #progress-bar-bg { width:180px; height:12px; background:#ffffff22; border:2px solid #ff8800; }
+    #progress-bar { height:100%; width:0%; background:linear-gradient(90deg,#ff4400,#ffdd44); transition:width 0.15s; }
+    #progress-label { color:#ffaa44; font-size:6px; }
+    #lives-wrap { display:flex; gap:5px; font-size:16px; }
+
+    .overlay { display:none; position:fixed; inset:0; align-items:center; justify-content:center; z-index:20; }
+    .overlay.show { display:flex; }
+
+    #start-screen { background:linear-gradient(160deg,#060c18,#0d1e38); flex-direction:column; align-items:center; gap:22px; text-align:center; }
+    #start-screen h1 { font-family:'Pacifico',cursive; font-size:clamp(30px,5vw,58px); color:#ffdd44; text-shadow:3px 3px 0 #aa6600,0 0 40px #ffd700aa; }
+    #start-screen p { color:#a8d8ff; font-size:8px; line-height:2.4; max-width:460px; }
+
+    .pxbtn {
+      background:#ff8800; color:#fff8ee; border:none; border-bottom:4px solid #aa4400;
+      padding:14px 40px; font-family:'Press Start 2P',monospace; font-size:11px;
+      cursor:pointer; letter-spacing:2px; transition:transform 0.08s;
+    }
+    .pxbtn:hover { filter:brightness(1.15); }
+    .pxbtn:active { transform:translateY(3px); border-bottom-width:1px; }
+
+    #gameover-screen { background:#0a0000ee; flex-direction:column; align-items:center; gap:20px; text-align:center; }
+    #gameover-screen h2 { color:#ff4444; font-size:24px; text-shadow:0 0 20px #ff0000; }
+    #gameover-screen p { color:#ffaa88; font-size:9px; }
+    #final-score { color:#ffdd44; font-size:16px; }
+
+    #win-screen { background:linear-gradient(160deg,#0a2a0a,#1a4a1a); flex-direction:column; align-items:center; gap:16px; text-align:center; }
+    #win-screen h2 { font-family:'Pacifico',cursive; font-size:clamp(26px,4vw,52px); color:#7dff7d; text-shadow:0 0 30px #00ff0088; animation:wpulse 1.5s ease-in-out infinite alternate; }
+    @keyframes wpulse { from{text-shadow:0 0 20px #00ff0055} to{text-shadow:0 0 50px #00ff00cc} }
+    #win-screen p { color:#c8ffc8; font-size:8px; line-height:2.2; }
+
+    /* farewell screen */
+    #farewell-screen {
+      flex-direction:column;
+      background:linear-gradient(160deg,#060c18,#0d1e38);
+    }
+    #farewell-top {
+      flex:1; display:flex; align-items:center; justify-content:center; padding:16px;
+    }
+    #farewell-dialog {
+      width:100%;
+      background:linear-gradient(135deg,#7a1200 0%,#c43a00 40%,#e86000 70%,#c43a00 100%);
+      border-top:4px solid #ffaa00;
+      box-shadow:0 -4px 0 #8b2200, inset 0 2px 0 #ff8844;
+      padding:24px 44px; min-height:140px;
+      display:flex; align-items:center; justify-content:space-between; gap:24px;
+      position:relative;
+    }
+    #farewell-dialog::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+      background:linear-gradient(90deg,transparent,#ffdd88,#ff8844,#ffdd88,transparent);
+    }
+    #farewell-speaker {
+      position:absolute; top:-20px; left:44px;
+      font-size:8px; opacity:0.9; letter-spacing:1px;
+    }
+    #farewell-text {
+      color:#fff8ee; font-size:12px; line-height:2.1;
+      white-space:pre-wrap; text-shadow:0 1px 4px #00000066; flex:1;
+    }
+    #farewell-arrow {
+      color:#ffdd44; font-size:18px; align-self:flex-end;
+      padding-bottom:4px; display:none;
+      animation:farr 0.6s ease-in-out infinite alternate;
+      text-shadow:0 0 8px #ffaa00;
+    }
+    @keyframes farr { from{transform:translateY(0)} to{transform:translateY(7px)} }
+    #farewell-continue-btn { display:none; margin:18px auto; }
+
+    #hint { position:fixed; bottom:14px; left:50%; transform:translateX(-50%); color:#ffffff44; font-size:6px; letter-spacing:2px; z-index:10; pointer-events:none; }
+  </style>
+</head>
+<body>
+
+<canvas id="game-canvas"></canvas>
+
+<div id="ui">
+  <div id="score-wrap"><span id="score-label">🍜 CAO LAU</span><span id="score">0 / 100</span></div>
+  <div id="progress-wrap">
+    <div id="progress-bar-bg"><div id="progress-bar"></div></div>
+    <div id="progress-label">COLLECT 100 CAO LAU TO WIN</div>
+  </div>
+  <div id="lives-wrap"><span class="hrt">❤️</span><span class="hrt">❤️</span><span class="hrt">❤️</span></div>
+</div>
+<div id="hint">← → ARROW KEYS &nbsp;|&nbsp; A D &nbsp;|&nbsp; SWIPE</div>
+
+<!-- START -->
+<div class="overlay show" id="start-screen">
+  <h1>Sky Glider ✈️</h1>
+  <p>Soar above Da Nang with your partner!<br/>
+     Dodge incoming planes across 3 lanes.<br/>
+     Collect 🍜 Cao Lau to win!<br/>
+     You have 3 lives. Fly safe!</p>
+  <button class="pxbtn" id="start-btn">▶ FLY NOW</button>
+  <!-- REMOVABLE -->
+  <button class="pxbtn" id="skip-win-btn" style="background:#555;border-bottom-color:#333;font-size:8px;padding:10px 22px;margin-top:-8px;">⏭ SKIP TO WIN</button>
+  <!-- REMOVABLE -->
+</div>
+
+<!-- GAME OVER -->
+<div class="overlay" id="gameover-screen">
+  <h2>CRASHED! 💥</h2>
+  <p>Your glider went down...</p>
+  <div id="final-score">0 🍜</div>
+  <button class="pxbtn" id="retry-btn">↺ TRY AGAIN</button>
+</div>
+
+<!-- WIN — landing animation -->
+<div class="overlay" id="win-screen">
+  <h2>You Made It! 🌿</h2>
+  <canvas id="win-canvas" width="540" height="220"></canvas>
+  <p>You collected 100 Cao Lau and landed in Da Nang!</p>
+  <button class="pxbtn" id="next-scene-btn">CONTINUE ▶</button>
+</div>
+
+<!-- FAREWELL — dialog + plane animation -->
+<div class="overlay" id="farewell-screen">
+  <div id="farewell-top">
+    <canvas id="plane-canvas" width="580" height="260"></canvas>
+  </div>
+  <div id="farewell-dialog">
+    <div id="farewell-speaker"></div>
+    <div id="farewell-text"></div>
+    <div id="farewell-arrow">▼</div>
+  </div>
+  <button class="pxbtn" id="farewell-continue-btn" onclick="window.location.href='autumn.html'">CONTINUE ▶</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CANVAS + RESIZE
+// ═══════════════════════════════════════════════
+const canvas = document.getElementById('game-canvas');
+const ctx    = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+// ═══════════════════════════════════════════════
+// CONSTANTS + STATE
+// ═══════════════════════════════════════════════
+const LANES = 3;
+const WIN   = 100;
+
+let lane=1, lives=3, score=0, spd=3.5, running=false;
+let inv=false, invT=0, moveCool=0, tick=0;
+let obsTimer=0, obsInt=95, rewTimer=0, rewInt=22;
+let playerX=0;
+let obstacles=[], rewards=[], particles=[];
+
+let bgStars = [];
+for(let i=0;i<80;i++) bgStars.push({x:Math.random()*2000,y:Math.random()*600,s:Math.floor(Math.random()*3)+1,sp:0.3+Math.random()*0.8});
+
+let clouds = [];
+for(let i=0;i<10;i++) clouds.push({x:Math.random()*2000,y:20+Math.random()*500,w:50+Math.random()*110,sp:0.4+Math.random(),op:0.15+Math.random()*0.35});
+
+// ═══════════════════════════════════════════════
+// LANE POSITIONS — centered on screen
+// ═══════════════════════════════════════════════
+function laneX(l){
+  const laneW = 160;
+  return Math.floor(canvas.width/2) + (l-1)*laneW;
+}
+
+// ═══════════════════════════════════════════════
+// SPRITE HELPER
+// ═══════════════════════════════════════════════
+const PX = 4;
+function drawSprite(grid, ox, oy, sc){
+  sc = sc||PX;
+  for(let r=0;r<grid.length;r++) for(let c=0;c<grid[r].length;c++){
+    if(grid[r][c]==='.') continue;
+    ctx.fillStyle=grid[r][c];
+    ctx.fillRect(ox+c*sc, oy+r*sc, sc, sc);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// SPRITES
+// ═══════════════════════════════════════════════
+const PLANE_S = [
+  ['.','.','.','#cc3322','#cc3322','#cc3322','#cc3322','.','.'  ],
+  ['.','.','#8899bb','#8899bb','#8899bb','#8899bb','#8899bb','#8899bb','.'],
+  ['#aabbcc','#aabbcc','#aabbcc','#8899bb','#8899bb','#8899bb','#8899bb','#aabbcc','#aabbcc'],
+  ['#ddeeff','#aabbcc','#8899bb','#8899bb','#8899bb','#8899bb','#8899bb','#aabbcc','.'],
+  ['.','#aabbcc','#8899bb','#556688','#556688','#8899bb','#8899bb','.','.'  ],
+  ['.','.','#8899bb','#8899bb','#8899bb','#8899bb','#8899bb','.','.'],
+  ['.','.','.',  '#556688','#556688','#556688','.','.','.'  ],
+  ['.','.','.',  '#556688','.','#556688','.','.','.'  ],
+];
+
+const BOWL_S = [
+  ['.','.',  '#ffffffaa','.',  '#ffffffaa','.',  '#ffffffaa','.','.','.','.','.'  ],
+  ['.','.','.','.','.','.','.','.','.','.','.','.'  ],
+  ['.','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','.','.'  ],
+  ['#e8c880','#c07030','#c07030','#f5d078','#c07030','#c07030','#f5d078','#c07030','#c07030','#c07030','#e8c880','.'],
+  ['#e8c880','#c07030','#f5d078','#c07030','#c07030','#c07030','#c07030','#f5d078','#c07030','#c07030','#e8c880','.'],
+  ['#e8c880','#c07030','#c07030','#c07030','#884400','#c07030','#c07030','#c07030','#884400','#c07030','#e8c880','.'],
+  ['.','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','.','.'  ],
+  ['.','.','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','.','.','.'  ],
+  ['.','.','.',  '#e8c880','#e8c880','#e8c880','#e8c880','#e8c880','.','.','.','.'],
+];
+
+// ═══════════════════════════════════════════════
+// DRAW COUPLE ON GLIDER
+// ═══════════════════════════════════════════════
+function drawCouple(cx, cy, flash){
+  if(flash && inv && Math.floor(invT/5)%2===0) return;
+  const sc = Math.max(3, Math.floor(canvas.width/220));
+
+  // wings
+  const wingW=28*sc, wy=cy-2*sc;
+  ctx.fillStyle='#d8eeff';
+  ctx.fillRect(cx-wingW/2-4*sc, wy, wingW/2, 4*sc);
+  ctx.fillRect(cx+4*sc, wy, wingW/2, 4*sc);
+  ctx.fillStyle='#ffffff66';
+  ctx.fillRect(cx-wingW/2-4*sc, wy, wingW/2, sc);
+  ctx.fillRect(cx+4*sc, wy, wingW/2, sc);
+  // gold stripe on wings
+  ctx.fillStyle='#ffd700';
+  ctx.fillRect(cx-wingW/2-4*sc, wy+sc, wingW/2, sc);
+  ctx.fillRect(cx+4*sc, wy+sc, wingW/2, sc);
+
+  // glider body
+  const bx=cx-4*sc, bw=8*sc;
+  ctx.fillStyle='#ee2222'; ctx.fillRect(bx+sc, cy-7*sc, bw-2*sc, 2*sc);
+  ctx.fillStyle='#2a5aaa'; ctx.fillRect(bx, cy-5*sc, bw, 8*sc);
+  ctx.fillStyle='#ffd700'; ctx.fillRect(bx, cy-sc, bw, 2*sc);
+  ctx.fillStyle='#88ccffaa'; ctx.fillRect(bx+sc, cy-5*sc, bw-2*sc, 3*sc);
+
+  // BOY (left)
+  const bpx=cx-9*sc, bpy=cy+3*sc;
+  ctx.fillStyle='#ff6600'; ctx.fillRect(bpx-sc, bpy, 4*sc, 4*sc);       // jacket
+  ctx.fillStyle='#ffaa00'; ctx.fillRect(bpx+sc, bpy+sc, sc, 2*sc);       // zipper
+  ctx.fillStyle='#cc2244'; ctx.fillRect(bpx-sc, bpy+4*sc, 4*sc, 3*sc);   // pink-red shorts
+  ctx.fillStyle='#f9c87a'; ctx.fillRect(bpx-sc, bpy-5*sc, 4*sc, 4*sc);   // head
+  ctx.fillStyle='#3a2008'; ctx.fillRect(bpx-2*sc, bpy-6*sc, 6*sc, 2*sc); // hair
+  ctx.fillStyle='#111';
+  ctx.fillRect(bpx-sc, bpy-4*sc, sc, sc); ctx.fillRect(bpx+sc, bpy-4*sc, sc, sc); // shades
+  ctx.fillStyle='#f9c87a';
+  ctx.fillRect(bpx-sc, bpy+7*sc, sc, 2*sc); ctx.fillRect(bpx+sc, bpy+7*sc, sc, 2*sc); // legs
+  ctx.fillStyle='#333';
+  ctx.fillRect(bpx-2*sc, bpy+9*sc, 2*sc, sc); ctx.fillRect(bpx+sc, bpy+9*sc, 2*sc, sc); // shoes
+
+  // GIRL (right)
+  const gpx=cx+6*sc, gpy=cy+3*sc;
+  ctx.fillStyle='#ff6600'; ctx.fillRect(gpx-sc, gpy, 4*sc, 4*sc);        // jacket
+  ctx.fillStyle='#ffaa00'; ctx.fillRect(gpx+sc, gpy+sc, sc, 2*sc);        // zipper
+  ctx.fillStyle='#222222'; ctx.fillRect(gpx-sc, gpy+4*sc, 4*sc, 3*sc);   // black shorts
+  ctx.fillStyle='#f9c87a'; ctx.fillRect(gpx-sc, gpy-5*sc, 4*sc, 4*sc);   // head
+  ctx.fillStyle='#3a2008';
+  ctx.fillRect(gpx-2*sc, gpy-6*sc, 6*sc, 2*sc);                          // hair top
+  ctx.fillRect(gpx+2*sc, gpy-5*sc, sc, 5*sc);                            // hair right
+  ctx.fillRect(gpx-2*sc, gpy-5*sc, sc, 4*sc);                            // hair left
+  ctx.fillStyle='#ff6699'; ctx.fillRect(gpx+sc, gpy-7*sc, 2*sc, 2*sc);  // bow
+  ctx.fillStyle='#111';
+  ctx.fillRect((gpx-sc+sc/2)|0, gpy-4*sc, sc, sc); ctx.fillRect(gpx+sc, gpy-4*sc, sc, sc); // eyes
+  ctx.fillStyle='#f9c87a';
+  ctx.fillRect(gpx-sc, gpy+7*sc, sc, 2*sc); ctx.fillRect(gpx+sc, gpy+7*sc, sc, 2*sc); // legs
+  ctx.fillStyle='#333';
+  ctx.fillRect(gpx-2*sc, gpy+9*sc, 2*sc, sc); ctx.fillRect(gpx+sc, gpy+9*sc, 2*sc, sc);
+
+  // heart
+  const hbob=Math.sin(tick*0.06)*2;
+  ctx.fillStyle='#ff4488';
+  const hx=cx-sc, hy=cy-12*sc+hbob;
+  [[0,1,0,1,0],[1,1,1,1,1],[0,1,1,1,0],[0,0,1,0,0]].forEach((row,r)=>
+    row.forEach((v,c)=>{ if(v) ctx.fillRect(hx+c*sc-sc, hy+r*sc, sc, sc); }));
+}
+
+// ═══════════════════════════════════════════════
+// DRAW PLANE OBSTACLE
+// ═══════════════════════════════════════════════
+function drawObstaclePlane(x, y){
+  const sc=5;
+  drawSprite(PLANE_S, x-(PLANE_S[0].length*sc)/2, y-(PLANE_S.length*sc)/2, sc);
+  ctx.fillStyle='#ffffff33';
+  ctx.fillRect(x-sc, y+(PLANE_S.length*sc)/2, sc, sc*3);
+  ctx.fillRect(x+sc, y+(PLANE_S.length*sc)/2, sc, sc*3);
+}
+
+// ═══════════════════════════════════════════════
+// DRAW CAO LAU BOWL
+// ═══════════════════════════════════════════════
+function drawBowl(x, y){
+  const sc=5;
+  drawSprite(BOWL_S, x-(BOWL_S[0].length*sc)/2, y-(BOWL_S.length*sc)/2, sc);
+  ctx.fillStyle='#ffdd44'; ctx.font='6px "Press Start 2P"'; ctx.textAlign='center';
+  ctx.fillText('CAO LAU', x, y+(BOWL_S.length*sc)/2+10);
+}
+
+// ═══════════════════════════════════════════════
+// BACKGROUND
+// ═══════════════════════════════════════════════
+let bgOff=0;
+function drawBg(){
+  const bands=12, bh=Math.ceil(canvas.height/bands);
+  ['#0a0e1e','#0c1228','#101830','#142038','#1a2a48','#1e3050','#243858','#2a4060','#304868','#3a5878','#4a6888','#5a7898'].forEach((c,i)=>{
+    ctx.fillStyle=c; ctx.fillRect(0,i*bh,canvas.width,bh+1);
+  });
+  bgStars.forEach(s=>{
+    ctx.fillStyle='#ffffff'; ctx.globalAlpha=0.4+Math.sin(tick*0.04+s.x)*0.3;
+    ctx.fillRect(s.x%canvas.width, s.y%(canvas.height*0.7), s.s, s.s);
+    ctx.globalAlpha=1;
+    if(running){ s.x-=s.sp; if(s.x<0) s.x=canvas.width+10; }
+  });
+  clouds.forEach(c=>{
+    ctx.globalAlpha=c.op; ctx.fillStyle='#c8e8ff';
+    const bsz=8, cw=Math.round(c.w/bsz)*bsz;
+    ctx.fillRect(c.x,c.y,cw,bsz*2); ctx.fillRect(c.x+bsz,c.y-bsz,cw-bsz*2,bsz); ctx.fillRect(c.x+bsz*2,c.y-bsz*2,cw-bsz*4,bsz);
+    ctx.globalAlpha=1;
+    if(running){ c.x-=c.sp; if(c.x+c.w<0) c.x=canvas.width+20; }
+  });
+  for(let l=0;l<LANES;l++){
+    const x=laneX(l); ctx.fillStyle='#ffffff11';
+    for(let y=0;y<canvas.height;y+=20){ ctx.fillRect(x-1, y-(bgOff*3)%20, 2, 10); }
+  }
+  bgOff++;
+}
+
+// ═══════════════════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════════════════
+function spawnParts(x,y,col,n){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=2+Math.random()*5;
+    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,life:30+Math.random()*20,max:50,col,sz:(4+Math.random()*4)|0});
+  }
+}
+function drawParts(){
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{
+    ctx.globalAlpha=p.life/p.max; ctx.fillStyle=p.col;
+    ctx.fillRect(p.x|0,p.y|0,p.sz,p.sz);
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.2; p.life--;
+  });
+  ctx.globalAlpha=1;
+}
+
+// ═══════════════════════════════════════════════
+// HUD
+// ═══════════════════════════════════════════════
+function updateHUD(){
+  document.getElementById('score').textContent=`${score} / ${WIN}`;
+  document.getElementById('progress-bar').style.width=`${(score/WIN)*100}%`;
+}
+function updateHearts(){
+  document.querySelectorAll('.hrt').forEach((h,i)=>{ h.textContent=i<lives?'❤️':'🖤'; });
+}
+
+// ═══════════════════════════════════════════════
+// INPUT
+// ═══════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(!running||moveCool>0) return;
+  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') move(-1);
+  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') move(1);
+});
+let tx0=0;
+canvas.addEventListener('touchstart',e=>{ tx0=e.touches[0].clientX; });
+canvas.addEventListener('touchend',e=>{ if(!running) return; const dx=e.changedTouches[0].clientX-tx0; if(dx<-40) move(-1); if(dx>40) move(1); });
+function move(d){ const n=lane+d; if(n<0||n>=LANES) return; lane=n; moveCool=10; }
+
+// ═══════════════════════════════════════════════
+// COLLISIONS
+// ═══════════════════════════════════════════════
+function playerY(){ return canvas.height*0.60; }
+function checkHit(){
+  if(inv) return;
+  const px=laneX(lane), py=playerY();
+  obstacles.forEach(o=>{
+    if(o.dead) return;
+    if(Math.abs(laneX(o.lane)-px)<52 && Math.abs(o.y-py)<50){
+      o.dead=true; lives--;
+      spawnParts(px,py,'#ff4444',18); updateHearts();
+      inv=true; invT=120;
+      if(lives<=0) gameOver();
+    }
+  });
+}
+function checkCollect(){
+  const px=laneX(lane), py=playerY();
+  rewards.forEach((r,i)=>{
+    if(Math.abs(laneX(r.lane)-px)<50 && Math.abs(r.y-py)<50){
+      rewards.splice(i,1); score=Math.min(score+1,WIN);
+      spawnParts(laneX(r.lane),r.y,'#ffdd44',6); updateHUD();
+      if(score>=WIN) triggerWin();
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════
+// STATE TRANSITIONS
+// ═══════════════════════════════════════════════
+function gameOver(){
+  running=false;
+  document.getElementById('final-score').textContent=`${score} 🍜`;
+  document.getElementById('gameover-screen').classList.add('show');
+}
+function triggerWin(){
+  running=false;
+  document.getElementById('win-screen').classList.add('show');
+  runWinAnim();
+}
+function resetGame(){
+  lane=1; lives=3; score=0; spd=3.5;
+  obstacles=[]; rewards=[]; particles=[];
+  obsTimer=0; obsInt=95; rewTimer=0; rewInt=22;
+  inv=false; invT=0; moveCool=0; tick=0;
+  updateHUD(); updateHearts();
+}
+
+// ═══════════════════════════════════════════════
+// WIN ANIMATION — landing on green land
+// ═══════════════════════════════════════════════
+function runWinAnim(){
+  const wc=document.getElementById('win-canvas');
+  const wg=wc.getContext('2d');
+  wg.imageSmoothingEnabled=false;
+  let wt=0, gx=-80;
+
+  function frame(){
+    wg.clearRect(0,0,wc.width,wc.height);
+    const W=wc.width, H=wc.height;
+    // sky
+    ['#1a4a7a','#2a6aaa','#3a8ac8','#5aaae0','#7ac8f0','#a0daf8'].forEach((c,i,a)=>{
+      wg.fillStyle=c; wg.fillRect(0,i*(H*0.65/a.length),W,H*0.65/a.length+1);
+    });
+    // land
+    wg.fillStyle='#4a9a28'; wg.fillRect(0,H*0.65,W,H*0.35);
+    wg.fillStyle='#5aaa30'; wg.fillRect(0,H*0.65,W,8);
+    wg.fillStyle='#3a8020'; wg.fillRect(0,H*0.62,180,H*0.05); wg.fillRect(320,H*0.60,220,H*0.07);
+    wg.fillStyle='#4a9a28'; wg.fillRect(30,H*0.60,120,H*0.05); wg.fillRect(350,H*0.58,140,H*0.06);
+    [[60,'#2a6a14'],[160,'#2a6a14'],[280,'#2a6a14'],[420,'#2a6a14'],[490,'#2a6a14']].forEach(([tx,tc])=>{
+      wg.fillStyle='#7a4a10'; wg.fillRect(tx-4,H*0.76,8,18);
+      wg.fillStyle=tc;
+      wg.fillRect(tx-14,H*0.62,28,16); wg.fillRect(tx-10,H*0.58,20,8); wg.fillRect(tx-6,H*0.55,12,6);
+    });
+    [[100,'#ff88aa'],[230,'#ffdd44'],[370,'#ff88aa'],[460,'#88ddff']].forEach(([fx,fc])=>{
+      wg.fillStyle=fc; wg.fillRect(fx-3,H*0.74,6,6);
+    });
+
+    const finalX=W*0.5, startY=H*0.22, endY=H*0.60;
+    const curX=Math.min(gx,finalX);
+    const prog=Math.min(1,(curX+80)/(finalX+80));
+    const curY=startY+(endY-startY)*prog;
+    const landed=curX>=finalX-2;
+    const sc=4;
+
+    if(!landed){
+      const wx=curX|0, wy=curY|0;
+      wg.fillStyle='#d8eeff'; wg.fillRect(wx-36,wy,28,8); wg.fillRect(wx+8,wy,28,8);
+      wg.fillStyle='#ffd700'; wg.fillRect(wx-36,wy+4,28,4); wg.fillRect(wx+8,wy+4,28,4);
+      wg.fillStyle='#ee2222'; wg.fillRect(wx-4,wy-10,8,4);
+      wg.fillStyle='#2a5aaa'; wg.fillRect(wx-6,wy-6,12,14);
+      wg.fillStyle='#ffd700'; wg.fillRect(wx-6,wy+2,12,4);
+      wg.fillStyle='#88ccffaa'; wg.fillRect(wx-5,wy-5,10,6);
+      // couple — orange jackets + correct shorts
+      wg.fillStyle='#ff6600'; wg.fillRect(wx-13,wy+6,5,7);
+      wg.fillStyle='#cc2244'; wg.fillRect(wx-13,wy+10,5,4);
+      wg.fillStyle='#ff6600'; wg.fillRect(wx+8,wy+6,5,7);
+      wg.fillStyle='#222222'; wg.fillRect(wx+8,wy+10,5,4);
+      wg.fillStyle='#f9c87a'; wg.fillRect(wx-13,wy+2,5,5); wg.fillRect(wx+8,wy+2,5,5);
+      wg.fillStyle='#ff4488'; wg.fillRect(wx-2,wy-4,4,4);
+    } else {
+      const px=finalX|0, py=(endY-28)|0;
+      // boy — orange jacket, pink-red shorts, arms up
+      wg.fillStyle='#ff6600'; wg.fillRect(px-18,py,sc*2,sc*4);
+      wg.fillStyle='#cc2244'; wg.fillRect(px-18,py+sc*4,sc*2,sc*3);
+      wg.fillStyle='#f9c87a'; wg.fillRect(px-18,py-sc*4,sc*2,sc*3);
+      wg.fillStyle='#3a2008'; wg.fillRect(px-20,py-sc*5,sc*2+4,sc*2);
+      wg.fillStyle='#f9c87a'; wg.fillRect(px-28,py-sc*4,sc,sc*3); wg.fillRect(px-12,py-sc*4,sc,sc*3);
+      // girl — orange jacket, black shorts, arms up
+      wg.fillStyle='#ff6600'; wg.fillRect(px+6,py,sc*2,sc*4);
+      wg.fillStyle='#222222'; wg.fillRect(px+6,py+sc*4,sc*2,sc*3);
+      wg.fillStyle='#f9c87a'; wg.fillRect(px+6,py-sc*4,sc*2,sc*3);
+      wg.fillStyle='#3a2008'; wg.fillRect(px+4,py-sc*5,sc*2+4,sc*2);
+      wg.fillStyle='#ff6699'; wg.fillRect(px+14,py-sc*5-4,8,6);
+      wg.fillStyle='#f9c87a'; wg.fillRect(px,py-sc*4,sc,sc*3); wg.fillRect(px+16,py-sc*4,sc,sc*3);
+      // heart
+      const hbob=Math.sin(wt*0.1)*3|0;
+      wg.fillStyle='#ff4488';
+      const hxw=px-sc, hyw=py-sc*9+hbob;
+      [[0,1,0,1,0],[1,1,1,1,1],[0,1,1,1,0],[0,0,1,0,0]].forEach((row,ri)=>
+        row.forEach((v,ci)=>{ if(v) wg.fillRect(hxw+ci*sc-sc,hyw+ri*sc,sc,sc); }));
+      if(wt%3===0){
+        ['#ff4488','#ffdd44','#44aaff','#88ff44','#ff8800'].forEach(cc=>{
+          wg.fillStyle=cc; wg.fillRect(Math.random()*W|0,Math.random()*H*0.65|0,6,8);
+        });
+      }
+    }
+    gx+=1.8; wt++;
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// ═══════════════════════════════════════════════
+// FAREWELL SCENE — typewriter dialog + two planes
+// ═══════════════════════════════════════════════
+
+/* ─────────────────────────────────────────────
+   FAREWELL MESSAGES — edit here
+   speaker: 'BOY' or 'GIRL'
+───────────────────────────────────────────── */
+const FAREWELL_LINES = [
+  { speaker:'BOY',  text:"Hey... I need to tell\nyou something." },
+  { speaker:'BOY',  text:"I have to fly to Melbourne\ntomorrow morning." },
+  { speaker:'GIRL', text:"Melbourne...?" },
+  { speaker:'GIRL', text:"That's okay.\nI'm going to Paris anyway." },
+  { speaker:'BOY',  text:"Paris? Of course you are." },
+  { speaker:'BOY',  text:"No matter where we go...\nwe'll get through it all together." },
+  { speaker:'GIRL', text:"Always. ❤\nNow go catch your plane." },
+];
+/* ───────────────────────────────────────────── */
+
+function runFarewellScene(){
+  const screen  = document.getElementById('farewell-screen');
+  const textEl  = document.getElementById('farewell-text');
+  const speakEl = document.getElementById('farewell-speaker');
+  const arrowEl = document.getElementById('farewell-arrow');
+  const contBtn = document.getElementById('farewell-continue-btn');
+  const pc      = document.getElementById('plane-canvas');
+  const pg      = pc.getContext('2d');
+  pg.imageSmoothingEnabled = false;
+
+  screen.classList.add('show');
+
+  let lineIdx=0, charIdx=0, typing=false, typeTout=null, full='', planePhase=false;
+  let boyX=-140, girlX=pc.width+140;
+
+  function setSpeaker(sp){
+    speakEl.textContent = sp==='BOY' ? '💙 BOY' : '💗 GIRL';
+    speakEl.style.color = sp==='BOY' ? '#88ccff' : '#ffaacc';
+  }
+
+  function typeLine(idx){
+    const line=FAREWELL_LINES[idx];
+    full=line.text; charIdx=0; typing=true;
+    textEl.textContent=''; arrowEl.style.display='none';
+    setSpeaker(line.speaker);
+    function tick(){
+      if(charIdx<full.length){ textEl.textContent=full.slice(0,++charIdx); typeTout=setTimeout(tick,36); }
+      else{
+        typing=false;
+        if(idx<FAREWELL_LINES.length-1){ arrowEl.style.display='block'; }
+        else{ planePhase=true; startPlanes(); }
+      }
+    }
+    tick();
+  }
+
+  function advance(){
+    if(planePhase) return;
+    if(typing){
+      clearTimeout(typeTout); typing=false; textEl.textContent=full;
+      if(lineIdx<FAREWELL_LINES.length-1) arrowEl.style.display='block';
+      else { planePhase=true; startPlanes(); }
+      return;
+    }
+    if(lineIdx>=FAREWELL_LINES.length-1) return;
+    lineIdx++; typeLine(lineIdx);
+  }
+
+  screen.addEventListener('click', advance);
+
+  // ── draw static people on ground waving ──
+  function drawPeople(){
+    const W=pc.width, H=pc.height, floorY=H-24, sc=3;
+    const mid=W/2;
+    // boy left, waving right arm
+    const bx=mid-70;
+    pg.fillStyle='#f9c87a'; pg.fillRect(bx-sc,floorY-sc*8,sc*2,sc*3);
+    pg.fillStyle='#ff6600'; pg.fillRect(bx-sc,floorY-sc*5,sc*2,sc*4);
+    pg.fillStyle='#cc2244'; pg.fillRect(bx-sc,floorY-sc,sc*2,sc*3);
+    pg.fillStyle='#f9c87a';
+    pg.fillRect(bx+sc,floorY-sc*7,sc,sc*3);  // waving arm up
+    pg.fillRect(bx-sc*2,floorY-sc*4,sc,sc*2); // other arm
+    // girl right, waving left arm
+    const gx=mid+70;
+    pg.fillStyle='#f9c87a'; pg.fillRect(gx-sc,floorY-sc*8,sc*2,sc*3);
+    pg.fillStyle='#ff6600'; pg.fillRect(gx-sc,floorY-sc*5,sc*2,sc*4);
+    pg.fillStyle='#222222'; pg.fillRect(gx-sc,floorY-sc,sc*2,sc*3);
+    pg.fillStyle='#f9c87a';
+    pg.fillRect(gx-sc*2,floorY-sc*7,sc,sc*3); // waving arm up
+    pg.fillRect(gx+sc,floorY-sc*4,sc,sc*2);   // other arm
+    // bow
+    pg.fillStyle='#ff6699'; pg.fillRect(gx+sc,floorY-sc*10,sc,sc);
+    // ground
+    pg.fillStyle='#1a2a1a'; pg.fillRect(0,floorY,W,H-floorY);
+    pg.fillStyle='#223322'; pg.fillRect(0,floorY,W,3);
+    // city lights
+    for(let i=0;i<16;i++){
+      pg.fillStyle=i%3===0?'#ffee88':'#88ccff';
+      pg.globalAlpha=0.4+Math.sin(Date.now()/300+i*1.2)*0.3;
+      pg.fillRect(15+i*36,floorY-3-Math.abs(Math.sin(i))*18|0,3,3+Math.abs(Math.sin(i))*18|0);
+    }
+    pg.globalAlpha=1;
+  }
+
+  function drawNightBg(){
+    const grad=pg.createLinearGradient(0,0,0,pc.height);
+    grad.addColorStop(0,'#03050e'); grad.addColorStop(1,'#080f22');
+    pg.fillStyle=grad; pg.fillRect(0,0,pc.width,pc.height);
+    for(let i=0;i<55;i++){
+      const sx=(i*179.3)%pc.width, sy=(i*67.7)%(pc.height*0.75);
+      pg.globalAlpha=0.2+Math.sin(Date.now()/500+i)*0.3;
+      pg.fillStyle='#ffffff'; pg.fillRect(sx|0,sy|0,i%3===0?2:1,i%3===0?2:1);
+    }
+    pg.globalAlpha=1;
+  }
+
+  function drawPixelPlane(x,y,goRight,label,color){
+    const sc=4;
+    pg.save(); pg.translate(x|0,y|0);
+    if(!goRight) pg.scale(-1,1);
+    pg.fillStyle='#b0b8d0'; pg.fillRect(-sc*2,0,sc*4,sc*2);
+    pg.fillStyle='#8890b0';
+    pg.beginPath(); pg.moveTo(sc*2,0); pg.lineTo(sc*4,sc); pg.lineTo(sc*2,sc*2); pg.closePath(); pg.fill();
+    pg.fillStyle='#8080a8'; pg.fillRect(-sc*4,0,sc*2,sc*2); pg.fillRect(-sc*4,-sc*2,sc*2,sc*2);
+    pg.fillStyle='#8080a8'; pg.fillRect(-sc,-sc*2,sc,sc*2);
+    pg.fillStyle='#9898c0'; pg.fillRect(-sc*2,sc*2,sc*5,sc);
+    pg.fillStyle='#88ddffaa'; pg.fillRect(0,0,sc,sc*2);
+    pg.fillStyle=color+'55'; pg.fillRect(-sc*4,sc,sc,sc);
+    pg.restore();
+    // label
+    pg.font='bold 9px "Press Start 2P"'; pg.textAlign='center';
+    pg.fillStyle=color; pg.globalAlpha=0.95;
+    pg.fillText(label,x,y-16); pg.globalAlpha=1;
+    // contrail
+    pg.globalAlpha=0.12; pg.fillStyle='#ffffff';
+    for(let t=1;t<=6;t++){
+      const tx=goRight?x-t*16:x+t*16;
+      pg.fillRect(tx|0,(y+4)|0,6,3);
+    }
+    pg.globalAlpha=1;
+  }
+
+  // initial idle animation of people standing on ground
+  function idleLoop(){
+    if(planePhase) return;
+    pg.clearRect(0,0,pc.width,pc.height);
+    drawNightBg();
+    drawPeople();
+    requestAnimationFrame(idleLoop);
+  }
+  idleLoop();
+
+  function startPlanes(){
+    // update dialog box style for plane phase
+    const dlg=document.getElementById('farewell-dialog');
+    dlg.style.background='linear-gradient(135deg,#05080f,#0a1428)';
+    dlg.style.borderTop='4px solid #ffdd44';
+    dlg.style.boxShadow='0 -4px 0 #443300';
+    speakEl.textContent='';
+    textEl.style.fontSize='11px'; textEl.style.color='#ffdd88';
+    textEl.textContent='Two planes.\nTwo destinations.\nOne heart — forever.';
+    arrowEl.style.display='none';
+
+    function animPlanes(){
+      pg.clearRect(0,0,pc.width,pc.height);
+      drawNightBg();
+      drawPeople();
+
+      boyX  += 1.4;
+      girlX -= 1.4;
+      const midY=pc.height*0.36;
+
+      drawPixelPlane(boyX,  midY-24, true,  '✈ MELBOURNE', '#88ccff');
+      drawPixelPlane(girlX, midY+24, false, '✈ PARIS',     '#ffaacc');
+
+      if(boyX>pc.width+160 && girlX<-160){
+        contBtn.style.display='block';
+        pg.clearRect(0,0,pc.width,pc.height);
+        drawNightBg(); drawPeople();
+        return;
+      }
+      requestAnimationFrame(animPlanes);
+    }
+    requestAnimationFrame(animPlanes);
+  }
+
+  typeLine(0);
+}
+
+// ═══════════════════════════════════════════════
+// MAIN GAME LOOP
+// ═══════════════════════════════════════════════
+function gameLoop(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.imageSmoothingEnabled=false;
+  tick++;
+  playerX+=(laneX(lane)-playerX)*0.16;
+  if(moveCool>0) moveCool--;
+  if(inv){ invT--; if(invT<=0) inv=false; }
+  drawBg();
+
+  if(running){
+    obsTimer++; rewTimer++;
+    if(obsTimer>=obsInt){
+      obstacles.push({lane:Math.floor(Math.random()*LANES),y:-80,dead:false});
+      obsTimer=0; obsInt=Math.max(48,obsInt-0.25);
+    }
+    if(rewTimer>=rewInt){
+      rewards.push({lane:Math.floor(Math.random()*LANES),y:-60});
+      rewTimer=0;
+    }
+    spd=3.5+score*0.03;
+  }
+
+  rewards.forEach((r,i)=>{
+    if(running) r.y+=spd*2.2;
+    drawBowl(laneX(r.lane),r.y);
+    if(r.y>canvas.height+80) rewards.splice(i,1);
+  });
+
+  obstacles.forEach((o,i)=>{
+    if(running) o.y+=spd*1.7;
+    if(!o.dead) drawObstaclePlane(laneX(o.lane),o.y);
+    if(o.y>canvas.height+100) obstacles.splice(i,1);
+  });
+
+  drawParts();
+  drawCouple(playerX|0, playerY()|0, true);
+  if(running){ checkHit(); checkCollect(); }
+  requestAnimationFrame(gameLoop);
+}
+
+// ═══════════════════════════════════════════════
+// BUTTONS
+// ═══════════════════════════════════════════════
+document.getElementById('start-btn').addEventListener('click',()=>{
+  document.getElementById('start-screen').classList.remove('show');
+  resetGame(); running=true; playerX=laneX(1);
+});
+
+// REMOVABLE — skips straight to win scene
+document.getElementById('skip-win-btn').addEventListener('click',()=>{
+  document.getElementById('start-screen').classList.remove('show');
+  resetGame(); score=WIN; triggerWin();
+});
+// REMOVABLE
+
+document.getElementById('retry-btn').addEventListener('click',()=>{
+  document.getElementById('gameover-screen').classList.remove('show');
+  resetGame(); running=true; playerX=laneX(1);
+});
+
+document.getElementById('next-scene-btn').addEventListener('click',()=>{
+  document.getElementById('win-screen').classList.remove('show');
+  runFarewellScene();
+});
+
+// init
+playerX=laneX(1);
+gameLoop();
+</script>
+</body>
+</html>

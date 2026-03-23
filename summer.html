@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Da Nang 2025</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;700;900&family=Press+Start+2P&display=swap');
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family:'Nunito',sans-serif;
+      overflow:hidden;
+      width:100vw; height:100vh;
+    }
+
+    .scene {
+      position:relative;
+      width:100vw; height:100vh;
+      overflow:hidden;
+    }
+
+    /* ══════════════ SKY ══════════════ */
+    .sky {
+      position:absolute; inset:0;
+      background:linear-gradient(to bottom,
+        #2fa8d8 0%, #5ecbee 30%, #a8dff7 60%, #fde8b0 85%, #f9c96e 100%);
+      z-index:0;
+    }
+
+    /* ══════════════ SUN ══════════════ */
+    .sun {
+      position:absolute; top:6%; left:7%;
+      width:88px; height:88px;
+      background:radial-gradient(circle at 38% 38%, #fffbe0 25%, #ffe566 55%, #ffb400 100%);
+      border-radius:50%;
+      box-shadow:0 0 0 12px #ffd70022, 0 0 0 28px #ffd70011,
+                 0 0 60px 20px #ffcc0066, 0 0 120px 50px #ffaa0033;
+      z-index:2;
+      animation:sun-pulse 5s ease-in-out infinite alternate;
+    }
+    @keyframes sun-pulse {
+      from { box-shadow:0 0 0 12px #ffd70022,0 0 0 28px #ffd70011,0 0 60px 20px #ffcc0055,0 0 120px 50px #ffaa0022; }
+      to   { box-shadow:0 0 0 18px #ffd70033,0 0 0 38px #ffd70018,0 0 80px 30px #ffcc0099,0 0 160px 70px #ffaa0044; }
+    }
+    /* ray lines */
+    .sun-rays {
+      position:absolute; top:6%; left:7%;
+      width:88px; height:88px;
+      z-index:1;
+      animation:ray-spin 12s linear infinite;
+    }
+    .sun-rays::before,.sun-rays::after {
+      content:'';
+      position:absolute; top:50%; left:50%;
+      width:200px; height:2px;
+      background:linear-gradient(to right,transparent,#ffd70055,transparent);
+      transform-origin:left center;
+      transform:translateY(-50%);
+    }
+    .sun-rays::after { transform:translateY(-50%) rotate(45deg); }
+    @keyframes ray-spin { to { transform:rotate(360deg); } }
+
+    /* ══════════════ CLOUDS ══════════════ */
+    .cloud {
+      position:absolute; z-index:1;
+      background:#ffffffdd; border-radius:60px;
+      animation:cloud-drift linear infinite;
+    }
+    .cloud::before,.cloud::after {
+      content:''; position:absolute;
+      background:#ffffffdd; border-radius:50%;
+    }
+    .c1{width:120px;height:36px;top:10%;left:18%;animation-duration:70s;}
+    .c1::before{width:64px;height:64px;top:-32px;left:16px;}
+    .c1::after{width:48px;height:48px;top:-22px;left:58px;}
+    .c2{width:160px;height:42px;top:17%;left:52%;animation-duration:90s;animation-delay:-25s;}
+    .c2::before{width:72px;height:72px;top:-36px;left:24px;}
+    .c2::after{width:56px;height:56px;top:-26px;left:85px;}
+    .c3{width:90px;height:28px;top:7%;left:72%;animation-duration:55s;animation-delay:-12s;}
+    .c3::before{width:48px;height:48px;top:-24px;left:12px;}
+    .c3::after{width:36px;height:36px;top:-16px;left:48px;}
+    @keyframes cloud-drift{from{transform:translateX(-250px)}to{transform:translateX(110vw)}}
+
+    /* ══════════════ CITY (3 depth layers) ══════════════ */
+    .city-back,.city-mid,.city-front {
+      position:absolute;
+      left:0; right:0;
+      z-index:3;
+    }
+    .city-back  { bottom:42%; height:200px; opacity:0.55; filter:blur(1.5px); }
+    .city-mid   { bottom:40%; height:220px; opacity:0.80; }
+    .city-front { bottom:38%; height:180px; opacity:1.00; }
+    .city-back svg,.city-mid svg,.city-front svg { width:100%; height:100%; display:block; }
+
+    /* ══════════════ SEA ══════════════ */
+    .sea {
+      position:absolute; bottom:22%; left:0; right:0; height:26%;
+      background:linear-gradient(to bottom,#3ab5e0 0%,#1a7ab8 50%,#0d5590 100%);
+      z-index:4;
+    }
+    .sea::before {
+      content:''; position:absolute; inset:0;
+      background:repeating-linear-gradient(
+        180deg, transparent 0, transparent 16px,
+        #ffffff12 16px, #ffffff12 18px
+      );
+      animation:shimmer 2.5s linear infinite;
+    }
+    /* sparkle glints */
+    .sea::after {
+      content:''; position:absolute; inset:0;
+      background:radial-gradient(ellipse 4px 2px at 20% 30%, #ffffffaa, transparent),
+                 radial-gradient(ellipse 3px 1px at 50% 60%, #ffffffaa, transparent),
+                 radial-gradient(ellipse 5px 2px at 75% 40%, #ffffffaa, transparent),
+                 radial-gradient(ellipse 3px 1px at 88% 70%, #ffffffaa, transparent);
+      animation:sparkle 3s ease-in-out infinite alternate;
+    }
+    @keyframes shimmer{from{background-position:0 0}to{background-position:0 36px}}
+    @keyframes sparkle{from{opacity:0.4}to{opacity:1}}
+
+    /* ══════════════ WAVES ══════════════ */
+    .waves {
+      position:absolute; bottom:21%; left:0; right:0;
+      height:70px; z-index:5; overflow:hidden;
+    }
+    .wave-svg { position:absolute; bottom:0; width:200%; height:100%; }
+    .wave-1{animation:wave-move 4.5s linear infinite;opacity:1;}
+    .wave-2{animation:wave-move 6.5s linear infinite reverse;opacity:0.55;top:10px;}
+    .wave-3{animation:wave-move 8s linear infinite;opacity:0.35;top:18px;}
+    @keyframes wave-move{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    /* ══════════════ BEACH ══════════════ */
+    .beach {
+      position:absolute; bottom:0; left:0; right:0; height:23%;
+      background:linear-gradient(to bottom,#f7e4a8 0%,#eec95a 55%,#d8ae3a 100%);
+      border-top:3px solid #e8c258;
+      z-index:6;
+    }
+    .beach::before {
+      content:''; position:absolute; inset:0;
+      background-image:
+        radial-gradient(circle,#b8900840 1px,transparent 1px),
+        radial-gradient(circle,#a8780830 1px,transparent 1px);
+      background-size:20px 14px, 13px 9px;
+      background-position:0 0, 10px 7px;
+    }
+    /* wet sand edge */
+    .beach::after {
+      content:''; position:absolute; top:0; left:0; right:0; height:12px;
+      background:linear-gradient(to bottom,#c8d8e8aa,transparent);
+    }
+
+    /* ══════════════ BENCH ══════════════ */
+    .bench {
+      position:absolute; bottom:22%; right:22%;
+      z-index:9; transform:translateY(28px);
+    }
+
+    /* ══════════════ PALMS ══════════════ */
+    .palm { position:absolute; bottom:22%; z-index:8; }
+    .palm-left  { right:9%;  transform:scaleX(-1); }
+    .palm-right { right:3%; }
+
+    /* ══════════════ BILLBOARD ══════════════ */
+    /* Big commercial billboard: tall post, orange/red frame, image panel */
+    .billboard {
+      position:absolute;
+      bottom:22%; /* sits on beach line */
+      left:5%;
+      z-index:10;
+      transform:translateY(0);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    /* The actual sign face */
+    .bb-face {
+      position:relative;
+      width:200px; height:130px;
+    }
+    /* Orange outer frame */
+    .bb-frame {
+      position:absolute; inset:0;
+      background:linear-gradient(135deg,#ff6a00,#ee0979);
+      border-radius:4px;
+      box-shadow:0 4px 20px #00000055, 3px 3px 0 #aa0000;
+    }
+    /* White inner mat */
+    .bb-mat {
+      position:absolute;
+      inset:6px;
+      background:#fff8f0;
+      border-radius:2px;
+      overflow:hidden;
+    }
+    .bb-mat img {
+      width:100%; height:100%; object-fit:cover;
+    }
+    .bb-mat .bb-placeholder {
+      width:100%; height:100%;
+      background:#1a1a2e;
+      display:flex; align-items:center; justify-content:center;
+      color:#ff6a00;
+      font-size:8px; font-weight:700; text-align:center;
+      padding:6px; line-height:1.7;
+      font-family:'Nunito',sans-serif;
+    }
+    /* Scan-line gloss effect */
+    .bb-mat::after {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(160deg,#ffffff22 0%,transparent 50%);
+      pointer-events:none;
+    }
+    /* Top header strip */
+    .bb-header {
+      position:absolute;
+      top:0; left:0; right:0; height:18px;
+      background:linear-gradient(90deg,#cc0000,#ff4400,#cc0000);
+      display:flex; align-items:center; justify-content:center;
+      font-size:7px; font-weight:900; letter-spacing:2px; color:#fff;
+      font-family:'Nunito',sans-serif;
+      text-shadow:0 1px 2px #00000088;
+      z-index:1;
+    }
+    /* Legs / post structure */
+    .bb-legs {
+      display:flex; gap:80px;
+      position:relative;
+    }
+    .bb-leg {
+      width:10px;
+      height:80px;
+      background:linear-gradient(to right,#888,#bbb,#888);
+      border-radius:3px;
+      box-shadow:2px 0 4px #00000033;
+    }
+    /* Cross beam */
+    .bb-beam {
+      position:absolute;
+      top:16px; left:2px; right:2px; height:6px;
+      background:linear-gradient(to bottom,#aaa,#777);
+      border-radius:2px;
+    }
+    /* Catwalk / ledge under sign */
+    .bb-ledge {
+      width:210px; height:8px;
+      background:linear-gradient(to bottom,#999,#666);
+      border-radius:2px 2px 0 0;
+      box-shadow:0 2px 6px #00000044;
+    }
+
+    /* ══════════════ WANTED PAPER (flat on sand) ══════════════ */
+    .wanted-paper {
+      position:absolute;
+      /* sit right on the beach surface */
+      bottom:calc(23% - 18px);
+      left:37%;
+      z-index:11;
+      width:54px; height:66px;
+      /* perspective squish: looks like it's lying flat */
+      transform:perspective(200px) rotateX(52deg) rotateZ(-6deg);
+      transform-origin:bottom center;
+      background:#f4e8c4;
+      border:1.5px solid #c8a458;
+      box-shadow:2px 2px 6px #00000044, inset 0 0 8px #c8a04022;
+      cursor:pointer;
+      transition:filter 0.2s;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:flex-end;
+      padding-bottom:5px;
+    }
+    .wanted-paper:hover { filter:brightness(1.1); }
+    /* crumple texture lines */
+    .wanted-paper::before {
+      content:''; position:absolute; inset:0;
+      background:repeating-linear-gradient(
+        180deg, transparent 0, transparent 7px,
+        #c8a04022 7px, #c8a04022 8px
+      );
+    }
+    .paper-label {
+      font-family:'Nunito',sans-serif;
+      font-size:7px; font-weight:900;
+      color:#7a2a00; letter-spacing:1.5px;
+      position:relative; z-index:1;
+    }
+    /* tiny shadow on the sand */
+    .wanted-paper::after {
+      content:''; position:absolute;
+      bottom:-6px; left:5px; right:5px; height:6px;
+      background:radial-gradient(ellipse,#00000033,transparent 70%);
+      border-radius:50%;
+    }
+
+    /* ══════════════ WANTED MODAL ══════════════ */
+    .wanted-modal {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.78);
+      z-index:200;
+      align-items:center; justify-content:center;
+    }
+    .wanted-modal.show { display:flex; }
+    .wanted-poster {
+      background:#f4e8c4;
+      border:10px solid #7a4a10;
+      box-shadow:0 0 0 4px #4a2a00, 0 24px 80px #000000aa;
+      padding:20px 18px 14px;
+      width:300px;
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      animation:poster-pop 0.22s cubic-bezier(.34,1.56,.64,1);
+      position:relative;
+    }
+    @keyframes poster-pop{from{transform:scale(0.6) rotate(-4deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+    .poster-top {
+      font-family:'Pacifico',cursive; font-size:12px;
+      color:#4a1a00; letter-spacing:5px;
+      border-bottom:2px solid #7a4a10;
+      width:100%; text-align:center; padding-bottom:6px;
+    }
+    .poster-img-wrap {
+      width:220px; height:220px;
+      border:5px solid #7a4a10;
+      overflow:hidden; background:#c8a870;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .poster-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+    .poster-img-wrap .img-ph {
+      font-size:9px; color:#7a4a10; text-align:center; padding:10px; font-family:'Nunito',sans-serif;
+    }
+    .poster-bottom {
+      font-family:'Pacifico',cursive; font-size:34px;
+      color:#8b0000; letter-spacing:8px;
+      text-shadow:2px 2px 0 #4a0000, 0 0 20px #ff000055;
+    }
+    .poster-close {
+      position:absolute; top:6px; right:10px;
+      font-size:20px; color:#7a4a10; cursor:pointer; font-weight:900; line-height:1;
+    }
+    .poster-close:hover { color:#8b0000; }
+
+    /* ══════════════ TITLE + PLAY ══════════════ */
+    .title-wrap {
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-58%);
+      z-index:20;
+      display:flex; flex-direction:column; align-items:center; gap:20px;
+      text-align:center;
+      transition:opacity 0.4s;
+    }
+    .main-title {
+      font-family:'Pacifico',cursive;
+      font-size:clamp(52px,8vw,100px);
+      color:#ffffff;
+      text-shadow:3px 3px 0 #d47800, 7px 7px 0 #a05000,
+                  0 0 50px #ffd700aa, 0 0 100px #ff990055;
+      line-height:1; letter-spacing:2px;
+      animation:title-bob 5s ease-in-out infinite;
+    }
+    @keyframes title-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+    .subtitle {
+      font-family:'Nunito',sans-serif; font-size:clamp(13px,2vw,19px);
+      color:#ffe9a8; letter-spacing:8px; text-transform:uppercase;
+      text-shadow:0 2px 10px #00000055; margin-top:-10px;
+    }
+    .play-btn {
+      width:72px; height:72px;
+      background:radial-gradient(circle at 35% 35%,#fffbe0,#ffd700);
+      border:none; border-radius:50%;
+      box-shadow:0 5px 0 #a07800, 0 9px 0 #7a5500, 0 14px 30px #00000055;
+      cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:transform 0.1s, box-shadow 0.1s;
+      animation:play-pulse 2s ease-in-out infinite alternate;
+    }
+    .play-btn:hover{transform:translateY(-4px);box-shadow:0 9px 0 #a07800,0 13px 0 #7a5500,0 18px 30px #00000055;}
+    .play-btn:active{transform:translateY(5px);box-shadow:0 0 0 #a07800,0 4px 0 #7a5500;}
+    @keyframes play-pulse{
+      from{box-shadow:0 5px 0 #a07800,0 9px 0 #7a5500,0 14px 30px #00000044,0 0 20px #ffd70044;}
+      to  {box-shadow:0 5px 0 #a07800,0 9px 0 #7a5500,0 14px 30px #00000044,0 0 50px #ffd700cc;}
+    }
+    .play-icon{width:0;height:0;border-top:16px solid transparent;border-bottom:16px solid transparent;border-left:28px solid #a07800;margin-left:7px;}
+
+    /* ══════════════ INSTRUCTION OVERLAY ══════════════ */
+    .instr-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 80;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 0;
+    }
+    .instr-overlay.show { display: flex; }
+
+    .instr-dialog {
+      width: 100%;
+      background: linear-gradient(135deg, #7a1200 0%, #c43a00 40%, #e86000 70%, #c43a00 100%);
+      border-top: 4px solid #ffaa00;
+      box-shadow: 0 -4px 0 #8b2200, inset 0 2px 0 #ff8844, 0 0 60px #ff440033;
+      padding: 28px 44px 28px 44px;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 24px;
+      min-height: 160px;
+      position: relative;
+    }
+    /* inner glow stripe at top */
+    .instr-dialog::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, #ffdd88, #ff8844, #ffdd88, transparent);
+    }
+    .instr-text-wrap { flex: 1; position: relative; overflow: hidden; }
+    .instr-text {
+      color: #fff8ee;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 13px; line-height: 2.1;
+      letter-spacing: 0.4px; white-space: pre-wrap;
+      text-shadow: 0 1px 4px #00000066;
+    }
+    .instr-text::after {
+      content: '▮'; color: #ffdd44;
+      animation: blink-c 0.7s step-end infinite;
+    }
+    .instr-text.done::after { display: none; }
+    @keyframes blink-c { 0%,100%{opacity:1} 50%{opacity:0} }
+    .instr-arrow {
+      color: #ffdd44; font-size: 18px;
+      align-self: flex-end; padding-bottom: 4px;
+      display: none;
+      animation: arr-b 0.6s ease-in-out infinite alternate;
+      text-shadow: 0 0 8px #ffaa00;
+    }
+    .instr-arrow.visible { display: block; }
+    @keyframes arr-b { from{transform:translateY(0)} to{transform:translateY(7px)} }
+    .instr-counter {
+      position: absolute; top: -20px; right: 0;
+      color: #ffdd88; font-family: 'Press Start 2P', monospace;
+      font-size: 8px; opacity: 0.7;
+    }
+
+    /* ══════════════ VIDEO OVERLAY ══════════════ */
+    .video-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: #000;
+      z-index: 90;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-overlay.show { display: flex; }
+    .video-wrap {
+      position: relative;
+      width: 96vw;
+      aspect-ratio: 16/9;
+      background: #000;
+      overflow: hidden;
+    }
+    .video-wrap video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .video-placeholder {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 14px;
+      color: #ffaa44; font-family: 'Press Start 2P', monospace;
+      font-size: 11px; text-align: center; padding: 20px;
+      background: #000;
+    }
+    .video-placeholder .vid-icon { font-size: 48px; opacity: 0.6; }
+
+    .continue-btn {
+      display: none;
+      position: fixed;
+      bottom: 32px;
+      right: 36px;
+      background: linear-gradient(135deg, #ff8800, #ff4400);
+      color: #fff8ee;
+      border: none; padding: 16px 44px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 13px; cursor: pointer; letter-spacing: 2px;
+      box-shadow: 4px 4px 0 #aa2200, 8px 8px 0 #7a1400;
+      animation: btn-glow 1.5s ease-in-out infinite alternate;
+      transition: transform 0.1s;
+      z-index: 100;
+    }
+    .continue-btn.visible { display: block; }
+    .continue-btn:hover  { filter: brightness(1.15); }
+    .continue-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #aa2200; }
+    @keyframes btn-glow {
+      from { box-shadow: 4px 4px 0 #aa2200, 8px 8px 0 #7a1400, 0 0 14px #ff660044; }
+      to   { box-shadow: 4px 4px 0 #aa2200, 8px 8px 0 #7a1400, 0 0 34px #ff8800cc; }
+    }
+
+  
+    .seagull{position:absolute;z-index:3;animation:gull-fly linear infinite;font-size:20px;opacity:0.75;}
+    .g1{top:20%;animation-duration:20s;}
+    .g2{top:14%;animation-duration:28s;animation-delay:-9s;font-size:13px;}
+    .g3{top:27%;animation-duration:34s;animation-delay:-17s;font-size:15px;}
+    @keyframes gull-fly{from{left:-60px}to{left:110vw}}
+  </style>
+</head>
+<body>
+<div class="scene">
+
+  <div class="sky"></div>
+  <div class="sun"></div>
+  <div class="sun-rays"></div>
+
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+
+  <div class="seagull g1">🕊</div>
+  <div class="seagull g2">🕊</div>
+  <div class="seagull g3">🕊</div>
+
+  <!-- ═══ CITY BACK LAYER — distant hazy towers ═══ -->
+  <div class="city-back">
+    <svg viewBox="0 0 1440 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="cb" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#b0c8d8"/><stop offset="100%" stop-color="#c8dce8"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,200 L0,130 L40,130 L40,100 L55,100 L55,80 L70,80 L70,100 L85,100 L85,115
+               L110,115 L110,85 L125,85 L125,65 L135,60 L145,65 L145,85 L165,85 L165,105
+               L195,105 L195,75 L210,75 L210,55 L222,48 L234,55 L234,75 L255,75 L255,90
+               L280,90 L280,65 L295,65 L295,45 L308,38 L321,45 L321,65 L345,65 L345,80
+               L375,80 L375,55 L390,55 L390,35 L403,28 L416,35 L416,55 L440,55 L440,72
+               L470,72 L470,48 L484,48 L484,30 L498,22 L512,30 L512,48 L535,48 L535,65
+               L565,65 L565,42 L579,42 L579,24 L593,16 L607,24 L607,42 L630,42 L630,58
+               L660,58 L660,38 L674,38 L674,20 L688,12 L702,20 L702,38 L725,38 L725,55
+               L755,55 L755,35 L769,35 L769,18 L783,10 L797,18 L797,35 L820,35 L820,52
+               L850,52 L850,32 L864,32 L864,15 L878,8  L892,15 L892,32 L915,32 L915,50
+               L945,50 L945,30 L959,30 L959,14 L973,6  L987,14 L987,30 L1010,30 L1010,48
+               L1040,48 L1040,28 L1054,28 L1054,12 L1068,5 L1082,12 L1082,28 L1105,28 L1105,46
+               L1135,46 L1135,28 L1149,28 L1149,12 L1163,5 L1177,12 L1177,28 L1200,28 L1200,46
+               L1230,46 L1230,62 L1255,62 L1255,42 L1269,42 L1269,26 L1283,18 L1297,26 L1297,42
+               L1320,42 L1320,60 L1350,60 L1350,40 L1364,40 L1364,24 L1378,16 L1392,24 L1392,40
+               L1415,40 L1415,58 L1440,58 L1440,200 Z" fill="url(#cb)"/>
+    </svg>
+  </div>
+
+  <!-- ═══ CITY MID LAYER — main buildings with colour & windows ═══ -->
+  <div class="city-mid">
+    <svg viewBox="0 0 1440 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="cm1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#c8a878"/><stop offset="100%" stop-color="#e0c090"/>
+        </linearGradient>
+        <linearGradient id="cm2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#a8c0c8"/><stop offset="100%" stop-color="#c0d4dc"/>
+        </linearGradient>
+        <linearGradient id="cm3" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#d4b88a"/><stop offset="100%" stop-color="#e8ccaa"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Building blocks — varied heights and colours -->
+      <!-- Left cluster -->
+      <rect x="0"   y="140" width="45"  height="80"  fill="url(#cm1)"/>
+      <rect x="42"  y="110" width="50"  height="110" fill="url(#cm2)"/>
+      <rect x="88"  y="125" width="38"  height="95"  fill="url(#cm3)"/>
+      <rect x="122" y="90"  width="55"  height="130" fill="url(#cm1)"/>
+      <!-- tower with pointed top -->
+      <polygon points="175,60 185,85 205,85" fill="#c8a050"/>
+      <rect x="177" y="85"  width="26"  height="135" fill="url(#cm2)"/>
+      <rect x="200" y="100" width="42"  height="120" fill="url(#cm1)"/>
+      <rect x="238" y="75"  width="48"  height="145" fill="url(#cm3)"/>
+      <!-- antenna on 238 building -->
+      <line x1="262" y1="75" x2="262" y2="50" stroke="#888" stroke-width="2"/>
+      <circle cx="262" cy="49" r="3" fill="#ff4444"/>
+      <rect x="282" y="95"  width="35"  height="125" fill="url(#cm2)"/>
+
+      <!-- Mid-left cluster -->
+      <rect x="315" y="115" width="40"  height="105" fill="url(#cm1)"/>
+      <rect x="350" y="80"  width="52"  height="140" fill="url(#cm3)"/>
+      <polygon points="376,52 390,80 404,80" fill="#b89060"/>
+      <rect x="376" y="80"  width="28"  height="140" fill="url(#cm1)"/>
+      <rect x="400" y="98"  width="44"  height="122" fill="url(#cm2)"/>
+      <rect x="440" y="70"  width="50"  height="150" fill="url(#cm3)"/>
+      <!-- water tower on 440 building -->
+      <rect x="450" y="54"  width="30"  height="18"  fill="#aa7744" rx="2"/>
+      <rect x="453" y="42"  width="4"   height="14"  fill="#886633"/>
+      <rect x="463" y="42"  width="4"   height="14"  fill="#886633"/>
+      <rect x="473" y="42"  width="4"   height="14"  fill="#886633"/>
+      <rect x="486" y="90"  width="40"  height="130" fill="url(#cm1)"/>
+      <rect x="522" y="60"  width="55"  height="160" fill="url(#cm2)"/>
+      <!-- antenna -->
+      <line x1="549" y1="60" x2="549" y2="32" stroke="#888" stroke-width="2"/>
+      <circle cx="549" cy="31" r="3" fill="#ff4444"/>
+
+      <!-- Centre cluster — tallest buildings -->
+      <rect x="573" y="100" width="45"  height="120" fill="url(#cm3)"/>
+      <rect x="614" y="55"  width="60"  height="165" fill="url(#cm1)"/>
+      <polygon points="644,28 658,55 672,55" fill="#c89040"/>
+      <rect x="644" y="55"  width="28"  height="165" fill="url(#cm2)"/>
+      <rect x="670" y="72"  width="50"  height="148" fill="url(#cm3)"/>
+      <rect x="716" y="42"  width="58"  height="178" fill="url(#cm1)"/>
+      <!-- rooftop HVAC boxes -->
+      <rect x="718" y="35"  width="16"  height="8"   fill="#aaa" rx="1"/>
+      <rect x="738" y="35"  width="16"  height="8"   fill="#aaa" rx="1"/>
+      <rect x="770" y="60"  width="50"  height="160" fill="url(#cm2)"/>
+      <rect x="816" y="40"  width="62"  height="180" fill="url(#cm3)"/>
+      <line x1="847" y1="40" x2="847" y2="14" stroke="#888" stroke-width="2"/>
+      <circle cx="847" cy="13" r="4" fill="#ff4444"/>
+      <rect x="874" y="70"  width="46"  height="150" fill="url(#cm1)"/>
+
+      <!-- Mid-right cluster -->
+      <rect x="916" y="90"  width="52"  height="130" fill="url(#cm2)"/>
+      <rect x="964" y="58"  width="55"  height="162" fill="url(#cm3)"/>
+      <polygon points="991,30 1005,58 1019,58" fill="#b08050"/>
+      <rect x="1015" y="80" width="45"  height="140" fill="url(#cm1)"/>
+      <rect x="1056" y="65" width="52"  height="155" fill="url(#cm2)"/>
+      <rect x="1100" y="48" width="60"  height="172" fill="url(#cm3)"/>
+      <line x1="1130" y1="48" x2="1130" y2="20" stroke="#888" stroke-width="2"/>
+      <circle cx="1130" cy="19" r="3" fill="#ff4444"/>
+      <rect x="1156" y="78" width="44"  height="142" fill="url(#cm1)"/>
+      <rect x="1196" y="55" width="54"  height="165" fill="url(#cm2)"/>
+      <!-- water tower -->
+      <rect x="1207" y="38" width="32"  height="19"  fill="#aa7744" rx="2"/>
+      <rect x="1210" y="26" width="4"   height="14"  fill="#886633"/>
+      <rect x="1220" y="26" width="4"   height="14"  fill="#886633"/>
+      <rect x="1230" y="26" width="4"   height="14"  fill="#886633"/>
+
+      <!-- Right cluster -->
+      <rect x="1246" y="95" width="46"  height="125" fill="url(#cm3)"/>
+      <rect x="1288" y="62" width="52"  height="158" fill="url(#cm1)"/>
+      <polygon points="1314,34 1328,62 1342,62" fill="#c89040"/>
+      <rect x="1338" y="80" width="44"  height="140" fill="url(#cm2)"/>
+      <rect x="1378" y="55" width="62"  height="165" fill="url(#cm3)"/>
+      <line x1="1409" y1="55" x2="1409" y2="28" stroke="#888" stroke-width="2"/>
+      <circle cx="1409" cy="27" r="3" fill="#ff4444"/>
+
+      <!-- ── WINDOWS (scattered) ── -->
+      <!-- left cluster windows -->
+      <rect x="8"   y="148" width="8" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="20"  y="148" width="8" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="8"   y="162" width="8" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="20"  y="162" width="8" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="50"  y="118" width="7" height="5" fill="#c8e8ffaa" rx="1"/>
+      <rect x="62"  y="118" width="7" height="5" fill="#c8e8ffaa" rx="1"/>
+      <rect x="50"  y="130" width="7" height="5" fill="#c8e8ffaa" rx="1"/>
+      <rect x="62"  y="130" width="7" height="5" fill="#c8e8ffaa" rx="1"/>
+      <rect x="50"  y="142" width="7" height="5" fill="#c8e8ffaa" rx="1"/>
+      <rect x="128" y="98"  width="9" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="142" y="98"  width="9" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="128" y="112" width="9" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="142" y="112" width="9" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="128" y="126" width="9" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="142" y="126" width="9" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="181" y="92"  width="8" height="6" fill="#c8e8ffaa" rx="1"/>
+      <rect x="192" y="92"  width="8" height="6" fill="#c8e8ffaa" rx="1"/>
+      <rect x="181" y="106" width="8" height="6" fill="#c8e8ffaa" rx="1"/>
+      <rect x="181" y="120" width="8" height="6" fill="#c8e8ffaa" rx="1"/>
+      <rect x="192" y="120" width="8" height="6" fill="#c8e8ffaa" rx="1"/>
+      <rect x="244" y="82"  width="9" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="258" y="82"  width="9" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="244" y="96"  width="9" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="258" y="96"  width="9" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="244" y="110" width="9" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="258" y="110" width="9" height="7" fill="#ffe08099" rx="1"/>
+      <!-- mid windows -->
+      <rect x="356" y="88"  width="9" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="370" y="88"  width="9" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="356" y="102" width="9" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="370" y="102" width="9" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="356" y="116" width="9" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="446" y="78"  width="8" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="458" y="78"  width="8" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="470" y="78"  width="8" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="446" y="92"  width="8" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="458" y="92"  width="8" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="470" y="92"  width="8" height="6" fill="#ffe08099" rx="1"/>
+      <rect x="528" y="68"  width="9" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="542" y="68"  width="9" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="528" y="82"  width="9" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="542" y="82"  width="9" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="528" y="96"  width="9" height="7" fill="#c8e8ffaa" rx="1"/>
+      <!-- centre tall buildings windows -->
+      <rect x="620" y="62"  width="10" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="635" y="62"  width="10" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="650" y="62"  width="10" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="620" y="78"  width="10" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="635" y="78"  width="10" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="650" y="78"  width="10" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="620" y="94"  width="10" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="635" y="94"  width="10" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="650" y="94"  width="10" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="722" y="50"  width="10" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="737" y="50"  width="10" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="752" y="50"  width="10" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="722" y="66"  width="10" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="737" y="66"  width="10" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="752" y="66"  width="10" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="722" y="82"  width="10" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="737" y="82"  width="10" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="752" y="82"  width="10" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="820" y="48"  width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="836" y="48"  width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="852" y="48"  width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="820" y="64"  width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="836" y="64"  width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="852" y="64"  width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="820" y="80"  width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="836" y="80"  width="11" height="8" fill="#ffe08099" rx="1"/>
+      <!-- right cluster windows -->
+      <rect x="970" y="66"  width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="985" y="66"  width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="970" y="80"  width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="985" y="80"  width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="970" y="94"  width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="985" y="94"  width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1062" y="72" width="10" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="1077" y="72" width="10" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="1062" y="86" width="10" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="1077" y="86" width="10" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="1062" y="100" width="10" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="1106" y="55" width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1122" y="55" width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1138" y="55" width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1106" y="71" width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1122" y="71" width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1138" y="71" width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1202" y="62" width="10" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="1217" y="62" width="10" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="1232" y="62" width="10" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="1202" y="76" width="10" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="1217" y="76" width="10" height="7" fill="#ffe08099" rx="1"/>
+      <rect x="1294" y="70" width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1309" y="70" width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1294" y="84" width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1309" y="84" width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1384" y="62" width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="1400" y="62" width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="1384" y="78" width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="1400" y="78" width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="1384" y="94" width="11" height="8" fill="#ffe08099" rx="1"/>
+      <rect x="1400" y="94" width="11" height="8" fill="#ffe08099" rx="1"/>
+
+      <!-- ground fill line -->
+      <rect x="0" y="218" width="1440" height="4" fill="#d4b87888"/>
+    </svg>
+  </div>
+
+  <!-- ═══ CITY FRONT LAYER — near buildings, darker & bold ═══ -->
+  <div class="city-front">
+    <svg viewBox="0 0 1440 180" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="cf1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#7a6040"/><stop offset="100%" stop-color="#a88858"/>
+        </linearGradient>
+        <linearGradient id="cf2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#607888"/><stop offset="100%" stop-color="#88a0b0"/>
+        </linearGradient>
+      </defs>
+      <!-- front-plane blocky buildings, much darker -->
+      <rect x="0"    y="100" width="60"  height="80" fill="url(#cf1)"/>
+      <rect x="55"   y="80"  width="55"  height="100" fill="url(#cf2)"/>
+      <rect x="105"  y="105" width="45"  height="75" fill="url(#cf1)"/>
+      <!-- big glass tower left -->
+      <rect x="145"  y="55"  width="70"  height="125" fill="url(#cf2)"/>
+      <line x1="180" y1="55" x2="180" y2="30" stroke="#666" stroke-width="3"/>
+      <circle cx="180" cy="29" r="4" fill="#ff2222"/>
+      <rect x="210"  y="90"  width="50"  height="90" fill="url(#cf1)"/>
+      <rect x="255"  y="65"  width="65"  height="115" fill="url(#cf2)"/>
+      <rect x="315"  y="95"  width="48"  height="85" fill="url(#cf1)"/>
+      <rect x="358"  y="60"  width="70"  height="120" fill="url(#cf2)"/>
+      <!-- rooftop details -->
+      <rect x="360"  y="54"  width="18"  height="7" fill="#556677" rx="1"/>
+      <rect x="382"  y="54"  width="18"  height="7" fill="#556677" rx="1"/>
+      <rect x="424"  y="85"  width="55"  height="95" fill="url(#cf1)"/>
+      <rect x="474"  y="55"  width="72"  height="125" fill="url(#cf2)"/>
+      <line x1="510" y1="55" x2="510" y2="26" stroke="#666" stroke-width="3"/>
+      <circle cx="510" cy="25" r="4" fill="#ff2222"/>
+      <rect x="541"  y="78"  width="52"  height="102" fill="url(#cf1)"/>
+      <rect x="588"  y="48"  width="78"  height="132" fill="url(#cf2)"/>
+      <rect x="661"  y="68"  width="58"  height="112" fill="url(#cf1)"/>
+      <rect x="714"  y="38"  width="82"  height="142" fill="url(#cf2)"/>
+      <line x1="755" y1="38" x2="755" y2="10" stroke="#666" stroke-width="3"/>
+      <circle cx="755" cy="9" r="5" fill="#ff2222"/>
+      <!-- water tank -->
+      <rect x="716"  y="30"  width="34"  height="10" fill="#5a4530" rx="2"/>
+      <rect x="720"  y="18"  width="5"   height="13" fill="#443322"/>
+      <rect x="730"  y="18"  width="5"   height="13" fill="#443322"/>
+      <rect x="740"  y="18"  width="5"   height="13" fill="#443322"/>
+      <rect x="791"  y="62"  width="58"  height="118" fill="url(#cf1)"/>
+      <rect x="844"  y="42"  width="76"  height="138" fill="url(#cf2)"/>
+      <rect x="915"  y="75"  width="52"  height="105" fill="url(#cf1)"/>
+      <rect x="962"  y="50"  width="70"  height="130" fill="url(#cf2)"/>
+      <line x1="997" y1="50" x2="997" y2="22" stroke="#666" stroke-width="3"/>
+      <circle cx="997" cy="21" r="4" fill="#ff2222"/>
+      <rect x="1027" y="82"  width="50"  height="98" fill="url(#cf1)"/>
+      <rect x="1072" y="55"  width="68"  height="125" fill="url(#cf2)"/>
+      <rect x="1135" y="72"  width="54"  height="108" fill="url(#cf1)"/>
+      <rect x="1184" y="45"  width="76"  height="135" fill="url(#cf2)"/>
+      <line x1="1222" y1="45" x2="1222" y2="16" stroke="#666" stroke-width="3"/>
+      <circle cx="1222" cy="15" r="4" fill="#ff2222"/>
+      <rect x="1255" y="68"  width="56"  height="112" fill="url(#cf1)"/>
+      <rect x="1306" y="48"  width="70"  height="132" fill="url(#cf2)"/>
+      <rect x="1371" y="78"  width="69"  height="102" fill="url(#cf1)"/>
+
+      <!-- front windows — small & bright -->
+      <rect x="6"    y="108" width="10" height="7" fill="#ffeebb88" rx="1"/>
+      <rect x="22"   y="108" width="10" height="7" fill="#ffeebb88" rx="1"/>
+      <rect x="38"   y="108" width="10" height="7" fill="#ffeebb88" rx="1"/>
+      <rect x="6"    y="122" width="10" height="7" fill="#ffeebb88" rx="1"/>
+      <rect x="22"   y="122" width="10" height="7" fill="#ffeebb88" rx="1"/>
+      <rect x="38"   y="122" width="10" height="7" fill="#ffeebb88" rx="1"/>
+      <rect x="62"   y="88"  width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="78"   y="88"  width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="62"   y="102" width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="78"   y="102" width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="62"   y="116" width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="78"   y="116" width="10" height="7" fill="#c8e8ffaa" rx="1"/>
+      <rect x="152"  y="62"  width="11" height="8" fill="#ffeebb88" rx="1"/>
+      <rect x="168"  y="62"  width="11" height="8" fill="#ffeebb88" rx="1"/>
+      <rect x="184"  y="62"  width="11" height="8" fill="#ffeebb88" rx="1"/>
+      <rect x="152"  y="78"  width="11" height="8" fill="#ffeebb88" rx="1"/>
+      <rect x="168"  y="78"  width="11" height="8" fill="#ffeebb88" rx="1"/>
+      <rect x="184"  y="78"  width="11" height="8" fill="#ffeebb88" rx="1"/>
+      <rect x="152"  y="94"  width="11" height="8" fill="#ffeebb88" rx="1"/>
+      <rect x="168"  y="94"  width="11" height="8" fill="#ffeebb88" rx="1"/>
+      <rect x="365"  y="68"  width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="381"  y="68"  width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="397"  y="68"  width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="365"  y="84"  width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="381"  y="84"  width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="397"  y="84"  width="11" height="8" fill="#c8e8ffaa" rx="1"/>
+      <rect x="481"  y="62"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="498"  y="62"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="515"  y="62"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="481"  y="78"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="498"  y="78"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="481"  y="94"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="595"  y="55"  width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="612"  y="55"  width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="629"  y="55"  width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="595"  y="72"  width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="612"  y="72"  width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="629"  y="72"  width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="595"  y="89"  width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="612"  y="89"  width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="720"  y="45"  width="13" height="10" fill="#ffeebb88" rx="1"/>
+      <rect x="738"  y="45"  width="13" height="10" fill="#ffeebb88" rx="1"/>
+      <rect x="756"  y="45"  width="13" height="10" fill="#ffeebb88" rx="1"/>
+      <rect x="720"  y="63"  width="13" height="10" fill="#ffeebb88" rx="1"/>
+      <rect x="738"  y="63"  width="13" height="10" fill="#ffeebb88" rx="1"/>
+      <rect x="756"  y="63"  width="13" height="10" fill="#ffeebb88" rx="1"/>
+      <rect x="720"  y="81"  width="13" height="10" fill="#ffeebb88" rx="1"/>
+      <rect x="738"  y="81"  width="13" height="10" fill="#ffeebb88" rx="1"/>
+      <rect x="756"  y="81"  width="13" height="10" fill="#ffeebb88" rx="1"/>
+      <rect x="851"  y="50"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="869"  y="50"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="887"  y="50"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="851"  y="68"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="869"  y="68"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="887"  y="68"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="851"  y="86"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1079" y="62"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="1096" y="62"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="1113" y="62"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="1079" y="78"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="1096" y="78"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="1079" y="94"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="1191" y="52"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1209" y="52"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1227" y="52"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1191" y="70"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1209" y="70"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1227" y="70"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1191" y="88"  width="13" height="10" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1313" y="55"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="1330" y="55"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="1347" y="55"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="1313" y="71"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="1330" y="71"  width="12" height="9" fill="#ffeebb88" rx="1"/>
+      <rect x="1378" y="85"  width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1395" y="85"  width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1412" y="85"  width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1378" y="101" width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+      <rect x="1395" y="101" width="12" height="9" fill="#c8e8ffaa" rx="1"/>
+    </svg>
+  </div>
+
+  <!-- Sea -->
+  <div class="sea"></div>
+
+  <!-- Waves -->
+  <div class="waves">
+    <svg class="wave-svg wave-1" viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,35 C120,12 240,58 360,35 C480,12 600,58 720,35 C840,12 960,58 1080,35 C1200,12 1320,58 1440,35 L1440,70 L0,70 Z" fill="#ffffffcc"/>
+    </svg>
+    <svg class="wave-svg wave-2" viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,45 C180,22 360,62 540,40 C720,18 900,62 1080,40 C1260,18 1380,55 1440,45 L1440,70 L0,70 Z" fill="#ffffff88"/>
+    </svg>
+    <svg class="wave-svg wave-3" viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,55 C200,38 400,68 600,50 C800,32 1050,68 1250,50 C1350,40 1400,60 1440,55 L1440,70 L0,70 Z" fill="#ffffff44"/>
+    </svg>
+  </div>
+
+  <!-- Beach -->
+  <div class="beach"></div>
+
+  <!-- Palms -->
+  <div class="palm palm-left">
+    <svg width="90" height="160" viewBox="0 0 90 160" xmlns="http://www.w3.org/2000/svg">
+      <rect x="42" y="60" width="9" height="100" rx="4" fill="#8b6914"/>
+      <path d="M46,65 Q10,40 0,20 Q20,45 46,65" fill="#2d8c2d"/>
+      <path d="M46,65 Q55,30 75,15 Q60,40 46,65" fill="#3aaa3a"/>
+      <path d="M46,65 Q80,50 95,35 Q72,52 46,65" fill="#2d8c2d"/>
+      <path d="M46,65 Q15,65 0,55 Q22,62 46,65" fill="#3aaa3a"/>
+      <path d="M46,65 Q60,70 80,65 Q62,67 46,65" fill="#2d8c2d"/>
+    </svg>
+  </div>
+  <div class="palm palm-right">
+    <svg width="75" height="130" viewBox="0 0 75 130" xmlns="http://www.w3.org/2000/svg">
+      <rect x="33" y="45" width="8" height="85" rx="4" fill="#8b6914"/>
+      <path d="M37,50 Q8,32 0,16 Q16,36 37,50" fill="#2d8c2d"/>
+      <path d="M37,50 Q44,22 62,10 Q50,32 37,50" fill="#3aaa3a"/>
+      <path d="M37,50 Q65,40 75,28 Q58,42 37,50" fill="#2d8c2d"/>
+      <path d="M37,50 Q12,54 0,46 Q18,50 37,50" fill="#3aaa3a"/>
+    </svg>
+  </div>
+
+  <!-- Bench -->
+  <div class="bench">
+    <svg width="120" height="70" viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="20" width="100" height="8"  rx="3" fill="#c8841a"/>
+      <rect x="10" y="30" width="100" height="8"  rx="3" fill="#b07010"/>
+      <rect x="10" y="5"  width="100" height="7"  rx="3" fill="#c8841a"/>
+      <rect x="10" y="14" width="100" height="5"  rx="2" fill="#b07010"/>
+      <rect x="15" y="38" width="8"   height="28" rx="3" fill="#8b5e14"/>
+      <rect x="97" y="38" width="8"   height="28" rx="3" fill="#8b5e14"/>
+      <rect x="22" y="5"  width="6"   height="33" rx="2" fill="#8b5e14"/>
+      <rect x="92" y="5"  width="6"   height="33" rx="2" fill="#8b5e14"/>
+      <rect x="10" y="62" width="20"  height="5"  rx="2" fill="#6b4a10"/>
+      <rect x="90" y="62" width="20"  height="5"  rx="2" fill="#6b4a10"/>
+    </svg>
+  </div>
+
+  <!-- ═══════════ BILLBOARD (commercial, orange/red) ═══════════ -->
+  <div class="billboard">
+    <div class="bb-face">
+      <div class="bb-frame"></div>
+      <div class="bb-mat">
+        <div class="bb-header">DA NANG SUMMER FEST</div>
+        <img src="image.png" alt="Billboard image"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <div class="bb-placeholder">[ image.png ]<br/>drop your<br/>image here</div>
+      </div>
+    </div>
+    <div class="bb-ledge"></div>
+    <div class="bb-legs">
+      <div class="bb-leg"></div>
+      <div class="bb-leg"></div>
+      <div class="bb-beam"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ WANTED PAPER (flat on sand) ═══════════ -->
+  <div class="wanted-paper" id="wanted-paper">
+    <div class="paper-label">WANTED</div>
+  </div>
+
+  <!-- Title + Play button -->
+  <div class="title-wrap" id="title-wrap">
+    <div class="main-title">Da Nang 2025</div>
+    <div class="subtitle">Summer is calling</div>
+    <button class="play-btn" id="play-btn">
+      <div class="play-icon"></div>
+    </button>
+  </div>
+
+</div><!-- /scene -->
+
+<!-- ═══ INSTRUCTION DIALOG OVERLAY ═══ -->
+<div class="instr-overlay" id="instr-overlay">
+  <div class="instr-dialog">
+    <div class="instr-text-wrap">
+      <div class="instr-text" id="instr-text"></div>
+      <div class="instr-counter" id="instr-counter"></div>
+    </div>
+    <div class="instr-arrow" id="instr-arrow">▼</div>
+  </div>
+</div>
+
+<!-- ═══ VIDEO OVERLAY ═══ -->
+<div class="video-overlay" id="video-overlay">
+  <div class="video-wrap">
+    <!-- ▼▼▼ Replace src="video.mp4" with your video file ▼▼▼ -->
+    <video id="game-video" src="video.mp4"
+           onerror="document.getElementById('vid-ph').style.display='flex'; this.style.display='none'">
+    </video>
+    <div class="video-placeholder" id="vid-ph" style="display:none">
+      <div class="vid-icon">🎬</div>
+      <div>[ video.mp4 ]</div>
+      <div style="font-size:8px;opacity:0.6;margin-top:8px">Drop your video file here</div>
+    </div>
+  </div>
+  <button class="continue-btn" id="continue-btn"
+          onclick="window.location.href='game.html'">
+    CONTINUE ▶
+  </button>
+</div>
+
+<!-- Wanted poster modal -->
+<div class="wanted-modal" id="wanted-modal">
+  <div class="wanted-poster">
+    <span class="poster-close" onclick="closeWanted()">✕</span>
+    <div class="poster-top">MOST WANTED</div>
+    <div class="poster-img-wrap">
+      <img src="image2.png" alt="Wanted"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+      <div class="img-ph">[ image2.png ]<br/>your photo here</div>
+    </div>
+    <div class="poster-bottom">WANTED</div>
+  </div>
+</div>
+
+<script>
+  /* ═══════════════════════════════════════════════════════
+     ██  INSTRUCTION MESSAGES — ADD YOUR LINES HERE  ██
+     Each string is one dialog page. Use \n for line breaks.
+  ═══════════════════════════════════════════════════════ */
+  const INSTRUCTIONS = [
+    "Welcome to Da Nang 2025!\nGet ready for the adventure.",
+    "Your mission: explore the city,\nfind hidden secrets on the beach.",
+    "Watch out for the WANTED poster —\nsomeone suspicious is around...",
+    "Collect items, talk to locals,\nand enjoy the summer vibes.",
+    "The rules are simple:\nhave fun and don't lose your sunscreen.",
+    "One last thing before we begin...\nWatch this carefully.",
+  ];
+  /* ═══════════════════════════════════════════════════════
+     ██  END OF INSTRUCTION MESSAGES  ██
+  ═══════════════════════════════════════════════════════ */
+
+
+  // ── Play button → fade title → show instructions ──────
+  document.getElementById('play-btn').addEventListener('click', () => {
+    const tw = document.getElementById('title-wrap');
+    tw.style.opacity = '0';
+    setTimeout(() => {
+      tw.style.display = 'none';
+      startInstructions();
+    }, 420);
+  });
+
+
+  // ── Instruction dialog ────────────────────────────────
+  const instrOverlay = document.getElementById('instr-overlay');
+  const instrText    = document.getElementById('instr-text');
+  const instrArrow   = document.getElementById('instr-arrow');
+  const instrCounter = document.getElementById('instr-counter');
+
+  let iIdx     = 0;
+  let iTyping  = false;
+  let iTimeout = null;
+  let iFull    = '';
+  let iChar    = 0;
+
+  function startInstructions() {
+    instrOverlay.classList.add('show');
+    showInstrMsg(0);
+  }
+
+  function updateInstrCounter() {
+    instrCounter.textContent = `${iIdx + 1} / ${INSTRUCTIONS.length}`;
+  }
+
+  function showInstrMsg(idx) {
+    iIdx    = idx;
+    iFull   = INSTRUCTIONS[idx];
+    iChar   = 0;
+    iTyping = true;
+    instrText.textContent = '';
+    instrText.classList.remove('done');
+    instrArrow.classList.remove('visible');
+    updateInstrCounter();
+
+    function tick() {
+      if (iChar < iFull.length) {
+        instrText.textContent = iFull.slice(0, ++iChar);
+        iTimeout = setTimeout(tick, 36);
+      } else {
+        iTyping = false;
+        instrText.classList.add('done');
+        if (iIdx < INSTRUCTIONS.length - 1) {
+          instrArrow.classList.add('visible');
+        } else {
+          // Last message done → show video
+          instrArrow.classList.remove('visible');
+          setTimeout(showVideo, 500);
+        }
+      }
+    }
+    tick();
+  }
+
+  function instrAdvance() {
+    if (iTyping) {
+      // skip to end of current message
+      clearTimeout(iTimeout);
+      iTyping = false;
+      instrText.textContent = iFull;
+      instrText.classList.add('done');
+      if (iIdx < INSTRUCTIONS.length - 1) {
+        instrArrow.classList.add('visible');
+      } else {
+        setTimeout(showVideo, 500);
+      }
+      return;
+    }
+    if (iIdx >= INSTRUCTIONS.length - 1) return;
+    showInstrMsg(iIdx + 1);
+  }
+
+  instrOverlay.addEventListener('click', instrAdvance);
+
+
+  // ── Video ─────────────────────────────────────────────
+  const videoOverlay = document.getElementById('video-overlay');
+  const gameVideo    = document.getElementById('game-video');
+  const continueBtn  = document.getElementById('continue-btn');
+
+  function showVideo() {
+    instrOverlay.classList.remove('show');
+    videoOverlay.classList.add('show');
+
+    // Try to play the video; show continue button once it starts
+    const playPromise = gameVideo.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        continueBtn.classList.add('visible');
+      }).catch(() => {
+        // Video couldn't play (file missing) — show button anyway
+        continueBtn.classList.add('visible');
+      });
+    } else {
+      continueBtn.classList.add('visible');
+    }
+
+    // Also show continue if video metadata loads (fallback)
+    gameVideo.addEventListener('play', () => {
+      continueBtn.classList.add('visible');
+    }, { once: true });
+
+    // Show continue when video ends too
+    gameVideo.addEventListener('ended', () => {
+      continueBtn.classList.add('visible');
+    }, { once: true });
+  }
+
+
+  // ── Wanted paper ──────────────────────────────────────
+  const paper = document.getElementById('wanted-paper');
+  const modal  = document.getElementById('wanted-modal');
+  paper.addEventListener('click', e => { e.stopPropagation(); modal.classList.add('show'); });
+  function closeWanted() { modal.classList.remove('show'); }
+  modal.addEventListener('click', e => { if (e.target === modal) closeWanted(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWanted(); });
+</script>
+</body>
+</html>
