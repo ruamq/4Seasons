@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Protect Our Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a1208;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            user-select: none;
+        }
+
+        #wrap {
+            position: relative;
+        }
+
+        canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            display: block;
+        }
+
+        /* Title overlay */
+        #ui {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            pointer-events: none;
+            padding: 20px 0 36px;
+        }
+
+        #title-box {
+            text-align: center;
+        }
+
+        #title-text {
+            font-size: 40px;
+            font-weight: 900;
+            letter-spacing: 6px;
+            color: #fff8e8;
+            text-shadow: 2px 2px 0 #7a2200, 4px 4px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        #sub {
+            color: #ffddaa;
+            font-size: 12px;
+            letter-spacing: 4px;
+            margin-top: 6px;
+            opacity: 0.75;
+        }
+
+        #btn-play {
+            pointer-events: all;
+            cursor: pointer;
+            background: linear-gradient(180deg, #ff6633, #cc2200 60%, #881100);
+            border: 3px solid #ffaa44;
+            color: #fff8e0;
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 5px;
+            padding: 13px 50px;
+            box-shadow: 0 5px 0 #550000;
+            clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+            transition: transform .1s, box-shadow .1s;
+        }
+
+        #btn-play:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 0 #550000;
+        }
+
+        #btn-play:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #550000;
+        }
+
+        /* Video overlay */
+        #video-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        #video-overlay.show {
+            display: flex;
+        }
+
+        #video-frame {
+            border: 4px solid #ffaa44;
+            background: #000;
+            width: 700px;
+            height: 394px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        /* Story text panel */
+        #story-textbox {
+            display: none;
+            width: 700px;
+            background: rgba(10, 8, 20, 0.95);
+            border: 3px solid #ffaa44;
+            padding: 22px 28px 20px;
+            margin-bottom: 20px;
+        }
+
+        #story-textbox .nametag {
+            color: #ff6633;
+            font-size: 11px;
+            letter-spacing: 3px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #story-textbox .story-line {
+            color: #fff0cc;
+            font-size: 13px;
+            line-height: 1.85;
+            letter-spacing: 1px;
+            min-height: 28px;
+        }
+
+        #story-textbox .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 13px;
+            background: #ffaa44;
+            vertical-align: middle;
+            margin-left: 2px;
+            animation: blink .6s step-end infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0
+            }
+        }
+
+        /* Wall of KFC reveal panel */
+        #wkfc-panel {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #wkfc-canvas {
+            border: 4px solid #ccaa77;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            margin-bottom: 14px;
+        }
+
+        #wkfc-caption {
+            color: #ff4422;
+            font-size: 15px;
+            letter-spacing: 5px;
+            font-weight: bold;
+            text-shadow: 0 0 12px rgba(255, 60, 0, 0.8);
+            animation: redpulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes redpulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.6
+            }
+        }
+
+        #video-frame video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #video-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 220, 150, 0.5);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        #video-placeholder span {
+            font-size: 44px;
+            display: block;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+
+        #btn-continue {
+            cursor: pointer;
+            background: linear-gradient(180deg, #44aa44, #228822 60%, #115511);
+            border: 3px solid #88ff88;
+            color: #e8ffe8;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            padding: 12px 44px;
+            box-shadow: 0 5px 0 #002200;
+            clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+            transition: transform .1s;
+        }
+
+        #btn-continue:hover {
+            transform: translateY(-2px);
+        }
+
+        .vlab {
+            color: #ffddaa;
+            font-size: 11px;
+            letter-spacing: 3px;
+            margin-bottom: 14px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="wrap">
+        <canvas id="c"></canvas>
+        <div id="ui">
+            <div id="title-box">
+                <div id="title-text">PROTECT OUR HOME</div>
+                <div id="sub">— A SPRING ADVENTURE —</div>
+            </div>
+            <button id="btn-play" onclick="showVideo()">▶ PLAY</button>
+        </div>
+        <div id="video-overlay">
+            <div class="vlab" id="vlab-top">◆ WATCH THE STORY ◆</div>
+
+            <!-- STEP 0: video -->
+            <div id="panel-video">
+                <div id="video-frame">
+                    <video id="story-video" controls>
+                        <!-- <source src="story.mp4" type="video/mp4"> -->
+                    </video>
+                    <div id="video-placeholder">
+                        <span>▶</span>
+                        PLACE YOUR VIDEO HERE
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 1: story text -->
+            <div id="story-textbox">
+                <div class="nametag">◆ THE THREAT APPROACHES ◆</div>
+                <div class="story-line" id="story-line-text"><span class="cursor"></span></div>
+            </div>
+
+            <!-- STEP 2: Wall of KFC reveal -->
+            <div id="wkfc-panel">
+                <canvas id="wkfc-canvas" width="560" height="320"></canvas>
+                <div id="wkfc-caption">⚠ THE WALL OF KFC APPROACHES ⚠</div>
+            </div>
+
+            <button id="btn-continue" onclick="handleContinue()">CONTINUE ▶</button>
+        </div>
+    </div>
+
+    <script>
+        var canvas = document.getElementById('c');
+        var ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        var W = window.innerWidth, H = window.innerHeight;
+        canvas.width = W; canvas.height = H;
+        var GY = Math.floor(H * 0.61);
+        var t = 0;
+        
+        window.addEventListener('resize', function() {
+            window.location.reload();
+        });
+
+        function px(x, y, w, h, c) {
+            ctx.fillStyle = c;
+            ctx.fillRect(Math.floor(x), Math.floor(y), w, h);
+        }
+
+        // ── Petals
+        var petals = [];
+        for (var i = 0; i < 10; i++) {
+            petals.push({
+                x: Math.random() * W, y: Math.random() * H * 0.7,
+                vx: -3 + Math.random() * 6, vy: 10 + Math.random() * 12,
+                rot: Math.random() * 6.28, sz: 2 + Math.floor(Math.random() * 3),
+                col: ['#ffb3cc', '#ff88aa', '#ffd0e0', '#ffffff', '#ffccdd'][Math.floor(Math.random() * 5)]
+            });
+        }
+
+        // ── Ducks (pond left and right)
+        var ducks = [
+            { ox: 70, baseY: GY + 30, dir: 1, spd: 18, wx: 0 },
+            { ox: 180, baseY: GY + 46, dir: -1, spd: 14, wx: 0 },
+            { ox: W - 230, baseY: GY + 32, dir: 1, spd: 16, wx: 0 },
+            { ox: W - 120, baseY: GY + 44, dir: -1, spd: 20, wx: 0 }
+        ];
+
+        // ── Fish
+        var fish = [
+            { x: 80, y: GY + 46, dir: 1, spd: 26, minX: 32, maxX: 256 },
+            { x: 200, y: GY + 58, dir: -1, spd: 20, minX: 32, maxX: 256 },
+            { x: W - 200, y: GY + 48, dir: 1, spd: 24, minX: W - 266, maxX: W - 34 },
+            { x: W - 90, y: GY + 60, dir: -1, spd: 18, minX: W - 266, maxX: W - 34 }
+        ];
+
+        // ── Frogs
+        var frogs = [
+            { x: 28, y: GY + 6, blinkT: 0, hop: 0, hopV: 0 },
+            { x: 264, y: GY + 4, blinkT: 1.8, hop: 0, hopV: 0 },
+            { x: W - 44, y: GY + 6, blinkT: 0.6, hop: 0, hopV: 0 },
+            { x: W - 270, y: GY + 4, blinkT: 2.4, hop: 0, hopV: 0 }
+        ];
+
+        // ── Bunnies
+        var bunnies = [
+            { ox: W / 2 - 190, y: GY + 2, dir: 1, spd: 22, wx: 0, hop: 0 },
+            { ox: W / 2 + 100, y: GY + 2, dir: -1, spd: 18, wx: 0, hop: 0 }
+        ];
+
+        // ── Butterflies
+        var butterflies = [
+            { bx: 380, by: GY - 75, phase: 0, col: '#ff88cc', col2: '#ff44aa' },
+            { bx: 680, by: GY - 95, phase: 2.1, col: '#ffee44', col2: '#ffaa00' },
+            { bx: 130, by: GY - 55, phase: 1.1, col: '#aaddff', col2: '#5599ff' },
+            { bx: 960, by: GY - 65, phase: 3.2, col: '#cc88ff', col2: '#9933ff' }
+        ];
+
+        // ── Birds
+        var birds = [
+            { x: 0, y: 88, spd: 52 },
+            { x: -90, y: 66, spd: 44 },
+            { x: W + 20, y: 108, spd: -56 }
+        ];
+
+        // ── Cat state
+        var catTailT = 0;
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // UPDATE
+        // ══════════════════════════════════════════════════════════════════════════
+        function update(dt) {
+            t += dt;
+            catTailT += dt;
+
+            // ducks
+            for (var i = 0; i < ducks.length; i++) {
+                var d = ducks[i];
+                d.wx += d.spd * d.dir * dt;
+                if (d.wx > 60) d.dir = -1;
+                if (d.wx < -60) d.dir = 1;
+            }
+
+            // fish
+            for (var i = 0; i < fish.length; i++) {
+                var f = fish[i];
+                f.x += f.spd * f.dir * dt;
+                if (f.x > f.maxX) { f.x = f.maxX; f.dir = -1; }
+                if (f.x < f.minX) { f.x = f.minX; f.dir = 1; }
+            }
+
+            // frogs blink + hop
+            for (var i = 0; i < frogs.length; i++) {
+                var fr = frogs[i];
+                fr.blinkT += dt;
+                if (fr.hopV === 0 && Math.random() < dt * 0.3) {
+                    fr.hopV = 55 + Math.random() * 40;
+                }
+                if (fr.hopV > 0) {
+                    fr.hop += fr.hopV * dt;
+                    if (fr.hop > 7) { fr.hop = 0; fr.hopV = 0; }
+                }
+            }
+
+            // bunnies
+            for (var i = 0; i < bunnies.length; i++) {
+                var b = bunnies[i];
+                b.wx += b.spd * b.dir * dt;
+                if (b.wx > 70) b.dir = -1;
+                if (b.wx < -70) b.dir = 1;
+                b.hop = Math.abs(Math.sin(t * 5 + b.wx * 0.1)) * 8;
+            }
+
+            // birds
+            for (var i = 0; i < birds.length; i++) {
+                var b = birds[i];
+                b.x += b.spd * dt;
+                if (b.spd > 0 && b.x > W + 50) b.x = -50;
+                if (b.spd < 0 && b.x < -50) b.x = W + 50;
+            }
+
+            // petals
+            for (var i = 0; i < petals.length; i++) {
+                var pt = petals[i];
+                pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.rot += dt;
+                if (pt.y > H + 10) { pt.y = -8; pt.x = Math.random() * W; }
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // DRAW HELPERS
+        // ══════════════════════════════════════════════════════════════════════════
+        function drawSky() {
+            var g = ctx.createLinearGradient(0, 0, 0, GY);
+            g.addColorStop(0, '#a0d4f0'); g.addColorStop(0.55, '#d0eaff'); g.addColorStop(1, '#c4eece');
+            ctx.fillStyle = g; ctx.fillRect(0, 0, W, GY);
+        }
+
+        function drawSun() {
+            var sx = Math.floor(W * 0.84), sy = 60;
+            px(sx - 26, sy - 26, 52, 52, '#fff5b8'); px(sx - 22, sy - 22, 44, 44, '#fffde0'); px(sx - 14, sy - 14, 28, 28, 'rgba(255,255,255,0.8)');
+            for (var i = 0; i < 8; i++) {
+                var a = i / 8 * Math.PI * 2 + t * 0.22;
+                px(sx + Math.cos(a) * 46 - 3, sy + Math.sin(a) * 46 - 3, 6, 6, 'rgba(255,240,160,0.38)');
+                px(sx + Math.cos(a) * 60 - 2, sy + Math.sin(a) * 60 - 2, 4, 4, 'rgba(255,240,160,0.18)');
+            }
+        }
+
+        function drawCloud(x, y, s) {
+            px(x, y, 80 * s, 16 * s, 'rgba(255,255,255,0.84)');
+            px(x + 10 * s, y - 10 * s, 54 * s, 14 * s, 'rgba(255,255,255,0.84)');
+            px(x + 24 * s, y - 18 * s, 32 * s, 12 * s, 'rgba(255,255,255,0.84)');
+        }
+
+        function drawClouds() {
+            drawCloud(50 + (t * 14 % 430 | 0), 44, 1);
+            drawCloud(360 + (t * 10 % 510 | 0), 70, 0.82);
+            drawCloud(700 + (t * 12 % 450 | 0), 36, 0.9);
+        }
+
+        function drawMountain(cx, peakY, w, col, snowCol) {
+            for (var i = 0; i < GY - peakY; i++) {
+                var hw = w * (i / (GY - peakY));
+                px(cx - hw / 2, peakY + i, hw, 1, col);
+            }
+            // Snow cap
+            var snowH = (GY - peakY) * 0.22;
+            for (var i = 0; i < snowH; i++) {
+                var sw = w * (i / (GY - peakY)) * 0.8;
+                px(cx - sw / 2, peakY + i, sw, 1, snowCol);
+            }
+            // Snow highlight edge
+            for (var i = 0; i < snowH * 0.4; i++) {
+                var sw = w * (i / (GY - peakY)) * 0.35;
+                px(cx - sw / 2, peakY + i, sw, 1, '#ffffff');
+            }
+        }
+
+        function drawMountains() {
+            // Back row (lighter, further)
+            drawMountain(150, GY - 210, 280, 'rgba(140,160,190,0.55)', 'rgba(230,240,255,0.7)');
+            drawMountain(440, GY - 240, 320, 'rgba(130,150,180,0.50)', 'rgba(230,240,255,0.7)');
+            drawMountain(720, GY - 220, 300, 'rgba(140,160,190,0.52)', 'rgba(230,240,255,0.7)');
+            drawMountain(980, GY - 200, 260, 'rgba(130,150,180,0.48)', 'rgba(230,240,255,0.7)');
+            drawMountain(1240, GY - 230, 310, 'rgba(140,160,190,0.52)', 'rgba(230,240,255,0.7)');
+            drawMountain(1520, GY - 210, 280, 'rgba(130,150,180,0.50)', 'rgba(230,240,255,0.7)');
+            drawMountain(1800, GY - 235, 330, 'rgba(140,160,190,0.55)', 'rgba(230,240,255,0.7)');
+            drawMountain(2100, GY - 215, 290, 'rgba(130,150,180,0.48)', 'rgba(230,240,255,0.7)');
+            drawMountain(2400, GY - 225, 300, 'rgba(140,160,190,0.52)', 'rgba(230,240,255,0.7)');
+            drawMountain(2700, GY - 200, 270, 'rgba(130,150,180,0.48)', 'rgba(230,240,255,0.7)');
+            // Front row (darker, closer)
+            drawMountain(60, GY - 160, 200, 'rgba(100,120,150,0.65)', 'rgba(220,235,255,0.8)');
+            drawMountain(320, GY - 180, 240, 'rgba(90,115,145,0.65)', 'rgba(220,235,255,0.8)');
+            drawMountain(600, GY - 170, 230, 'rgba(100,120,150,0.65)', 'rgba(220,235,255,0.8)');
+            drawMountain(860, GY - 155, 210, 'rgba(90,115,145,0.60)', 'rgba(220,235,255,0.8)');
+            drawMountain(1060, GY - 145, 190, 'rgba(100,120,150,0.58)', 'rgba(220,235,255,0.8)');
+            drawMountain(1280, GY - 175, 250, 'rgba(90,115,145,0.65)', 'rgba(220,235,255,0.8)');
+            drawMountain(1500, GY - 160, 220, 'rgba(100,120,150,0.60)', 'rgba(220,235,255,0.8)');
+            drawMountain(1740, GY - 185, 240, 'rgba(90,115,145,0.65)', 'rgba(220,235,255,0.8)');
+            drawMountain(1980, GY - 165, 230, 'rgba(100,120,150,0.60)', 'rgba(220,235,255,0.8)');
+            drawMountain(2220, GY - 170, 220, 'rgba(90,115,145,0.62)', 'rgba(220,235,255,0.8)');
+            drawMountain(2460, GY - 150, 200, 'rgba(100,120,150,0.58)', 'rgba(220,235,255,0.8)');
+            drawMountain(2700, GY - 160, 230, 'rgba(90,115,145,0.60)', 'rgba(220,235,255,0.8)');
+        }
+
+        function drawGround() {
+            var g = ctx.createLinearGradient(0, GY, 0, H);
+            g.addColorStop(0, '#5aaa28'); g.addColorStop(0.1, '#3a7a18');
+            g.addColorStop(0.28, '#7a5220'); g.addColorStop(1, '#4a3010');
+            ctx.fillStyle = g; ctx.fillRect(0, GY, W, H - GY);
+            for (var x = 0; x < W; x += 6) {
+                var gh = 2 + Math.sin(x * 0.11) * 2 + Math.cos(x * 0.07) * 1.5;
+                px(x, GY - gh, 6, gh + 3, '#5aaa28');
+            }
+            px(0, GY, W, 2, '#3d8010');
+            for (var y = GY + 22; y < H; y += 22) px(0, y, W, 2, 'rgba(0,0,0,0.07)');
+        }
+
+        function drawPath() {
+            var cx = W / 2;
+            for (var i = 0; i < 8; i++) {
+                var py2 = GY + 6 + i * 22, pw = 18 + i * 6, px2 = cx - pw / 2 + Math.sin(i * 0.6) * 2;
+                px(px2, py2, pw, 14, '#c0a878'); px(px2 + 2, py2 + 2, pw - 4, 10, '#d4bc8c');
+                px(px2, py2, pw, 2, '#e0ccaa');
+            }
+        }
+
+        function drawPond(ox, oy, ow, oh) {
+            var g = ctx.createLinearGradient(ox, oy, ox, oy + oh);
+            g.addColorStop(0, '#5a9ac8'); g.addColorStop(0.5, '#3a7aaa'); g.addColorStop(1, '#1a4a77');
+            ctx.fillStyle = g; ctx.fillRect(ox, oy, ow, oh);
+            px(ox, oy, ow, 4, '#6ab4d8'); px(ox, oy + oh - 3, ow, 3, '#1a3a66');
+            for (var i = 0; i < 9; i++) {
+                px(ox, oy + i, i, 1, '#5aaa28'); px(ox + ow - i, oy + i, i, 1, '#5aaa28');
+                px(ox, oy + oh - i - 1, i, 1, '#5aaa28'); px(ox + ow - i, oy + oh - i - 1, i, 1, '#5aaa28');
+            }
+            for (var i = 0; i < 3; i++) {
+                var rx = ox + 22 + i * ow / 4, ry = oy + 14 + i * 12;
+                px(rx, ry, 36 - i * 6, 2, 'rgba(130,190,220,' + (0.18 + 0.07 * Math.sin(t * 2.2 + i)) + ')');
+            }
+            for (var sx = ox + 8; sx < ox + ow - 8; sx += 14) {
+                px(sx, oy + 8 + Math.sin(t * 3 + sx * 0.07) * 3, 8, 2, 'rgba(180,220,250,0.18)');
+            }
+            lilyPad(ox + 26, oy + 26); lilyPad(ox + ow - 60, oy + 18); lilyPad(ox + ow / 2 - 6, oy + oh - 22);
+        }
+
+        function lilyPad(x, y) {
+            px(x, y, 14, 8, '#2a8a2a'); px(x + 2, y - 2, 10, 12, '#2a8a2a'); px(x + 4, y, 6, 6, '#3aaa3a');
+            ctx.clearRect(Math.floor(x + 4), Math.floor(y), 5, 3); px(x + 4, y, 5, 3, '#3a7aaa');
+            if ((x + y) % 28 < 14) { px(x + 3, y - 5, 6, 5, '#ffaacc'); px(x + 5, y - 3, 2, 2, '#ffff88'); }
+        }
+
+        function drawCherryTree(x, y, sz, tiltX) {
+            var tx = x + (tiltX || 0);
+            // Tall trunk
+            px(tx - sz, y, sz * 2, sz * 16, '#7a4a1a'); px(tx - sz + 2, y, sz * 2 - 4, sz * 16, '#8a5a2a');
+            // branches higher up
+            px(tx - sz * 7, y - sz * 5, sz * 6, sz, '#7a4a1a');
+            px(tx + sz, y - sz * 7, sz * 6, sz, '#7a4a1a');
+            px(tx - sz * 4, y - sz * 11, sz * 3, sz, '#7a4a1a');
+            px(tx + sz * 2, y - sz * 12, sz * 3, sz, '#7a4a1a');
+            var cols = ['#ff88aa', '#ffaacc', '#ff6699', '#ffbbdd', '#ff99bb', '#ffddee'];
+            var blobs = [
+                [0, -20], [sz * 6, -16], [-sz * 6, -15], [sz * 3, -26], [-sz * 3, -25],
+                [sz * 9, -10], [-sz * 9, -9], [sz * 1, -30], [-sz * 1, -31], [sz * 5, -28], [-sz * 5, -27]
+            ];
+            for (var i = 0; i < blobs.length; i++) {
+                var dx = blobs[i][0], dy = blobs[i][1];
+                var bx = tx + dx, by = y + dy * (sz * 0.27);
+                var c = cols[i % cols.length], c2 = cols[(i + 2) % cols.length];
+                px(bx - sz * 2, by, sz * 4, sz * 3, c); px(bx - sz * 3, by + sz, sz * 6, sz * 3, c);
+                px(bx - sz * 2, by + sz * 2, sz * 4, sz * 2, c2); px(bx - sz, by - sz, sz * 2, sz * 2, c2);
+            }
+        }
+
+        function drawHouse() {
+            var hx = W / 2 - 65, hy = GY - 128;
+            px(hx - 6, hy + 126, 140, 10, 'rgba(0,0,0,0.15)');
+            px(hx, hy + 22, 130, 108, '#e8d8b0'); px(hx + 2, hy + 24, 126, 106, '#f0e0b8');
+            for (var wy = hy + 28; wy < hy + 128; wy += 9) px(hx + 4, wy, 122, 2, 'rgba(160,130,70,0.15)');
+            // door
+            px(hx + 47, hy + 76, 36, 54, '#8a5a20'); px(hx + 49, hy + 78, 32, 52, '#9a6a30');
+            px(hx + 47, hy + 76, 36, 4, '#7a4a10');
+            px(hx + 49, hy + 72, 32, 5, '#9a6a30'); px(hx + 51, hy + 68, 28, 5, '#9a6a30'); px(hx + 55, hy + 64, 20, 5, '#9a6a30');
+            px(hx + 57, hy + 100, 6, 6, '#ffcc44');
+            // left window
+            px(hx + 7, hy + 36, 36, 28, '#88ccee'); px(hx + 9, hy + 38, 32, 24, '#aaddff'); px(hx + 9, hy + 38, 8, 10, '#cceeff');
+            px(hx + 23, hy + 36, 3, 28, '#bb9955'); px(hx + 7, hy + 49, 36, 3, '#bb9955');
+            // right window
+            px(hx + 88, hy + 36, 36, 28, '#88ccee'); px(hx + 90, hy + 38, 32, 24, '#aaddff'); px(hx + 90, hy + 38, 8, 10, '#cceeff');
+            px(hx + 104, hy + 36, 3, 28, '#bb9955'); px(hx + 88, hy + 49, 36, 3, '#bb9955');
+            // flower boxes
+            px(hx + 5, hy + 62, 40, 7, '#886644');
+            for (var i = 0; i < 5; i++) px(hx + 7 + i * 8, hy + 56, 6, 7, ['#ff88cc', '#ffee44', '#ff6699'][i % 3]);
+            px(hx + 87, hy + 62, 40, 7, '#886644');
+            for (var i = 0; i < 5; i++) px(hx + 89 + i * 8, hy + 56, 6, 7, ['#ffee44', '#ff88cc', '#ffffff'][i % 3]);
+            // chimney
+            px(hx + 16, hy - 12, 16, 34, '#997766'); px(hx + 18, hy - 12, 12, 5, '#aa8877');
+            for (var si = 0; si < 3; si++) {
+                var sy2 = hy - 14 - si * 14 - ((t * 24 + si * 32) % 72);
+                var sa = Math.max(0, 0.22 - si * 0.07 - ((t * 0.36 + si * 0.26) % 1) * 0.2);
+                ctx.fillStyle = 'rgba(210,210,210,' + sa + ')'; ctx.fillRect(Math.floor(hx + 20), Math.floor(sy2), 7 - si * 2, 8);
+            }
+            // roof
+            for (var ri = 0; ri < 30; ri++) px(hx - ri, hy + 22 - ri * 0.5, 130 + ri * 2, 4, ri % 2 === 0 ? '#cc3322' : '#aa2211');
+            px(hx - 28, hy + 8, 186, 14, '#bb2211'); px(hx - 30, hy + 4, 190, 7, '#992200');
+            px(hx + 58, hy + 2, 14, 7, '#ffaa33'); px(hx + 62, hy - 2, 8, 5, '#ffcc55');
+            // porch
+            px(hx - 5, hy + 128, 140, 5, '#d4b88a');
+            px(hx + 9, hy + 108, 5, 20, '#d4b88a'); px(hx + 115, hy + 108, 5, 20, '#d4b88a');
+        }
+
+        function drawNeighborHouse(x, y, scale) {
+            ctx.save();
+            ctx.translate(Math.floor(x), Math.floor(y));
+            ctx.scale(scale, scale);
+            
+            // wall
+            px(0, 0, 100, 80, '#d8c8a0');
+            px(2, 2, 96, 78, '#e0d0a8');
+            for(var wy=6; wy<80; wy+=8) px(4, wy, 92, 2, 'rgba(150,120,60,0.15)');
+            
+            // roof
+            for (var ri = 0; ri < 20; ri++) {
+                px(-ri, -ri * 0.5, 100 + ri * 2, 8, ri % 2 === 0 ? '#4a7c8c' : '#3a6c7c');
+            }
+            px(-22, -10, 144, 9, '#2a5a6a');
+            px(-24, -14, 148, 4, '#1a4a5a');
+            
+            // door
+            px(35, 45, 26, 35, '#7a4a20');
+            px(37, 47, 22, 33, '#8a5a30');
+            px(55, 62, 4, 4, '#ffcc44');
+            
+            // windows
+            px(10, 20, 20, 20, '#88ccee');
+            px(12, 22, 16, 16, '#aaddff');
+            px(70, 20, 20, 20, '#88ccee');
+            px(72, 22, 16, 16, '#aaddff');
+            
+            ctx.restore();
+        }
+
+        function drawCouple() {
+            var cx = W / 2, cy = GY + 2;
+
+            // ── GIRL (taller, slimmer, more detail)
+            var gx = cx - 28, gy = cy;
+            // Legs (slim, longer)
+            px(gx + 3, gy - 26, 5, 26, '#ffcba4');
+            px(gx + 10, gy - 26, 5, 26, '#ffcba4');
+            // Shoes
+            px(gx + 2, gy, 7, 4, '#cc3366');
+            px(gx + 9, gy, 7, 4, '#cc3366');
+            // Skirt (flared, layered)
+            px(gx - 2, gy - 38, 22, 14, '#ee66aa');
+            px(gx - 4, gy - 30, 26, 8, '#ff88cc');
+            px(gx, gy - 38, 4, 14, '#dd4499');
+            px(gx + 14, gy - 38, 4, 14, '#ff99cc');
+            // Waist / top
+            px(gx + 2, gy - 52, 14, 15, '#ee66aa');
+            px(gx + 2, gy - 52, 4, 15, '#dd4499');
+            px(gx + 12, gy - 52, 4, 15, '#ff99cc');
+            // Belt
+            px(gx + 2, gy - 40, 14, 3, '#cc2266');
+            px(gx + 6, gy - 41, 6, 4, '#ffaa44');
+            // Arms (longer, slimmer)
+            px(gx - 3, gy - 50, 5, 18, '#ffcba4');
+            px(gx + 16, gy - 50, 5, 18, '#ffcba4');
+            // Hands reaching toward boy
+            px(gx - 4, gy - 34, 4, 5, '#ffcba4');
+            // Neck
+            px(gx + 5, gy - 56, 8, 6, '#ffcba4');
+            // Head (rounder, cuter)
+            px(gx + 2, gy - 70, 14, 14, '#ffcba4');
+            px(gx + 2, gy - 70, 5, 9, '#ffddc0');
+            // Eyes (bigger, cuter)
+            px(gx + 4, gy - 65, 3, 3, '#111');
+            px(gx + 4, gy - 65, 1, 1, '#ffffffcc');
+            px(gx + 9, gy - 65, 3, 3, '#111');
+            px(gx + 9, gy - 65, 1, 1, '#ffffffcc');
+            px(gx + 3, gy - 65, 1, 1, '#ff99bb');  // eyelash L
+            px(gx + 11, gy - 65, 1, 1, '#ff99bb');  // eyelash R
+            // Blush
+            px(gx + 2, gy - 62, 3, 2, 'rgba(255,120,120,0.55)');
+            px(gx + 10, gy - 62, 3, 2, 'rgba(255,120,120,0.55)');
+            // Smile
+            px(gx + 5, gy - 60, 2, 1, '#cc7755');
+            px(gx + 8, gy - 60, 2, 1, '#cc7755');
+            // Hair (long flowing)
+            px(gx + 1, gy - 76, 16, 7, '#7B3F00');
+            px(gx + 1, gy - 70, 3, 12, '#7B3F00');
+            px(gx + 13, gy - 70, 3, 16, '#7B3F00');
+            px(gx + 14, gy - 56, 3, 14, '#7B3F00');
+            px(gx + 5, gy - 76, 8, 2, '#9B5200');
+            // Hair bow
+            px(gx + 9, gy - 78, 7, 5, '#ff88cc');
+            px(gx + 11, gy - 79, 3, 3, '#ffff88');
+
+            // ── BOY (taller, better proportioned)
+            var bx = cx + 10, by = cy;
+            // Legs (longer, slim jeans)
+            px(bx + 2, by - 28, 6, 28, '#2a4a88');
+            px(bx + 10, by - 28, 6, 28, '#2a4a88');
+            px(bx + 3, by - 28, 3, 28, '#3a5a9a'); // highlight
+            // Shoes
+            px(bx + 1, by, 9, 4, '#222');
+            px(bx + 9, by, 9, 4, '#222');
+            // Belt
+            px(bx + 1, by - 30, 16, 3, '#7a5520');
+            px(bx + 7, by - 31, 5, 4, '#cc9922');
+            // Shirt (fitted)
+            px(bx + 1, by - 52, 16, 24, '#3366cc');
+            px(bx + 1, by - 52, 5, 24, '#2255bb');
+            px(bx + 13, by - 52, 4, 24, '#4477dd');
+            // Collar
+            px(bx + 4, by - 53, 10, 3, '#ffffff');
+            // Arms (longer)
+            px(bx - 4, by - 50, 6, 20, '#ffcba4');
+            px(bx + 16, by - 50, 6, 20, '#ffcba4');
+            // Left hand toward girl
+            px(bx - 5, by - 33, 5, 5, '#ffcba4');
+            // Neck
+            px(bx + 5, by - 56, 8, 5, '#ffcba4');
+            // Head
+            px(bx + 2, by - 70, 14, 14, '#ffcba4');
+            px(bx + 2, by - 70, 4, 9, '#ffddc0');
+            // Eyes
+            px(bx + 4, by - 65, 3, 3, '#111');
+            px(bx + 4, by - 65, 1, 1, '#ffffffcc');
+            px(bx + 9, by - 65, 3, 3, '#111');
+            px(bx + 9, by - 65, 1, 1, '#ffffffcc');
+            // Glasses (neat frames)
+            px(bx + 3, by - 67, 6, 1, '#333');  // top L
+            px(bx + 3, by - 64, 6, 1, '#333');  // bot L
+            px(bx + 3, by - 67, 1, 4, '#333');  // side L
+            px(bx + 8, by - 67, 1, 4, '#333');  // side R
+            px(bx + 9, by - 67, 6, 1, '#333');  // top R
+            px(bx + 9, by - 64, 6, 1, '#333');  // bot R
+            px(bx + 9, by - 67, 1, 4, '#333');
+            px(bx + 14, by - 67, 1, 4, '#333');
+            px(bx + 8, by - 66, 2, 1, '#333');  // bridge
+            px(bx + 2, by - 67, 1, 3, '#333');  // temple L
+            px(bx + 15, by - 67, 1, 3, '#333');  // temple R
+            // Smile
+            px(bx + 5, by - 60, 2, 1, '#cc7755');
+            px(bx + 9, by - 60, 2, 1, '#cc7755');
+            // Hair (neat)
+            px(bx + 1, by - 76, 14, 7, '#222');
+            px(bx + 1, by - 70, 3, 3, '#222');
+            px(bx + 13, by - 70, 3, 4, '#222');
+            px(bx + 4, by - 77, 9, 2, '#444');
+
+            // Shared heart (between them, higher up now)
+            var hp = 0.75 + 0.25 * Math.sin(t * 4);
+            ctx.globalAlpha = hp;
+            var hx2 = cx - 2, hy2 = cy - 82;
+            px(hx2, hy2, 3, 2, '#ff4466'); px(hx2 + 4, hy2, 3, 2, '#ff4466');
+            px(hx2 - 1, hy2 + 2, 9, 3, '#ff4466'); px(hx2, hy2 + 5, 7, 3, '#ff4466');
+            px(hx2 + 1, hy2 + 8, 5, 3, '#ff4466'); px(hx2 + 2, hy2 + 11, 3, 2, '#ff4466');
+            px(hx2 + 3, hy2 + 13, 1, 2, '#ff4466');
+            ctx.globalAlpha = 1;
+        }
+
+        // Cute pixel car parked to the left of house
+        function drawCar(x, y) {
+            // Shadow
+            px(x + 4, y + 2, 88, 5, 'rgba(0,0,0,0.18)');
+            // Body lower (main chassis)
+            px(x, y - 18, 92, 20, '#dd4422');
+            px(x + 2, y - 18, 88, 6, '#ee5533');  // top shine
+            px(x, y - 18, 4, 20, '#cc3311');  // left shade
+            px(x + 88, y - 18, 4, 20, '#cc3311');  // right shade
+            // Cabin (upper body)
+            px(x + 12, y - 38, 64, 22, '#dd4422');
+            px(x + 14, y - 38, 60, 6, '#ee5533');
+            px(x + 12, y - 38, 4, 22, '#cc3311');
+            px(x + 72, y - 38, 4, 22, '#cc3311');
+            // Windshield (front)
+            px(x + 52, y - 37, 20, 18, '#88ccee');
+            px(x + 53, y - 36, 18, 6, '#aaddff');
+            px(x + 53, y - 36, 4, 16, '#aaddff');
+            // Rear window
+            px(x + 16, y - 37, 20, 18, '#88ccee');
+            px(x + 17, y - 36, 4, 16, '#aaddff');
+            px(x + 17, y - 36, 18, 6, '#aaddff');
+            // Side windows
+            px(x + 38, y - 37, 12, 18, '#99ddee');
+            px(x + 39, y - 36, 10, 6, '#bbeeee');
+            // Window frames
+            px(x + 12, y - 38, 64, 2, '#bb2200');
+            px(x + 36, y - 38, 2, 22, '#bb2200');
+            px(x + 50, y - 38, 2, 22, '#bb2200');
+            // Bumpers
+            px(x - 4, y - 12, 10, 10, '#cc9955');
+            px(x - 4, y - 12, 10, 3, '#ddaa66');
+            px(x + 86, y - 12, 10, 10, '#cc9955');
+            px(x + 86, y - 12, 10, 3, '#ddaa66');
+            // Headlights
+            px(x + 84, y - 14, 8, 8, '#ffffcc');
+            px(x + 85, y - 13, 6, 4, '#ffffff');
+            // Taillights
+            px(x, y - 14, 8, 8, '#ff3300');
+            px(x + 1, y - 13, 6, 3, '#ff6644');
+            // Wheels (4 big pixel wheels)
+            // Rear left
+            px(x + 6, y - 4, 22, 8, '#222');
+            px(x + 7, y - 6, 20, 12, '#333');
+            px(x + 8, y - 8, 18, 16, '#222');
+            px(x + 11, y - 6, 12, 12, '#555');
+            px(x + 14, y - 4, 6, 8, '#888');
+            // Front left  
+            px(x + 62, y - 4, 22, 8, '#222');
+            px(x + 63, y - 6, 20, 12, '#333');
+            px(x + 64, y - 8, 18, 16, '#222');
+            px(x + 67, y - 6, 12, 12, '#555');
+            px(x + 70, y - 4, 6, 8, '#888');
+            // Wheel arches
+            px(x + 4, y - 10, 26, 4, '#cc3311');
+            px(x + 60, y - 10, 26, 4, '#cc3311');
+            // Door handle
+            px(x + 42, y - 24, 8, 3, '#ffaa44');
+            px(x + 43, y - 24, 6, 1, '#ffcc66');
+            // Stripe / detail line
+            px(x + 4, y - 22, 84, 2, '#ff6644');
+            // Antenna
+            px(x + 22, y - 38, 2, 12, '#888');
+            px(x + 21, y - 49, 4, 4, '#aaa');
+        }
+
+        function drawDuck(x, y, flip) {
+            ctx.save(); ctx.translate(Math.floor(x), Math.floor(y)); ctx.scale(flip ? -1 : 1, 1);
+            px(0, 0, 14, 8, '#f0f0c0'); px(-2, 2, 4, 4, '#f0f0c0');
+            px(12, -4, 8, 6, '#f0f0c0'); px(12, -4, 4, 3, '#ff9900');
+            px(14, -3, 2, 2, '#111'); px(14, -3, 1, 1, '#fff');
+            px(2, 6, 4, 4, '#ff9900'); px(8, 6, 4, 4, '#ff9900');
+            ctx.restore();
+        }
+
+        function drawFish(x, y, flip) {
+            ctx.save(); ctx.translate(Math.floor(x), Math.floor(y)); ctx.scale(flip ? -1 : 1, 1);
+            px(0, 0, 12, 6, '#ff8844'); px(0, 1, 12, 4, '#ffaa66');
+            px(-4, -1, 5, 4, '#ff6622'); px(-4, 4, 5, 4, '#ff6622');
+            px(10, 1, 3, 2, '#111'); px(10, 1, 1, 1, '#fff');
+            ctx.restore();
+        }
+
+        function drawFrog(x, y, blink) {
+            px(x, y, 14, 9, '#3aaa44'); px(x + 1, y - 1, 12, 5, '#4abb55');
+            px(x - 2, y + 3, 4, 6, '#3aaa44'); px(x + 12, y + 3, 4, 6, '#3aaa44');
+            px(x - 3, y + 7, 6, 3, '#3aaa44'); px(x + 11, y + 7, 6, 3, '#3aaa44');
+            px(x + 1, y - 5, 5, 5, '#3aaa44'); px(x + 8, y - 5, 5, 5, '#3aaa44');
+            if (!blink) {
+                px(x + 2, y - 4, 3, 3, '#111'); px(x + 2, y - 4, 1, 1, '#fff');
+                px(x + 9, y - 4, 3, 3, '#111'); px(x + 9, y - 4, 1, 1, '#fff');
+            } else {
+                px(x + 2, y - 3, 3, 1, '#1a6622'); px(x + 9, y - 3, 3, 1, '#1a6622');
+            }
+        }
+
+        function drawBunny(x, y, hopY, flip) {
+            ctx.save(); ctx.translate(Math.floor(x), Math.floor(y - hopY)); ctx.scale(flip ? -1 : 1, 1);
+            px(0, 8, 12, 10, '#f5f0e8'); px(1, 6, 10, 5, '#ffffff');
+            px(3, 0, 6, 9, '#f5f0e8'); px(4, -1, 4, 6, '#ffffff');
+            px(4, -8, 3, 10, '#f5f0e8'); px(5, -7, 1, 8, '#ffaacc');
+            px(8, -7, 3, 9, '#f5f0e8'); px(9, -6, 1, 7, '#ffaacc');
+            px(4, 3, 2, 2, '#111'); px(4, 3, 1, 1, '#fff');
+            px(4, 6, 2, 1, '#ffaacc');
+            px(0, 16, 4, 4, '#f5f0e8'); px(8, 16, 4, 4, '#f5f0e8');
+            px(10, 10, 4, 4, '#ffaacc');
+            ctx.restore();
+        }
+
+        function drawButterfly(x, y, wingOpen, col, col2) {
+            var w = wingOpen ? 6 : 3;
+            px(x - w - 2, y - 4, w + 2, 6, col); px(x - w - 2, y + 2, w, 4, col);
+            px(x + 2, y - 4, w + 2, 6, col2); px(x + 2, y + 2, w, 4, col2);
+            px(x, y - 2, 2, 8, '#333'); px(x, y - 4, 2, 2, '#333');
+        }
+
+        function drawBird(x, y, flapUp) {
+            px(x, y, 6, 3, '#554433');
+            px(x - 4, flapUp ? y - 3 : y + 1, 5, 2, '#554433');
+            px(x + 5, flapUp ? y - 3 : y + 1, 5, 2, '#554433');
+            px(x + 5, y, 3, 2, '#ffaa44');
+        }
+
+        function drawCat(x, y) {
+            var tailSway = Math.sin(catTailT * 2) * 4 | 0;
+            px(x + 12, y + 10, 4, 10, '#e8c890'); px(x + 14, y + 18, 4 + tailSway, 4, '#e8c890');
+            px(x, y + 6, 14, 14, '#e8c890'); px(x + 1, y + 7, 12, 8, '#f0d8a0');
+            px(x + 1, y - 2, 12, 10, '#e8c890'); px(x + 2, y - 1, 10, 6, '#f0d8a0');
+            px(x + 1, y - 7, 4, 6, '#e8c890'); px(x + 2, y - 6, 2, 4, '#ffaacc');
+            px(x + 9, y - 7, 4, 6, '#e8c890'); px(x + 10, y - 6, 2, 4, '#ffaacc');
+            px(x + 3, y + 1, 3, 3, '#2aaa44'); px(x + 3, y + 1, 1, 1, '#fff');
+            px(x + 8, y + 1, 3, 3, '#2aaa44'); px(x + 8, y + 1, 1, 1, '#fff');
+            px(x + 6, y + 4, 2, 2, '#ffaacc');
+            px(x + 2, y + 18, 4, 6, '#e8c890'); px(x + 8, y + 18, 4, 6, '#e8c890');
+        }
+
+        function drawFlowerPatch(x, y, n, sp) {
+            sp = sp || 16;
+            var fc = ['#ff88cc', '#ffee44', '#ffffff', '#ff6699', '#ffbbdd', '#aaffaa'];
+            for (var i = 0; i < n; i++) {
+                var fx = x + (i % 4) * sp - sp * 1.5, fy = y + Math.floor(i / 4) * 10 + Math.sin(i * 1.3) * 3;
+                px(fx + 2, fy, 2, 9, '#44aa22');
+                px(fx, fy - 4, 6, 4, fc[i % fc.length]); px(fx + 1, fy - 6, 4, 7, fc[i % fc.length]);
+                px(fx + 1, fy - 4, 4, 3, '#ffffaa');
+            }
+        }
+
+        function drawBush(x, y, w, h) {
+            px(x, y + h * 0.35, w, h * 0.65, '#2a8a2a'); px(x, y + h * 0.1, w * 0.7, h * 0.8, '#3aaa3a');
+            px(x + w * 0.3, y, w * 0.7, h * 0.8, '#3aaa3a'); px(x + w * 0.1, y + h * 0.1, w * 0.8, h * 0.4, '#4abb4a');
+            var fc = ['#ffaacc', '#ffee66', '#ffffff'];
+            for (var i = 0; i < 5; i++) px(x + i * w / 5 + 3, y + h * 0.12 + Math.sin(i) * 5, 6, 6, fc[i % 3]);
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // DRAW SCENE
+        // ══════════════════════════════════════════════════════════════════════════
+        function drawScene() {
+            drawSky(); drawSun(); drawClouds();
+            drawMountains();
+            drawGround(); drawPath();
+
+            // birds in sky
+            for (var i = 0; i < birds.length; i++) {
+                drawBird(birds[i].x, birds[i].y, Math.sin(t * 8 + birds[i].x * 0.05) > 0);
+            }
+
+            // trees
+            drawCherryTree(75, GY, 5, -2);
+            drawCherryTree(240, GY, 4, -1);
+            drawCherryTree(W - 85, GY, 5, 2);
+            drawCherryTree(W - 255, GY, 4, 1);
+
+            // LEFT POND
+            var lx = 28, lw = 246, ly = GY + 10, lh = 82;
+            drawPond(lx, ly, lw, lh);
+            for (var i = 0; i < 2; i++) drawFish(fish[i].x, fish[i].y, fish[i].dir < 0);
+            for (var i = 0; i < 2; i++) {
+                var d = ducks[i], dx = d.ox + d.wx;
+                if (dx > lx + 4 && dx < lx + lw - 18) drawDuck(dx, d.baseY, d.dir < 0);
+            }
+            drawFrog(lx - 5, GY + 4, Math.sin(frogs[0].blinkT * 1.2) > 0.9);
+            drawFrog(lx + lw - 8, GY + 4, Math.sin(frogs[1].blinkT * 1.1) > 0.9);
+
+            // RIGHT POND
+            var rx = W - 274, rw = 246, ry = GY + 12, rh = 78;
+            drawPond(rx, ry, rw, rh);
+            for (var i = 2; i < 4; i++) drawFish(fish[i].x, fish[i].y, fish[i].dir < 0);
+            for (var i = 2; i < 4; i++) {
+                var d = ducks[i], dx = d.ox + d.wx;
+                if (dx > rx + 4 && dx < rx + rw - 18) drawDuck(dx, d.baseY, d.dir < 0);
+            }
+            drawFrog(rx - 5, GY + 6, Math.sin(frogs[2].blinkT * 1.3) > 0.9);
+            drawFrog(rx + rw - 8, GY + 5, Math.sin(frogs[3].blinkT * 1.0) > 0.9);
+
+            // bushes & flowers
+            drawBush(0, GY + 4, 88, 46);
+            drawBush(W - 88, GY + 4, 88, 46);
+            drawFlowerPatch(22, GY + 8, 8, 14);
+            drawFlowerPatch(285, GY + 6, 7, 16);
+            drawFlowerPatch(W / 2 - 170, GY + 10, 6, 14);
+            drawFlowerPatch(W / 2 + 94, GY + 10, 6, 14);
+            drawFlowerPatch(W - 265, GY + 6, 7, 16);
+            drawFlowerPatch(W - 38, GY + 8, 8, 14);
+
+            // bunnies
+            for (var i = 0; i < bunnies.length; i++) {
+                var b = bunnies[i];
+                drawBunny(b.ox + b.wx, b.y, b.hop, b.dir < 0);
+            }
+
+            // butterflies
+            for (var i = 0; i < butterflies.length; i++) {
+                var bf = butterflies[i];
+                var bfx = bf.bx + Math.sin(t * 0.9 + bf.phase) * 50;
+                var bfy = bf.by + Math.cos(t * 1.1 + bf.phase) * 22 + Math.sin(t * 0.6 + bf.phase) * 14;
+                drawButterfly(bfx, bfy, Math.sin(t * 5 + bf.phase) > 0, bf.col, bf.col2);
+            }
+
+            // neighboring houses
+            drawNeighborHouse(W / 2 - 340, GY - 50, 0.7);
+            drawNeighborHouse(W / 2 + 160, GY - 58, 0.8);
+
+            // house
+            drawHouse();
+
+            // Car parked left of house
+            drawCar(W / 2 - 210, GY);
+
+            // cat by house right side
+            drawCat(W / 2 + 74, GY - 28);
+
+            // couple
+            drawCouple();
+
+            // petals
+            for (var i = 0; i < petals.length; i++) {
+                var pt = petals[i];
+                ctx.save(); ctx.translate(Math.floor(pt.x), Math.floor(pt.y)); ctx.rotate(pt.rot);
+                px(-pt.sz / 2, -pt.sz / 2, pt.sz, pt.sz, pt.col);
+                px(-pt.sz, 0, pt.sz, pt.sz, pt.col); px(0, -pt.sz, pt.sz, pt.sz, pt.col);
+                ctx.restore();
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // LOOP
+        // ══════════════════════════════════════════════════════════════════════════
+        var lastTs = 0;
+        function loop(ts) {
+            var dt = Math.min((ts - lastTs) / 1000, 0.05);
+            lastTs = ts;
+            ctx.clearRect(0, 0, W, H);
+            update(dt);
+            drawScene();
+            requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+
+        function showVideo() {
+            document.getElementById('video-overlay').classList.add('show');
+            overlayStep = 0;
+            updateOverlayPanels();
+            var v = document.getElementById('story-video');
+            var hasSrc = v.querySelector('source') || v.getAttribute('src');
+            document.getElementById('video-placeholder').style.display = hasSrc ? 'none' : 'flex';
+            if (hasSrc) v.play();
+        }
+
+        var overlayStep = 0;
+
+        function handleContinue() {
+            if (storyTimer) { clearTimeout(storyTimer); storyTimer = null; }
+            overlayStep++;
+            if (overlayStep === 1) {
+                updateOverlayPanels();
+                startStoryText();
+            } else if (overlayStep === 2) {
+                updateOverlayPanels();
+                drawWKFCReveal();
+            } else {
+                goToGame();
+            }
+        }
+
+        function updateOverlayPanels() {
+            document.getElementById('panel-video').style.display = overlayStep === 0 ? 'block' : 'none';
+            document.getElementById('story-textbox').style.display = overlayStep === 1 ? 'block' : 'none';
+            document.getElementById('wkfc-panel').style.display = overlayStep === 2 ? 'flex' : 'none';
+            document.getElementById('vlab-top').textContent =
+                overlayStep === 0 ? '◆ WATCH THE STORY ◆' :
+                    overlayStep === 1 ? '◆ THE STORY SO FAR ◆' :
+                        '◆ YOUR ENEMY ◆';
+            var btnLabel = overlayStep < 2 ? 'CONTINUE ▶' : 'FIGHT! ▶';
+            document.getElementById('btn-continue').textContent = btnLabel;
+        }
+
+        var storyLines = [
+            "It was a peaceful spring day...",
+            "The couple stood outside their beloved home,",
+            "watching the blossoms drift in the warm breeze.",
+            " ",
+            "But from the east, a dark shadow loomed.",
+            "An ancient, greasy evil was on the march —",
+            " ",
+            "The WALL OF KFC.",
+            " ",
+            "Three vicious chicken heads. Endless eggs.",
+            "A wall of red and white, unstoppable in hunger.",
+            " ",
+            "It wants to engulf their home.",
+            "It wants to consume everything they love.",
+            " ",
+            "Only YOU can stop it.",
+            "Shoot it. Freeze it. Destroy it.",
+            " ",
+            "Protect. Our. Home."
+        ];
+
+        var storyFlat = '';
+        var storyLineIdx = 0;
+        var storyCharIdx = 0;
+        var storyTimer = null;
+
+        function startStoryText() {
+            storyFlat = '';
+            storyLineIdx = 0;
+            storyCharIdx = 0;
+            document.getElementById('story-line-text').innerHTML = '<span class="cursor"></span>';
+            typeNextChar();
+        }
+
+        function typeNextChar() {
+            if (overlayStep !== 1) return;
+            if (storyLineIdx >= storyLines.length) return;
+            var line = storyLines[storyLineIdx];
+            if (storyCharIdx < line.length) {
+                storyFlat += line[storyCharIdx];
+                storyCharIdx++;
+                renderStoryText();
+                var delay = (line[storyCharIdx - 1] === '.') ? 60 : 26;
+                storyTimer = setTimeout(typeNextChar, delay);
+            } else {
+                storyFlat += '\n';
+                storyLineIdx++;
+                storyCharIdx = 0;
+                renderStoryText();
+                var pause = (storyLines[storyLineIdx - 1].trim() === '') ? 80 : 120;
+                storyTimer = setTimeout(typeNextChar, pause);
+            }
+        }
+
+        function renderStoryText() {
+            var el = document.getElementById('story-line-text');
+            var html = '';
+            var lines = storyFlat.split('\n');
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                line = line.replace(/WALL OF KFC/g, '<span style="color:#ff3300;font-weight:bold;letter-spacing:2px">WALL OF KFC</span>');
+                line = line.replace(/Protect\. Our\. Home\./g, '<span style="color:#ffdd44;font-weight:bold;letter-spacing:3px">Protect. Our. Home.</span>');
+                line = line.replace(/YOU/g, '<span style="color:#88ddff;font-weight:bold">YOU</span>');
+                html += line + (i < lines.length - 1 ? '<br>' : '');
+            }
+            html += '<span class="cursor"></span>';
+            el.innerHTML = html;
+        }
+
+        function drawWKFCReveal() {
+            var c = document.getElementById('wkfc-canvas');
+            var cx = c.getContext('2d');
+            cx.imageSmoothingEnabled = false;
+            var cW = 560, cH = 320;
+            function rr(x, y, w, h, col) { cx.fillStyle = col; cx.fillRect(x | 0, y | 0, w, h); }
+
+            // Dark sky
+            var bg = cx.createLinearGradient(0, 0, 0, cH);
+            bg.addColorStop(0, '#120008'); bg.addColorStop(1, '#2a0010');
+            cx.fillStyle = bg; cx.fillRect(0, 0, cW, cH);
+
+            // Ground
+            rr(0, cH - 40, cW, 40, '#2a1a08');
+            rr(0, cH - 42, cW, 4, '#3a2a10');
+
+            // Wall of KFC (right side, looming tall)
+            var wx = cW - 140;
+            for (var sy = 0; sy < cH; sy += 28) {
+                rr(wx, sy, cW - wx + 4, 28, (sy / 28 | 0) % 2 === 0 ? '#cc1100' : '#f5f0e8');
+            }
+            cx.fillStyle = 'rgba(0,0,0,0.18)';
+            for (var sy = 0; sy < cH; sy += 5) cx.fillRect(wx, sy, cW - wx, 2);
+            rr(wx, 0, 12, cH, '#440000');
+            rr(wx + 12, 0, 6, cH, 'rgba(0,0,0,0.28)');
+
+            // Bucket
+            var bkx = wx + 14, bky = cH / 2 - 52;
+            rr(bkx, bky, 48, 56, '#cc1100');
+            rr(bkx - 4, bky - 3, 56, 10, '#ee1100');
+            rr(bkx + 4, bky + 15, 40, 3, '#ff9977');
+            rr(bkx + 4, bky + 27, 40, 3, '#ff9977');
+            rr(bkx + 4, bky + 37, 40, 2, '#ff9977');
+            rr(bkx + 6, bky + 40, 3, 13, '#fff'); rr(bkx + 9, bky + 43, 4, 4, '#fff');
+            rr(bkx + 13, bky + 40, 3, 5, '#fff'); rr(bkx + 13, bky + 47, 3, 7, '#fff');
+            rr(bkx + 19, bky + 40, 3, 13, '#fff'); rr(bkx + 22, bky + 40, 6, 3, '#fff'); rr(bkx + 22, bky + 45, 5, 3, '#fff');
+            rr(bkx + 31, bky + 40, 3, 13, '#fff'); rr(bkx + 34, bky + 40, 6, 3, '#fff'); rr(bkx + 34, bky + 51, 6, 3, '#fff');
+            rr(bkx, bky, 6, 56, 'rgba(255,255,255,0.1)');
+
+            // 3 Chicken heads
+            var headYs = [cH * 0.2, cH * 0.5, cH * 0.78];
+            for (var hi = 0; hi < 3; hi++) {
+                var hx = wx - 48, hy = headYs[hi] | 0;
+                rr(hx + 10, hy, 14, 12, '#f0ead0'); rr(hx + 12, hy, 10, 4, '#c8b870');
+                rr(hx, hy - 30, 36, 30, '#f0ead0');
+                rr(hx + 5, hy - 22, 10, 10, '#e8e0c8'); rr(hx + 6, hy - 21, 9, 9, '#fff');
+                rr(hx + 7, hy - 19, 6, 6, '#111'); rr(hx + 7, hy - 19, 2, 2, 'rgba(255,255,255,0.5)');
+                rr(hx - 12, hy - 19, 14, 6, '#ffaa22'); rr(hx - 8, hy - 14, 10, 5, '#ffaa22');
+                rr(hx - 12, hy - 19, 14, 2, '#bb7010'); rr(hx - 8, hy - 14, 10, 2, '#bb7010');
+                rr(hx + 3, hy - 36, 8, 8, '#ee2222'); rr(hx + 12, hy - 40, 9, 10, '#ee2222'); rr(hx + 23, hy - 35, 8, 8, '#ee2222');
+                rr(hx + 12, hy - 43, 5, 4, '#ff5555');
+                rr(hx + 2, hy - 5, 8, 13, '#cc1818'); rr(hx + 4, hy - 3, 5, 10, '#ff4444');
+                rr(hx + 3, hy - 25, 13, 2, '#886622');
+                cx.fillStyle = 'rgba(255,40,0,0.35)'; cx.fillRect(hx + 5, hy - 23, 10, 12);
+            }
+
+            // Wall of KFC without red glow
+
+            // House silhouette
+            var hhx = 130, hhy = cH - 40;
+            rr(hhx, hhy - 50, 60, 50, '#0e0a06');
+            for (var ri = 0; ri < 20; ri++) rr(hhx - ri, hhy - 50 - ri * 0.6, 60 + ri * 2, 4, '#0e0a06');
+            rr(hhx + 20, hhy - 12, 18, 14, 'rgba(255,200,60,0.28)');
+            rr(hhx + 22, hhy - 50, 8, 22, '#0e0a06');
+
+            // Couple silhouettes (scared, leaning away from wall)
+            var cpx = 55, cpy = cH - 40;
+            rr(cpx, cpy - 58, 10, 58, '#1a0a14');
+            rr(cpx - 3, cpy - 40, 16, 24, '#1a0a14');
+            rr(cpx + 2, cpy - 73, 8, 16, '#1a0a14');
+            rr(cpx + 14, cpy - 62, 12, 62, '#0a0a1a');
+            rr(cpx + 12, cpy - 78, 14, 17, '#0a0a1a');
+            rr(cpx + 8, cpy - 44, 8, 4, '#1a0a14');
+
+            // Embers drifting
+            for (var ei = 0; ei < 22; ei++) {
+                var ex = 15 + ei * 24, ey = 20 + ((ei * 43) % 240);
+                var ec = ei % 3 === 0 ? 'rgba(255,80,0,0.65)' : ei % 3 === 1 ? 'rgba(255,160,0,0.45)' : 'rgba(200,40,0,0.38)';
+                rr(ex, ey, 3, 3, ec); rr(ex + 1, ey + 6, 2, 2, ec);
+            }
+        }
+
+        function goToGame() { window.location.href = 'wall_of_kfc.html'; }
+    </script>
+</body>
+
+</html>

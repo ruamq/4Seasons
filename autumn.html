@@ -105,10 +105,10 @@
     }
     .video-overlay.show { display:flex; }
     .video-wrap {
-      position:relative; width:96vw; aspect-ratio:16/9;
+      position:absolute; inset:0; width:100vw; height:100vh;
       background:#000; overflow:hidden;
     }
-    .video-wrap video { width:100%; height:100%; object-fit:cover; display:block; }
+    .video-wrap video { width:100%; height:100%; object-fit:contain; display:block; }
     .video-placeholder {
       position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
       flex-direction:column; gap:14px;
@@ -174,12 +174,12 @@
 <div class="video-overlay" id="video-overlay">
   <div class="video-wrap">
     <!-- ▼▼▼ Replace src with your autumn video file ▼▼▼ -->
-    <video id="autumn-video" src="autumn-video.mp4"
+    <video id="autumn-video" src="public/autumn-video.mp4"
            onerror="document.getElementById('vid-ph').style.display='flex';this.style.display='none'">
     </video>
     <div class="video-placeholder" id="vid-ph" style="display:none">
       <div class="vid-icon">🍂</div>
-      <div>[ autumn-video.mp4 ]</div>
+      <div>[ public/autumn-video.mp4 ]</div>
       <div style="font-size:8px;opacity:0.6;margin-top:8px">Drop your video file here</div>
     </div>
   </div>

@@ -178,32 +178,34 @@
     /* The actual sign face */
     .bb-face {
       position:relative;
-      width:200px; height:130px;
+      width:640px; height:360px;
     }
     /* Orange outer frame */
     .bb-frame {
       position:absolute; inset:0;
       background:linear-gradient(135deg,#ff6a00,#ee0979);
-      border-radius:4px;
-      box-shadow:0 4px 20px #00000055, 3px 3px 0 #aa0000;
+      border-radius:6px;
+      box-shadow:0 8px 30px #00000055, 4px 4px 0 #aa0000;
     }
     /* White inner mat */
     .bb-mat {
       position:absolute;
-      inset:6px;
+      inset:10px;
       background:#fff8f0;
-      border-radius:2px;
+      border-radius:4px;
       overflow:hidden;
     }
     .bb-mat img {
+      position:relative; z-index:2; /* stay above placeholder */
       width:100%; height:100%; object-fit:cover;
     }
     .bb-mat .bb-placeholder {
+      position:relative; z-index:2; /* stay above fireworks */
       width:100%; height:100%;
-      background:#1a1a2e;
+      background:rgba(26,26,46,0.8);
       display:flex; align-items:center; justify-content:center;
-      color:#ff6a00;
-      font-size:8px; font-weight:700; text-align:center;
+      color:#ffaa00;
+      font-size:10px; font-weight:700; text-align:center;
       padding:6px; line-height:1.7;
       font-family:'Nunito',sans-serif;
     }
@@ -216,39 +218,39 @@
     /* Top header strip */
     .bb-header {
       position:absolute;
-      top:0; left:0; right:0; height:18px;
+      top:0; left:0; right:0; height:26px;
       background:linear-gradient(90deg,#cc0000,#ff4400,#cc0000);
       display:flex; align-items:center; justify-content:center;
-      font-size:7px; font-weight:900; letter-spacing:2px; color:#fff;
+      font-size:11px; font-weight:900; letter-spacing:3px; color:#fff;
       font-family:'Nunito',sans-serif;
       text-shadow:0 1px 2px #00000088;
       z-index:1;
     }
     /* Legs / post structure */
     .bb-legs {
-      display:flex; gap:80px;
+      display:flex; gap:360px;
       position:relative;
     }
     .bb-leg {
-      width:10px;
-      height:80px;
+      width:16px;
+      height:130px;
       background:linear-gradient(to right,#888,#bbb,#888);
-      border-radius:3px;
+      border-radius:4px;
       box-shadow:2px 0 4px #00000033;
     }
     /* Cross beam */
     .bb-beam {
       position:absolute;
-      top:16px; left:2px; right:2px; height:6px;
+      top:24px; left:4px; right:4px; height:8px;
       background:linear-gradient(to bottom,#aaa,#777);
       border-radius:2px;
     }
     /* Catwalk / ledge under sign */
     .bb-ledge {
-      width:210px; height:8px;
+      width:660px; height:12px;
       background:linear-gradient(to bottom,#999,#666);
-      border-radius:2px 2px 0 0;
-      box-shadow:0 2px 6px #00000044;
+      border-radius:3px 3px 0 0;
+      box-shadow:0 3px 8px #00000044;
     }
 
     /* ══════════════ WANTED PAPER (flat on sand) ══════════════ */
@@ -304,11 +306,12 @@
     .wanted-modal.show { display:flex; }
     .wanted-poster {
       background:#f4e8c4;
-      border:10px solid #7a4a10;
-      box-shadow:0 0 0 4px #4a2a00, 0 24px 80px #000000aa;
-      padding:20px 18px 14px;
-      width:300px;
-      display:flex; flex-direction:column; align-items:center; gap:10px;
+      border:16px solid #7a4a10;
+      box-shadow:0 0 0 8px #4a2a00, 0 24px 80px #000000aa;
+      padding:40px 30px 20px;
+      width:90vw; height:90vh;
+      max-width:900px; max-height:800px;
+      display:flex; flex-direction:column; align-items:center; gap:20px;
       animation:poster-pop 0.22s cubic-bezier(.34,1.56,.64,1);
       position:relative;
     }
@@ -320,12 +323,12 @@
       width:100%; text-align:center; padding-bottom:6px;
     }
     .poster-img-wrap {
-      width:220px; height:220px;
-      border:5px solid #7a4a10;
+      width:100%; flex:1;
+      border:8px solid #7a4a10;
       overflow:hidden; background:#c8a870;
       display:flex; align-items:center; justify-content:center;
     }
-    .poster-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+    .poster-img-wrap img { width:100%; height:100%; object-fit:contain; display:block; }
     .poster-img-wrap .img-ph {
       font-size:9px; color:#7a4a10; text-align:center; padding:10px; font-family:'Nunito',sans-serif;
     }
@@ -335,8 +338,8 @@
       text-shadow:2px 2px 0 #4a0000, 0 0 20px #ff000055;
     }
     .poster-close {
-      position:absolute; top:6px; right:10px;
-      font-size:20px; color:#7a4a10; cursor:pointer; font-weight:900; line-height:1;
+      position:absolute; top:12px; right:16px;
+      font-size:36px; color:#7a4a10; cursor:pointer; font-weight:900; line-height:1;
     }
     .poster-close:hover { color:#8b0000; }
 
@@ -950,9 +953,9 @@
       <div class="bb-frame"></div>
       <div class="bb-mat">
         <div class="bb-header">DA NANG SUMMER FEST</div>
-        <img src="image.png" alt="Billboard image"
+        <img src="public/image.png" alt="Billboard image"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-        <div class="bb-placeholder">[ image.png ]<br/>drop your<br/>image here</div>
+        <div class="bb-placeholder">[ public/image.png ]<br/>drop your<br/>image here</div>
       </div>
     </div>
     <div class="bb-ledge"></div>
@@ -993,13 +996,13 @@
 <!-- ═══ VIDEO OVERLAY ═══ -->
 <div class="video-overlay" id="video-overlay">
   <div class="video-wrap">
-    <!-- ▼▼▼ Replace src="video.mp4" with your video file ▼▼▼ -->
-    <video id="game-video" src="video.mp4"
+    <!-- ▼▼▼ Replace src="public/video.mp4" with your video file ▼▼▼ -->
+    <video id="game-video" src="public/video.mp4"
            onerror="document.getElementById('vid-ph').style.display='flex'; this.style.display='none'">
     </video>
     <div class="video-placeholder" id="vid-ph" style="display:none">
       <div class="vid-icon">🎬</div>
-      <div>[ video.mp4 ]</div>
+      <div>[ public/video.mp4 ]</div>
       <div style="font-size:8px;opacity:0.6;margin-top:8px">Drop your video file here</div>
     </div>
   </div>
@@ -1015,9 +1018,9 @@
     <span class="poster-close" onclick="closeWanted()">✕</span>
     <div class="poster-top">MOST WANTED</div>
     <div class="poster-img-wrap">
-      <img src="image2.png" alt="Wanted"
+      <img src="public/image2.png" alt="Wanted"
            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-      <div class="img-ph">[ image2.png ]<br/>your photo here</div>
+      <div class="img-ph" style="display:none"></div>
     </div>
     <div class="poster-bottom">WANTED</div>
   </div>
@@ -1156,7 +1159,6 @@
     }, { once: true });
   }
 
-
   // ── Wanted paper ──────────────────────────────────────
   const paper = document.getElementById('wanted-paper');
   const modal  = document.getElementById('wanted-modal');
@@ -1164,6 +1166,7 @@
   function closeWanted() { modal.classList.remove('show'); }
   modal.addEventListener('click', e => { if (e.target === modal) closeWanted(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWanted(); });
+
 </script>
 </body>
 </html>
