@@ -112,7 +112,6 @@
 </head>
 <body>
 
-<button id="skip-btn">SKIP ▶▶</button>
 
 <!-- VIDEO -->
 <div class="overlay show" id="video-screen">
@@ -456,9 +455,9 @@ function updateHUD(){
   const h=n=>'❤️'.repeat(n)+'🖤'.repeat(3-n);
   document.getElementById('girl-hearts').textContent=h(girlHP);
   document.getElementById('boy-hearts').textContent=h(boyHP);
-  document.getElementById('turn-banner').textContent=isGirlTurn?'💗 YOUR TURN':'💙 BOY\'S TURN';
+  document.getElementById('turn-banner').textContent=isGirlTurn?'💗 GIRL\'S TURN':'💙 YOUR TURN';
   const pw=document.getElementById('power-wrap');
-  if(isGirlTurn && animState==='aiming') pw.classList.add('show'); else pw.classList.remove('show');
+  if(!isGirlTurn && animState==='aiming') pw.classList.add('show'); else pw.classList.remove('show');
 }
 
 // ── DRAW BG ──────────────────────────────────────────
@@ -708,8 +707,8 @@ function endGame(winner){
   animState='done';
   document.getElementById('power-wrap').classList.remove('show');
 
-  if(winner==='girl'){
-    // Girl wins → show skating animation
+  if(winner==='boy'){
+    // Boy wins → show skating animation
     canvas.style.display='none';
     document.getElementById('game-ui').style.display='none';
     document.getElementById('skate-screen').classList.add('show');
@@ -1271,23 +1270,23 @@ function gameLoop(){
   requestAnimationFrame(gameLoop);
 }
 
-// ── INPUT (girl = player, fires RIGHT toward boy) ─────
+// ── INPUT (boy = player, fires LEFT toward girl) ─────
 addEventListener('keydown',e=>{
-  if(!isGirlTurn||animState!=='aiming') return;
+  if(isGirlTurn||animState!=='aiming') return;
   if(e.key==='ArrowUp'  ||e.key==='w'||e.key==='W'){ angle=Math.min(85,angle+3); }
   if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){ angle=Math.max(5, angle-3); }
-  if(e.code==='Space'||e.key==='Enter'){ e.preventDefault(); fire(girlX,girlY,angle,power,true); }
+  if(e.code==='Space'||e.key==='Enter'){ e.preventDefault(); fire(boyX,boyY,angle,power,false); }
 });
 
 canvas.addEventListener('mousemove',e=>{
-  if(!isGirlTurn||animState!=='aiming') return;
+  if(isGirlTurn||animState!=='aiming') return;
   angle=Math.max(5,Math.min(85,(1-(e.clientY/canvas.height))*90)|0);
 });
 
 canvas.addEventListener('click',e=>{
-  if(!isGirlTurn||animState!=='aiming') return;
+  if(isGirlTurn||animState!=='aiming') return;
   angle=Math.max(5,Math.min(85,(1-(e.clientY/canvas.height))*90)|0);
-  fire(girlX,girlY,angle,power,true);
+  fire(boyX,boyY,angle,power,false);
 });
 
 addEventListener('resize',()=>{
