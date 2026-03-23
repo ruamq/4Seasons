@@ -1,138 +1,339 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Autumn - Stop the Long Distance</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Press+Start+2P&display=swap');
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { background:#1a0e00; overflow:hidden; width:100vw; height:100vh; image-rendering:pixelated; }
-    canvas { display:block; image-rendering:pixelated; image-rendering:crisp-edges; position:absolute; top:0; left:0; z-index:0; }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a0e00;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      image-rendering: pixelated;
+    }
+
+    canvas {
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
 
     #title-wrap {
-      position:fixed; top:50%; left:50%;
-      transform:translate(-50%,-50%);
-      z-index:10; text-align:center; pointer-events:auto;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      text-align: center;
+      pointer-events: auto;
     }
+
     #main-title {
-      font-family:'Playfair Display',serif; font-style:italic; font-weight:700;
-      font-size:clamp(38px,6.5vw,88px); color:#fff8e8; line-height:1.1; letter-spacing:2px;
-      text-shadow:3px 3px 0 #7a3300,6px 6px 0 #4a1a00,0 0 60px #ff8800aa,0 0 120px #ff440055;
-      animation:tflicker 8s ease-in-out infinite alternate;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-weight: 700;
+      font-size: clamp(38px, 6.5vw, 88px);
+      color: #fff8e8;
+      line-height: 1.1;
+      letter-spacing: 2px;
+      text-shadow: 3px 3px 0 #7a3300, 6px 6px 0 #4a1a00, 0 0 60px #ff8800aa, 0 0 120px #ff440055;
+      animation: tflicker 8s ease-in-out infinite alternate;
     }
+
     @keyframes tflicker {
-      0%   { text-shadow:3px 3px 0 #7a3300,6px 6px 0 #4a1a00,0 0 40px #ff880077,0 0 80px #ff440033; }
-      50%  { text-shadow:3px 3px 0 #7a3300,6px 6px 0 #4a1a00,0 0 80px #ffaa00bb,0 0 140px #ff660066; }
-      100% { text-shadow:3px 3px 0 #7a3300,6px 6px 0 #4a1a00,0 0 50px #ff880088,0 0 100px #ff440044; }
+      0% {
+        text-shadow: 3px 3px 0 #7a3300, 6px 6px 0 #4a1a00, 0 0 40px #ff880077, 0 0 80px #ff440033;
+      }
+
+      50% {
+        text-shadow: 3px 3px 0 #7a3300, 6px 6px 0 #4a1a00, 0 0 80px #ffaa00bb, 0 0 140px #ff660066;
+      }
+
+      100% {
+        text-shadow: 3px 3px 0 #7a3300, 6px 6px 0 #4a1a00, 0 0 50px #ff880088, 0 0 100px #ff440044;
+      }
     }
+
     #sub-title {
-      font-family:'Press Start 2P',monospace; font-size:clamp(6px,1vw,11px);
-      color:#ffcc88; letter-spacing:5px; text-transform:uppercase; margin-top:14px;
-      animation:psub 3s ease-in-out infinite alternate;
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(6px, 1vw, 11px);
+      color: #ffcc88;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      margin-top: 14px;
+      animation: psub 3s ease-in-out infinite alternate;
     }
-    @keyframes psub { from{opacity:0.5} to{opacity:0.95} }
+
+    @keyframes psub {
+      from {
+        opacity: 0.5
+      }
+
+      to {
+        opacity: 0.95
+      }
+    }
 
     #play-btn {
-      margin-top:24px;
-      background:linear-gradient(135deg,#c84400,#e86000);
-      color:#fff8e8; border:none; border-bottom:4px solid #7a2200;
-      padding:14px 44px;
-      font-family:'Press Start 2P',monospace;
-      font-size:clamp(8px,1.2vw,13px);
-      cursor:pointer; letter-spacing:2px;
-      box-shadow:4px 4px 0 #7a2200, 8px 8px 0 #4a1400;
-      animation:btn-glow 2s ease-in-out infinite alternate;
-      transition:transform 0.08s;
-      display:block;
-      margin-left:auto;
-      margin-right:auto;
+      margin-top: 24px;
+      background: linear-gradient(135deg, #c84400, #e86000);
+      color: #fff8e8;
+      border: none;
+      border-bottom: 4px solid #7a2200;
+      padding: 14px 44px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(8px, 1.2vw, 13px);
+      cursor: pointer;
+      letter-spacing: 2px;
+      box-shadow: 4px 4px 0 #7a2200, 8px 8px 0 #4a1400;
+      animation: btn-glow 2s ease-in-out infinite alternate;
+      transition: transform 0.08s;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
-    #play-btn:hover { filter:brightness(1.2); transform:translateY(-2px); }
-    #play-btn:active { transform:translateY(3px); border-bottom-width:1px; box-shadow:2px 2px 0 #7a2200; }
+
+    #play-btn:hover {
+      filter: brightness(1.2);
+      transform: translateY(-2px);
+    }
+
+    #play-btn:active {
+      transform: translateY(3px);
+      border-bottom-width: 1px;
+      box-shadow: 2px 2px 0 #7a2200;
+    }
+
     @keyframes btn-glow {
-      from { box-shadow:4px 4px 0 #7a2200,8px 8px 0 #4a1400,0 0 16px #e8600055; }
-      to   { box-shadow:4px 4px 0 #7a2200,8px 8px 0 #4a1400,0 0 36px #e86000cc; }
+      from {
+        box-shadow: 4px 4px 0 #7a2200, 8px 8px 0 #4a1400, 0 0 16px #e8600055;
+      }
+
+      to {
+        box-shadow: 4px 4px 0 #7a2200, 8px 8px 0 #4a1400, 0 0 36px #e86000cc;
+      }
     }
 
     /* ── Instruction overlay ── */
     .instr-overlay {
-      display:none; position:fixed; inset:0;
-      background:rgba(0,0,0,0.50);
-      z-index:80; flex-direction:column;
-      align-items:center; justify-content:flex-end;
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.50);
+      z-index: 80;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
     }
-    .instr-overlay.show { display:flex; }
+
+    .instr-overlay.show {
+      display: flex;
+    }
+
     .instr-dialog {
-      width:100%;
-      background:linear-gradient(135deg,#3a1e00 0%,#7a3c00 40%,#c87000 70%,#7a3c00 100%);
-      border-top:4px solid #f0c030;
-      box-shadow:0 -4px 0 #5a2800, inset 0 2px 0 #e8a020;
-      padding:26px 44px; min-height:155px;
-      display:flex; align-items:center; justify-content:space-between; gap:24px;
-      position:relative;
+      width: 100%;
+      background: linear-gradient(135deg, #3a1e00 0%, #7a3c00 40%, #c87000 70%, #7a3c00 100%);
+      border-top: 4px solid #f0c030;
+      box-shadow: 0 -4px 0 #5a2800, inset 0 2px 0 #e8a020;
+      padding: 26px 44px;
+      min-height: 155px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      position: relative;
     }
+
     .instr-dialog::before {
-      content:''; position:absolute; top:0; left:0; right:0; height:3px;
-      background:linear-gradient(90deg,transparent,#f0d060,#e8a020,#f0d060,transparent);
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #f0d060, #e8a020, #f0d060, transparent);
     }
-    .instr-text-wrap { flex:1; position:relative; overflow:hidden; }
+
+    .instr-text-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
     .instr-text {
-      color:#fff8e8; font-family:'Press Start 2P',monospace;
-      font-size:13px; line-height:2.1; letter-spacing:0.4px; white-space:pre-wrap;
-      text-shadow:0 1px 4px #00000066;
+      color: #fff8e8;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 13px;
+      line-height: 2.1;
+      letter-spacing: 0.4px;
+      white-space: pre-wrap;
+      text-shadow: 0 1px 4px #00000066;
     }
-    .instr-text::after { content:'▮'; color:#f0c030; animation:iblink 0.7s step-end infinite; }
-    .instr-text.done::after { display:none; }
-    @keyframes iblink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .instr-text::after {
+      content: '▮';
+      color: #f0c030;
+      animation: iblink 0.7s step-end infinite;
+    }
+
+    .instr-text.done::after {
+      display: none;
+    }
+
+    @keyframes iblink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0
+      }
+    }
+
     .instr-arrow {
-      color:#f0c030; font-size:18px; align-self:flex-end; padding-bottom:4px;
-      display:none; animation:iarr 0.6s ease-in-out infinite alternate;
-      text-shadow:0 0 8px #e8a020;
+      color: #f0c030;
+      font-size: 18px;
+      align-self: flex-end;
+      padding-bottom: 4px;
+      display: none;
+      animation: iarr 0.6s ease-in-out infinite alternate;
+      text-shadow: 0 0 8px #e8a020;
     }
-    .instr-arrow.visible { display:block; }
-    @keyframes iarr { from{transform:translateY(0)} to{transform:translateY(7px)} }
+
+    .instr-arrow.visible {
+      display: block;
+    }
+
+    @keyframes iarr {
+      from {
+        transform: translateY(0)
+      }
+
+      to {
+        transform: translateY(7px)
+      }
+    }
+
     .instr-counter {
-      position:absolute; top:-20px; right:0;
-      color:#f0d060; font-family:'Press Start 2P',monospace; font-size:8px; opacity:0.7;
+      position: absolute;
+      top: -20px;
+      right: 0;
+      color: #f0d060;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      opacity: 0.7;
     }
 
     /* ── Video overlay ── */
     .video-overlay {
-      display:none; position:fixed; inset:0;
-      background:#000; z-index:90;
-      flex-direction:column; align-items:center; justify-content:center;
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 90;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
-    .video-overlay.show { display:flex; }
+
+    .video-overlay.show {
+      display: flex;
+    }
+
     .video-wrap {
-      position:absolute; inset:0; width:100vw; height:100vh;
-      background:#000; overflow:hidden;
+      position: absolute;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      overflow: hidden;
     }
-    .video-wrap video { width:100%; height:100%; object-fit:contain; display:block; }
+
+    .video-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
     .video-placeholder {
-      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-      flex-direction:column; gap:14px;
-      color:#f0c030; font-family:'Press Start 2P',monospace;
-      font-size:11px; text-align:center; padding:20px; background:#0a0800;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      color: #f0c030;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      text-align: center;
+      padding: 20px;
+      background: #0a0800;
     }
-    .video-placeholder .vid-icon { font-size:48px; opacity:0.6; }
+
+    .video-placeholder .vid-icon {
+      font-size: 48px;
+      opacity: 0.6;
+    }
+
     .continue-btn {
-      display:none; position:fixed; bottom:32px; right:36px;
-      background:linear-gradient(135deg,#c87000,#e8a000);
-      color:#fff8e8; border:none; padding:16px 44px;
-      font-family:'Press Start 2P',monospace; font-size:13px;
-      cursor:pointer; letter-spacing:2px;
-      box-shadow:4px 4px 0 #7a3c00, 8px 8px 0 #4a2200;
-      animation:cglow 1.5s ease-in-out infinite alternate; transition:transform 0.1s; z-index:100;
+      display: none;
+      position: fixed;
+      bottom: 32px;
+      right: 36px;
+      background: linear-gradient(135deg, #c87000, #e8a000);
+      color: #fff8e8;
+      border: none;
+      padding: 16px 44px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 13px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      box-shadow: 4px 4px 0 #7a3c00, 8px 8px 0 #4a2200;
+      animation: cglow 1.5s ease-in-out infinite alternate;
+      transition: transform 0.1s;
+      z-index: 100;
     }
-    .continue-btn.visible { display:block; }
-    .continue-btn:hover { filter:brightness(1.15); }
-    .continue-btn:active { transform:translate(2px,2px); }
+
+    .continue-btn.visible {
+      display: block;
+    }
+
+    .continue-btn:hover {
+      filter: brightness(1.15);
+    }
+
+    .continue-btn:active {
+      transform: translate(2px, 2px);
+    }
+
     @keyframes cglow {
-      from { box-shadow:4px 4px 0 #7a3c00,8px 8px 0 #4a2200,0 0 14px #c8700044; }
-      to   { box-shadow:4px 4px 0 #7a3c00,8px 8px 0 #4a2200,0 0 34px #e8a000cc; }
+      from {
+        box-shadow: 4px 4px 0 #7a3c00, 8px 8px 0 #4a2200, 0 0 14px #c8700044;
+      }
+
+      to {
+        box-shadow: 4px 4px 0 #7a3c00, 8px 8px 0 #4a2200, 0 0 34px #e8a000cc;
+      }
     }
-  
+
     .leaf {
       position: fixed;
       pointer-events: none;
@@ -141,427 +342,467 @@
       animation: lfall linear infinite;
       opacity: 0.85;
     }
+
     @keyframes lfall {
-      0%   { transform:translateY(-40px) rotate(0deg) translateX(0px); opacity:0.9; }
-      25%  { transform:translateY(25vh)  rotate(90deg)  translateX(30px); }
-      50%  { transform:translateY(50vh)  rotate(180deg) translateX(-20px); }
-      75%  { transform:translateY(75vh)  rotate(270deg) translateX(25px); }
-      100% { transform:translateY(105vh) rotate(360deg) translateX(-10px); opacity:0; }
+      0% {
+        transform: translateY(-40px) rotate(0deg) translateX(0px);
+        opacity: 0.9;
+      }
+
+      25% {
+        transform: translateY(25vh) rotate(90deg) translateX(30px);
+      }
+
+      50% {
+        transform: translateY(50vh) rotate(180deg) translateX(-20px);
+      }
+
+      75% {
+        transform: translateY(75vh) rotate(270deg) translateX(25px);
+      }
+
+      100% {
+        transform: translateY(105vh) rotate(360deg) translateX(-10px);
+        opacity: 0;
+      }
     }
   </style>
 </head>
+
 <body>
-<canvas id="scene"></canvas>
-<div id="leaves"></div>
-<div id="title-wrap">
-  <div id="main-title">Stop the<br/>Long Distance</div>
-  <div id="sub-title">Autumn is here</div>
-  <button id="play-btn">▶ PLAY</button>
-</div>
-
-<!-- Instruction overlay -->
-<div class="instr-overlay" id="instr-overlay">
-  <div class="instr-dialog">
-    <div class="instr-text-wrap">
-      <div class="instr-text" id="instr-text"></div>
-      <div class="instr-counter" id="instr-counter"></div>
-    </div>
-    <div class="instr-arrow" id="instr-arrow">▼</div>
+  <canvas id="scene"></canvas>
+  <div id="leaves"></div>
+  <div id="title-wrap">
+    <div id="main-title">Stop the<br />Long Distance</div>
+    <div id="sub-title">Autumn is here</div>
+    <button id="play-btn">▶ PLAY</button>
   </div>
-</div>
 
-<!-- Video overlay -->
-<div class="video-overlay" id="video-overlay">
-  <div class="video-wrap">
-    <!-- ▼▼▼ Replace src with your autumn video file ▼▼▼ -->
-    <video id="autumn-video" src="public/autumn-video.mp4"
-           onerror="document.getElementById('vid-ph').style.display='flex';this.style.display='none'">
-    </video>
-    <div class="video-placeholder" id="vid-ph" style="display:none">
-      <div class="vid-icon">🍂</div>
-      <div>[ public/autumn-video.mp4 ]</div>
-      <div style="font-size:8px;opacity:0.6;margin-top:8px">Drop your video file here</div>
+  <!-- Instruction overlay -->
+  <div class="instr-overlay" id="instr-overlay">
+    <div class="instr-dialog">
+      <div class="instr-text-wrap">
+        <div class="instr-text" id="instr-text"></div>
+        <div class="instr-counter" id="instr-counter"></div>
+      </div>
+      <div class="instr-arrow" id="instr-arrow">▼</div>
     </div>
   </div>
-  <button class="continue-btn" id="continue-btn" onclick="window.location.href='goldminer.html'">CONTINUE ▶</button>
-</div>
-<script>
-const canvas = document.getElementById('scene');
-const ctx    = canvas.getContext('2d');
-ctx.imageSmoothingEnabled = false;
 
-let W, H, P;
-
-function resize(){
-  W = canvas.width  = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-  P = Math.max(3, Math.floor(W / 360));
-  draw();
-}
-
-// helpers
-function r(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
-function rp(gx,gy,gw,gh,c){ r(gx*P, gy*P, gw*P, gh*P, c); } // grid-pixel draw
-function lerp(a,b,t){ return a+(b-a)*t; }
-function seeded(s){ return((s*9301+49297)%233280)/233280; }
-function GW(){ return Math.ceil(W/P); }
-function GH(){ return Math.ceil(H/P); }
-
-// ─────────────────────────────────────────
-// DRAW
-// ─────────────────────────────────────────
-function draw(){
-  ctx.clearRect(0,0,W,H);
-  ctx.imageSmoothingEnabled = false;
-
-  const gw = GW(), gh = GH();
-  const midX  = gw/2;      // grid center X
-  const skyH  = gh*0.50;   // sky takes top 50%
-  const groundY = gh*0.50; // where ground starts
-
-  // ── SKY (left=Melbourne teal/gold, right=Paris blue/white/red) ──────────
-  for(let y=0;y<skyH;y++){
-    const t = y/skyH;
-    // LEFT half — Australian colours: deep teal-blue to warm gold
-    const lr = lerp(0x00,0xb8,t), lg = lerp(0x20,0x70,t), lb = lerp(0x4a,0x00,t);
-    r(0, y*P, W/2, P, `rgb(${lr|0},${lg|0},${lb|0})`);
-    // RIGHT half — French colours: navy blue to warm amber
-    const rr = lerp(0x00,0xd4,t), rg = lerp(0x10,0x60,t), rb = lerp(0x40,0x00,t);
-    r(W/2, y*P, W/2, P, `rgb(${rr|0},${rg|0},${rb|0})`);
-  }
-
-  // ── DIVIDING LINE (road center) ──────────────────────────────────────────
-  // The road runs down the middle — drawn as part of ground below
-
-  // ── GROUND / GRASS ───────────────────────────────────────────────────────
-  // base ground colour
-  for(let y=groundY;y<gh;y++){
-    const t=(y-groundY)/(gh-groundY);
-    const shade = lerp(0x18,0x0e,t);
-    r(0, y*P, W, P, `rgb(${(shade*1.2)|0},${shade|0},0)`);
-  }
-
-  // LEFT HALF grass (Melbourne — greener, autumn mix)
-  for(let gy=groundY;gy<gh;gy++){
-    for(let gx=0;gx<midX;gx++){
-      const n = seeded(gx*37+gy*53);
-      if(n<0.45){
-        const cols=['#2a5010','#3a6818','#4a7820','#224010','#305415'];
-        rp(gx,gy,1,1,cols[Math.floor(n*5)]);
-      }
-    }
-  }
-
-  // RIGHT HALF grass (Paris — slightly yellower autumn grass)
-  for(let gy=groundY;gy<gh;gy++){
-    for(let gx=midX;gx<gw;gx++){
-      const n = seeded(gx*41+gy*59);
-      if(n<0.45){
-        const cols=['#3a5810','#4a6a18','#506018','#2a4010','#384c12'];
-        rp(gx,gy,1,1,cols[Math.floor(n*5)]);
-      }
-    }
-  }
-
-  // ── ROAD (center strip, divides Melbourne left / Paris right) ────────────
-  const roadW = Math.max(6, gw*0.06|0);
-  const roadX = (midX - roadW/2)|0;
-  for(let gy=groundY;gy<gh;gy++){
-    const t=(gy-groundY)/(gh-groundY);
-    const shade = lerp(55,35,t);
-    rp(roadX, gy, roadW, 1, `rgb(${shade},${shade},${shade})`);
-  }
-  // road centre dashes
-  for(let gy=groundY;gy<gh;gy+=4){
-    rp(midX-1, gy, 2, 2, '#dddd44');
-  }
-  // road edges
-  for(let gy=groundY;gy<gh;gy++){
-    rp(roadX,          gy, 1, 1, '#ffffff44');
-    rp(roadX+roadW-1,  gy, 1, 1, '#ffffff44');
-  }
-
-  // ── LEAF LITTER ON GROUND ────────────────────────────────────────────────
-  const leafCols=['#c84400','#e86000','#d45000','#aa3300','#f07000','#f0c020','#e8a800','#d4b400','#f0d040','#883300'];
-  for(let i=0;i<1200;i++){
-    const lx=(seeded(i*3+1)*gw)|0;
-    const ly=(groundY + seeded(i*3+2)*(gh-groundY))|0;
-    // skip road
-    if(lx>=roadX && lx<=roadX+roadW) continue;
-    const col=leafCols[Math.floor(seeded(i*7)*leafCols.length)];
-    const sz=seeded(i*11)>0.75?2:1;
-    rp(lx,ly,sz,1,col);
-  }
-
-  // ── TREES — left and right sides ─────────────────────────────────────────
-  // Left trees (Melbourne side)
-  const leftTreeXs  = [0.04,0.11,0.17,0.23,0.29,0.34,0.38,0.42];
-  const rightTreeXs = [0.96,0.89,0.83,0.77,0.71,0.66,0.62,0.58];
-
-  function drawTree(fx, scale, variant){
-    const tx = (fx*gw)|0;
-    const gy = (groundY)|0;
-    const s  = scale;
-    const trunkW = Math.max(2, (3*s)|0);
-    const trunkH = (16*s)|0;
-
-    // trunk
-    for(let dy=0;dy<trunkH;dy++){
-      const c = dy<trunkH*0.4 ? '#4a2c10' : '#2a1600';
-      rp(tx-(trunkW/2)|0, gy-dy, trunkW, 1, c);
-    }
-    // branches
-    const brs = variant===0 ? [
-      {ox:-8*s,oy:trunkH*0.7,len:10*s,ang:-0.6},
-      {ox:8*s, oy:trunkH*0.6,len:11*s,ang:0.55},
-      {ox:-4*s,oy:trunkH*0.4,len:7*s, ang:-0.85},
-      {ox:5*s, oy:trunkH*0.3,len:8*s, ang:0.7},
-    ] : [
-      {ox:-9*s,oy:trunkH*0.72,len:12*s,ang:-0.55},
-      {ox:8*s, oy:trunkH*0.62,len:10*s,ang:0.6},
-      {ox:-5*s,oy:trunkH*0.42,len:8*s, ang:-0.9},
-      {ox:4*s, oy:trunkH*0.32,len:9*s, ang:0.65},
-    ];
-    brs.forEach(b=>{
-      for(let i=0;i<b.len;i++){
-        const bx=(tx+b.ox+Math.sin(b.ang)*i)|0;
-        const by=(gy-b.oy-Math.cos(b.ang)*i)|0;
-        rp(bx,by,1,1,'#2a1600');
-      }
+  <!-- Video overlay -->
+  <div class="video-overlay" id="video-overlay">
+    <!-- CRY image shown first -->
+    <div id="cry-screen"
+      style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000;z-index:5;cursor:pointer;">
+      <img src="public/cry.jpg" alt="cry" style="max-width:100%;max-height:100%;object-fit:contain;" />
+    </div>
+    <div class="video-wrap" style="display:none" id="video-wrap">
+      <!-- ▼▼▼ Replace src with your autumn video file ▼▼▼ -->
+      <video id="autumn-video" src="public/autumn-video.mp4"
+        onerror="document.getElementById('vid-ph').style.display='flex';this.style.display='none'">
+      </video>
+      <div class="video-placeholder" id="vid-ph" style="display:none">
+        <div class="vid-icon">🍂</div>
+        <div>[ public/autumn-video.mp4 ]</div>
+        <div style="font-size:8px;opacity:0.6;margin-top:8px">Drop your video file here</div>
+      </div>
+    </div>
+    <button class="continue-btn" id="continue-btn" onclick="window.location.href='goldminer.html'">CONTINUE ▶</button>
+  </div>
+  <script>
+    // Click cry image to show video
+    document.getElementById('cry-screen').addEventListener('click', function () {
+      this.style.display = 'none';
+      var vw = document.getElementById('video-wrap');
+      vw.style.display = 'block';
+      var vid = document.getElementById('autumn-video');
+      vid.play().catch(function () { });
+      document.getElementById('continue-btn').classList.add('visible');
     });
-    // foliage — autumn colours including YELLOW
-    const fh=(20*s)|0, fw=(24*s)|0;
-    const fBase=(gy-trunkH-2)|0;
-    const foliageCols=['#c84400','#e86000','#d45000','#f09020','#f0c020','#e8a800','#d4b400','#f0d040','#aa3300','#f07000','#e8b800'];
-    for(let dy=0;dy<fh;dy++){
-      const rowT=dy/fh;
-      const rowW=(fw*Math.sin(rowT*Math.PI)*(0.7+seeded(tx+dy)*0.3))|0;
-      for(let dx=-rowW;dx<rowW;dx++){
-        const n=seeded((tx+dx)*37+(fBase-dy)*53);
-        if(n>0.28){
-          const ci=Math.floor(seeded((tx+dx)*7+(fBase-dy)*11)*foliageCols.length);
-          rp((tx+dx)|0,fBase-dy,1,1,foliageCols[ci]);
+  </script>
+  <script>
+    const canvas = document.getElementById('scene');
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+
+    let W, H, P;
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      P = Math.max(3, Math.floor(W / 360));
+      draw();
+    }
+
+    // helpers
+    function r(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); }
+    function rp(gx, gy, gw, gh, c) { r(gx * P, gy * P, gw * P, gh * P, c); } // grid-pixel draw
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function seeded(s) { return ((s * 9301 + 49297) % 233280) / 233280; }
+    function GW() { return Math.ceil(W / P); }
+    function GH() { return Math.ceil(H / P); }
+
+    // ─────────────────────────────────────────
+    // DRAW
+    // ─────────────────────────────────────────
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.imageSmoothingEnabled = false;
+
+      const gw = GW(), gh = GH();
+      const midX = gw / 2;      // grid center X
+      const skyH = gh * 0.50;   // sky takes top 50%
+      const groundY = gh * 0.50; // where ground starts
+
+      // ── SKY (left=Melbourne teal/gold, right=Paris blue/white/red) ──────────
+      for (let y = 0; y < skyH; y++) {
+        const t = y / skyH;
+        // LEFT half — Australian colours: deep teal-blue to warm gold
+        const lr = lerp(0x00, 0xb8, t), lg = lerp(0x20, 0x70, t), lb = lerp(0x4a, 0x00, t);
+        r(0, y * P, W / 2, P, `rgb(${lr | 0},${lg | 0},${lb | 0})`);
+        // RIGHT half — French colours: navy blue to warm amber
+        const rr = lerp(0x00, 0xd4, t), rg = lerp(0x10, 0x60, t), rb = lerp(0x40, 0x00, t);
+        r(W / 2, y * P, W / 2, P, `rgb(${rr | 0},${rg | 0},${rb | 0})`);
+      }
+
+      // ── DIVIDING LINE (road center) ──────────────────────────────────────────
+      // The road runs down the middle — drawn as part of ground below
+
+      // ── GROUND / GRASS ───────────────────────────────────────────────────────
+      // base ground colour
+      for (let y = groundY; y < gh; y++) {
+        const t = (y - groundY) / (gh - groundY);
+        const shade = lerp(0x18, 0x0e, t);
+        r(0, y * P, W, P, `rgb(${(shade * 1.2) | 0},${shade | 0},0)`);
+      }
+
+      // LEFT HALF grass (Melbourne — greener, autumn mix)
+      for (let gy = groundY; gy < gh; gy++) {
+        for (let gx = 0; gx < midX; gx++) {
+          const n = seeded(gx * 37 + gy * 53);
+          if (n < 0.45) {
+            const cols = ['#2a5010', '#3a6818', '#4a7820', '#224010', '#305415'];
+            rp(gx, gy, 1, 1, cols[Math.floor(n * 5)]);
+          }
         }
       }
+
+      // RIGHT HALF grass (Paris — slightly yellower autumn grass)
+      for (let gy = groundY; gy < gh; gy++) {
+        for (let gx = midX; gx < gw; gx++) {
+          const n = seeded(gx * 41 + gy * 59);
+          if (n < 0.45) {
+            const cols = ['#3a5810', '#4a6a18', '#506018', '#2a4010', '#384c12'];
+            rp(gx, gy, 1, 1, cols[Math.floor(n * 5)]);
+          }
+        }
+      }
+
+      // ── ROAD (center strip, divides Melbourne left / Paris right) ────────────
+      const roadW = Math.max(6, gw * 0.06 | 0);
+      const roadX = (midX - roadW / 2) | 0;
+      for (let gy = groundY; gy < gh; gy++) {
+        const t = (gy - groundY) / (gh - groundY);
+        const shade = lerp(55, 35, t);
+        rp(roadX, gy, roadW, 1, `rgb(${shade},${shade},${shade})`);
+      }
+      // road centre dashes
+      for (let gy = groundY; gy < gh; gy += 4) {
+        rp(midX - 1, gy, 2, 2, '#dddd44');
+      }
+      // road edges
+      for (let gy = groundY; gy < gh; gy++) {
+        rp(roadX, gy, 1, 1, '#ffffff44');
+        rp(roadX + roadW - 1, gy, 1, 1, '#ffffff44');
+      }
+
+      // ── LEAF LITTER ON GROUND ────────────────────────────────────────────────
+      const leafCols = ['#c84400', '#e86000', '#d45000', '#aa3300', '#f07000', '#f0c020', '#e8a800', '#d4b400', '#f0d040', '#883300'];
+      for (let i = 0; i < 1200; i++) {
+        const lx = (seeded(i * 3 + 1) * gw) | 0;
+        const ly = (groundY + seeded(i * 3 + 2) * (gh - groundY)) | 0;
+        // skip road
+        if (lx >= roadX && lx <= roadX + roadW) continue;
+        const col = leafCols[Math.floor(seeded(i * 7) * leafCols.length)];
+        const sz = seeded(i * 11) > 0.75 ? 2 : 1;
+        rp(lx, ly, sz, 1, col);
+      }
+
+      // ── TREES — left and right sides ─────────────────────────────────────────
+      // Left trees (Melbourne side)
+      const leftTreeXs = [0.04, 0.11, 0.17, 0.23, 0.29, 0.34, 0.38, 0.42];
+      const rightTreeXs = [0.96, 0.89, 0.83, 0.77, 0.71, 0.66, 0.62, 0.58];
+
+      function drawTree(fx, scale, variant) {
+        const tx = (fx * gw) | 0;
+        const gy = (groundY) | 0;
+        const s = scale;
+        const trunkW = Math.max(2, (3 * s) | 0);
+        const trunkH = (16 * s) | 0;
+
+        // trunk
+        for (let dy = 0; dy < trunkH; dy++) {
+          const c = dy < trunkH * 0.4 ? '#4a2c10' : '#2a1600';
+          rp(tx - (trunkW / 2) | 0, gy - dy, trunkW, 1, c);
+        }
+        // branches
+        const brs = variant === 0 ? [
+          { ox: -8 * s, oy: trunkH * 0.7, len: 10 * s, ang: -0.6 },
+          { ox: 8 * s, oy: trunkH * 0.6, len: 11 * s, ang: 0.55 },
+          { ox: -4 * s, oy: trunkH * 0.4, len: 7 * s, ang: -0.85 },
+          { ox: 5 * s, oy: trunkH * 0.3, len: 8 * s, ang: 0.7 },
+        ] : [
+          { ox: -9 * s, oy: trunkH * 0.72, len: 12 * s, ang: -0.55 },
+          { ox: 8 * s, oy: trunkH * 0.62, len: 10 * s, ang: 0.6 },
+          { ox: -5 * s, oy: trunkH * 0.42, len: 8 * s, ang: -0.9 },
+          { ox: 4 * s, oy: trunkH * 0.32, len: 9 * s, ang: 0.65 },
+        ];
+        brs.forEach(b => {
+          for (let i = 0; i < b.len; i++) {
+            const bx = (tx + b.ox + Math.sin(b.ang) * i) | 0;
+            const by = (gy - b.oy - Math.cos(b.ang) * i) | 0;
+            rp(bx, by, 1, 1, '#2a1600');
+          }
+        });
+        // foliage — autumn colours including YELLOW
+        const fh = (20 * s) | 0, fw = (24 * s) | 0;
+        const fBase = (gy - trunkH - 2) | 0;
+        const foliageCols = ['#c84400', '#e86000', '#d45000', '#f09020', '#f0c020', '#e8a800', '#d4b400', '#f0d040', '#aa3300', '#f07000', '#e8b800'];
+        for (let dy = 0; dy < fh; dy++) {
+          const rowT = dy / fh;
+          const rowW = (fw * Math.sin(rowT * Math.PI) * (0.7 + seeded(tx + dy) * 0.3)) | 0;
+          for (let dx = -rowW; dx < rowW; dx++) {
+            const n = seeded((tx + dx) * 37 + (fBase - dy) * 53);
+            if (n > 0.28) {
+              const ci = Math.floor(seeded((tx + dx) * 7 + (fBase - dy) * 11) * foliageCols.length);
+              rp((tx + dx) | 0, fBase - dy, 1, 1, foliageCols[ci]);
+            }
+          }
+        }
+        // wispy tops
+        for (let i = 0; i < 35 * s; i++) {
+          const wx = (tx + (seeded(i + tx * 3) - 0.5) * fw * 1.4) | 0;
+          const wy = (fBase - fh * 0.7 - seeded(i * 7 + tx) * fh * 0.5) | 0;
+          const ci = Math.floor(seeded(i + tx) * foliageCols.length);
+          rp(wx, wy, 1 + Math.floor(seeded(i * 3) * 2), 1, foliageCols[ci]);
+        }
+      }
+
+      [...leftTreeXs, ...rightTreeXs].map((fx, i) => {
+        const sc = i < 4 || i >= 8 ? 1.6 - i % 4 * 0.28 : 1.6 - (i - 8) * 0.28;
+        return { fx, sc, v: i % 2 };
+      }).sort((a, b) => a.sc - b.sc).forEach(t => drawTree(t.fx, t.sc, t.v));
+
+      // ── BENCH (right side, Melbourne) ────────────────────────────────────────
+      function drawBench(bfx, side) {
+        const btx = (bfx * gw) | 0;
+        const bgy = (groundY + 6) | 0;
+        const sc = 1.2;
+        const bm = '#3a4a5a', bd = '#2a3848', bl = '#5a7088';
+        // back slats
+        for (let i = 0; i < 8; i++) rp(btx + (i * 2 * sc) | 0, bgy, (sc) | 0, (8 * sc) | 0, i % 2 ? bd : bm);
+        // top rail
+        rp(btx - 1, bgy - 1, (17 * sc) | 0, (2 * sc) | 0, bl);
+        // seat
+        for (let i = 0; i < 6; i++) rp(btx - 1, bgy + (8 * sc) | 0 + i * ((1.5 * sc) | 0), (17 * sc) | 0, (sc) | 0, i % 2 ? bd : bm);
+        // legs
+        rp(btx + 1, bgy + (11 * sc) | 0, (2 * sc) | 0, (6 * sc) | 0, bd);
+        rp(btx + (12 * sc) | 0, bgy + (11 * sc) | 0, (2 * sc) | 0, (6 * sc) | 0, bd);
+        // leaf on bench
+        rp(btx + (6 * sc) | 0, bgy + (9 * sc) | 0, 2, 1, '#f0c020');
+      }
+      drawBench(0.22, 'left');   // Melbourne bench
+      drawBench(0.72, 'right');  // Paris bench
+
+      // ── FLAG POLES ───────────────────────────────────────────────────────────
+      // LEFT: Australian flag pole (near road, Melbourne side)
+      function drawFlagpole(fx, flag) {
+        const fpx = (fx * gw) | 0;
+        const fpBase = (groundY + 2) | 0;
+        const poleH = 40;
+        // pole
+        for (let dy = 0; dy < poleH; dy++) rp(fpx, fpBase - dy, 1, 1, dy < poleH * 0.3 ? '#cccccc' : '#aaaaaa');
+        // ball top
+        rp(fpx - 1, fpBase - poleH - 1, 3, 3, '#ddddaa');
+        // draw flag
+        flag(fpx + 1, fpBase - poleH + 1);
+      }
+
+      // Australian flag (Melbourne) — blue with Union Jack corner + stars
+      function drawAusFlag(fx, fy) {
+        const fw = 18, fh = 10;
+        // blue base
+        rp(fx, fy, fw, fh, '#00008b');
+        // Union Jack top-left quarter (simplified)
+        // red cross
+        rp(fx, fy + fh / 2 - 1, fw / 2, 2, '#cc0000');
+        rp(fx + fw / 4 - 1, fy, 2, fh / 2, '#cc0000');
+        // white diagonals (St Andrews)
+        for (let d = 0; d < fw / 2; d++) {
+          const yy = (d * (fh / 2) / (fw / 2)) | 0;
+          rp(fx + d, fy + yy, 1, 1, '#ffffff');
+          rp(fx + d, fy + fh / 2 - 1 - yy, 1, 1, '#ffffff');
+        }
+        // white cross (St George) on top
+        rp(fx, fy + (fh / 2 / 2) | 0 - 1, fw / 2, 1, '#ffffff');
+        rp(fx + (fw / 4) | 0, fy, 1, fh / 2, '#ffffff');
+        // Commonwealth star (bottom left)
+        rp(fx + 2, fy + fh / 2 + 2, 1, 1, '#ffffff');
+        rp(fx + 1, fy + fh / 2 + 3, 3, 1, '#ffffff');
+        rp(fx + 2, fy + fh / 2 + 4, 1, 1, '#ffffff');
+        // Southern cross (right side) — 5 small stars
+        [[fx + 11, fy + 2], [fx + 14, fy + 1], [fx + 13, fy + 5], [fx + 10, fy + 7], [fx + 15, fy + 7]].forEach(([sx, sy]) => {
+          rp(sx, sy, 2, 2, '#ffffff');
+          rp(sx - 1, sy + 1, 1, 1, '#ffffff');
+          rp(sx + 2, sy + 1, 1, 1, '#ffffff');
+        });
+      }
+
+      // French flag (Paris) — blue, white, red vertical stripes
+      function drawFrenchFlag(fx, fy) {
+        const fw = 18, fh = 10;
+        const sw = (fw / 3) | 0;
+        rp(fx, fy, sw, fh, '#002395'); // blue
+        rp(fx + sw, fy, sw, fh, '#ffffff'); // white
+        rp(fx + sw * 2, fy, fw - sw * 2, fh, '#ed2939'); // red
+      }
+
+      drawFlagpole(0.43, drawAusFlag);    // Melbourne side, near road
+      drawFlagpole(0.57, drawFrenchFlag); // Paris side, near road
+
+      // ── CITY LABELS ──────────────────────────────────────────────────────────
+      ctx.font = `bold ${P * 4}px "Press Start 2P"`;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffdd88';
+      ctx.globalAlpha = 0.7;
+      ctx.fillText('MELBOURNE', W * 0.25, H * 0.96);
+      ctx.fillText('PARIS', W * 0.75, H * 0.96);
+      ctx.globalAlpha = 1;
+
+      // ── VERTICAL DIVIDER LINE (visual split) ─────────────────────────────────
+      // Already the road, but add a thin glow line at exact center
+      ctx.fillStyle = 'rgba(255,220,100,0.08)';
+      ctx.fillRect(W / 2 - 1, 0, 2, H);
+
+      // ── AMBIENT GLOW ─────────────────────────────────────────────────────────
+      const grd = ctx.createRadialGradient(W / 2, H * 0.5, 0, W / 2, H * 0.5, W * 0.55);
+      grd.addColorStop(0, 'rgba(220,120,10,0.10)');
+      grd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
     }
-    // wispy tops
-    for(let i=0;i<35*s;i++){
-      const wx=(tx+(seeded(i+tx*3)-0.5)*fw*1.4)|0;
-      const wy=(fBase-fh*0.7-seeded(i*7+tx)*fh*0.5)|0;
-      const ci=Math.floor(seeded(i+tx)*foliageCols.length);
-      rp(wx,wy,1+Math.floor(seeded(i*3)*2),1,foliageCols[ci]);
+
+    // ─────────────────────────────────────────
+    // FALLING LEAVES
+    // ─────────────────────────────────────────
+    const lc = document.getElementById('leaves');
+    const LCHARS = ['🍂', '🍁', '🍃'];
+    for (let i = 0; i < 32; i++) {
+      const l = document.createElement('div');
+      l.className = 'leaf';
+      l.textContent = LCHARS[i % LCHARS.length];
+      l.style.left = `${Math.random() * 100}vw`;
+      const dur = 6 + Math.random() * 8;
+      l.style.animationDuration = `${dur}s`;
+      l.style.animationDelay = `${-Math.random() * 12}s`;
+      l.style.fontSize = `${10 + Math.floor(Math.random() * 10)}px`;
+      lc.appendChild(l);
     }
-  }
 
-  [...leftTreeXs,...rightTreeXs].map((fx,i)=>{
-    const sc=i<4||i>=8 ? 1.6-i%4*0.28 : 1.6-(i-8)*0.28;
-    return{fx,sc,v:i%2};
-  }).sort((a,b)=>a.sc-b.sc).forEach(t=>drawTree(t.fx,t.sc,t.v));
+    resize();
+    window.addEventListener('resize', resize);
 
-  // ── BENCH (right side, Melbourne) ────────────────────────────────────────
-  function drawBench(bfx, side){
-    const btx=(bfx*gw)|0;
-    const bgy=(groundY+6)|0;
-    const sc=1.2;
-    const bm='#3a4a5a', bd='#2a3848', bl='#5a7088';
-    // back slats
-    for(let i=0;i<8;i++) rp(btx+(i*2*sc)|0, bgy, (sc)|0, (8*sc)|0, i%2?bd:bm);
-    // top rail
-    rp(btx-1, bgy-1, (17*sc)|0, (2*sc)|0, bl);
-    // seat
-    for(let i=0;i<6;i++) rp(btx-1, bgy+(8*sc)|0+i*((1.5*sc)|0), (17*sc)|0, (sc)|0, i%2?bd:bm);
-    // legs
-    rp(btx+1, bgy+(11*sc)|0, (2*sc)|0, (6*sc)|0, bd);
-    rp(btx+(12*sc)|0, bgy+(11*sc)|0, (2*sc)|0, (6*sc)|0, bd);
-    // leaf on bench
-    rp(btx+(6*sc)|0, bgy+(9*sc)|0, 2, 1, '#f0c020');
-  }
-  drawBench(0.22, 'left');   // Melbourne bench
-  drawBench(0.72, 'right');  // Paris bench
+    // ─────────────────────────────────────────
+    // INSTRUCTION + VIDEO FLOW
+    // ─────────────────────────────────────────
 
-  // ── FLAG POLES ───────────────────────────────────────────────────────────
-  // LEFT: Australian flag pole (near road, Melbourne side)
-  function drawFlagpole(fx, flag){
-    const fpx=(fx*gw)|0;
-    const fpBase=(groundY+2)|0;
-    const poleH=40;
-    // pole
-    for(let dy=0;dy<poleH;dy++) rp(fpx, fpBase-dy, 1, 1, dy<poleH*0.3?'#cccccc':'#aaaaaa');
-    // ball top
-    rp(fpx-1, fpBase-poleH-1, 3, 3, '#ddddaa');
-    // draw flag
-    flag(fpx+1, fpBase-poleH+1);
-  }
+    /* ═══════════════════════════════════════════
+       AUTUMN INSTRUCTION MESSAGES — edit here
+       Each string = one dialog page. \n = line break.
+    ═══════════════════════════════════════════ */
+    const MESSAGES = [
+      "Welcome to Autumn.",
+      "Two people.\nTwo cities.\nOne season.",
+      "Melbourne is golden.\nParis is golden.\nSo is this moment.",
+      "No matter the distance —\nAutumn finds you both.",
+      "But it still so sad. Who could seperate such a couple",
+      "In this challenge you will be getting that flight ticket to visit Ha Linh",
+      " Yes you will be playing as Minh Quan, your job will be to get some gold home so you can afford that ticket.",
+      "It always is good to be in the other person's position.",
+      "Good luck, here is some sad video about long distance. Let's end this."
 
-  // Australian flag (Melbourne) — blue with Union Jack corner + stars
-  function drawAusFlag(fx, fy){
-    const fw=18, fh=10;
-    // blue base
-    rp(fx,fy,fw,fh,'#00008b');
-    // Union Jack top-left quarter (simplified)
-    // red cross
-    rp(fx,fy+fh/2-1,fw/2,2,'#cc0000');
-    rp(fx+fw/4-1,fy,2,fh/2,'#cc0000');
-    // white diagonals (St Andrews)
-    for(let d=0;d<fw/2;d++){
-      const yy=(d*(fh/2)/(fw/2))|0;
-      rp(fx+d,fy+yy,1,1,'#ffffff');
-      rp(fx+d,fy+fh/2-1-yy,1,1,'#ffffff');
+    ];
+    /* ═══════════════════════════════════════════ */
+
+    const instrOverlay = document.getElementById('instr-overlay');
+    const instrText = document.getElementById('instr-text');
+    const instrArrow = document.getElementById('instr-arrow');
+    const instrCounter = document.getElementById('instr-counter');
+    const videoOverlay = document.getElementById('video-overlay');
+    const autumnVideo = document.getElementById('autumn-video');
+    const continueBtn = document.getElementById('continue-btn');
+
+    let msgIdx = 0, typing = false, typeTout = null, curFull = '', charIdx = 0;
+
+    function updateCounter() { instrCounter.textContent = `${msgIdx + 1} / ${MESSAGES.length}`; }
+
+    function typeMsg(text) {
+      instrText.classList.remove('done');
+      instrArrow.classList.remove('visible');
+      curFull = text; charIdx = 0; typing = true;
+      instrText.textContent = '';
+      updateCounter();
+      function tick() {
+        if (charIdx < curFull.length) {
+          instrText.textContent = curFull.slice(0, ++charIdx);
+          typeTout = setTimeout(tick, 36);
+        } else {
+          typing = false; instrText.classList.add('done');
+          if (msgIdx < MESSAGES.length - 1) { instrArrow.classList.add('visible'); }
+          else { setTimeout(showVideo, 500); }
+        }
+      }
+      tick();
     }
-    // white cross (St George) on top
-    rp(fx,fy+(fh/2/2)|0-1,fw/2,1,'#ffffff');
-    rp(fx+(fw/4)|0,fy,1,fh/2,'#ffffff');
-    // Commonwealth star (bottom left)
-    rp(fx+2,fy+fh/2+2,1,1,'#ffffff');
-    rp(fx+1,fy+fh/2+3,3,1,'#ffffff');
-    rp(fx+2,fy+fh/2+4,1,1,'#ffffff');
-    // Southern cross (right side) — 5 small stars
-    [[fx+11,fy+2],[fx+14,fy+1],[fx+13,fy+5],[fx+10,fy+7],[fx+15,fy+7]].forEach(([sx,sy])=>{
-      rp(sx,sy,2,2,'#ffffff');
-      rp(sx-1,sy+1,1,1,'#ffffff');
-      rp(sx+2,sy+1,1,1,'#ffffff');
-    });
-  }
 
-  // French flag (Paris) — blue, white, red vertical stripes
-  function drawFrenchFlag(fx, fy){
-    const fw=18, fh=10;
-    const sw=(fw/3)|0;
-    rp(fx,        fy, sw,   fh, '#002395'); // blue
-    rp(fx+sw,     fy, sw,   fh, '#ffffff'); // white
-    rp(fx+sw*2,   fy, fw-sw*2, fh, '#ed2939'); // red
-  }
-
-  drawFlagpole(0.43, drawAusFlag);    // Melbourne side, near road
-  drawFlagpole(0.57, drawFrenchFlag); // Paris side, near road
-
-  // ── CITY LABELS ──────────────────────────────────────────────────────────
-  ctx.font=`bold ${P*4}px "Press Start 2P"`;
-  ctx.textAlign='center';
-  ctx.fillStyle='#ffdd88';
-  ctx.globalAlpha=0.7;
-  ctx.fillText('MELBOURNE', W*0.25, H*0.96);
-  ctx.fillText('PARIS', W*0.75, H*0.96);
-  ctx.globalAlpha=1;
-
-  // ── VERTICAL DIVIDER LINE (visual split) ─────────────────────────────────
-  // Already the road, but add a thin glow line at exact center
-  ctx.fillStyle='rgba(255,220,100,0.08)';
-  ctx.fillRect(W/2-1, 0, 2, H);
-
-  // ── AMBIENT GLOW ─────────────────────────────────────────────────────────
-  const grd=ctx.createRadialGradient(W/2,H*0.5,0,W/2,H*0.5,W*0.55);
-  grd.addColorStop(0,'rgba(220,120,10,0.10)');
-  grd.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
-}
-
-// ─────────────────────────────────────────
-// FALLING LEAVES
-// ─────────────────────────────────────────
-const lc=document.getElementById('leaves');
-const LCHARS=['🍂','🍁','🍃'];
-for(let i=0;i<32;i++){
-  const l=document.createElement('div');
-  l.className='leaf';
-  l.textContent=LCHARS[i%LCHARS.length];
-  l.style.left=`${Math.random()*100}vw`;
-  const dur=6+Math.random()*8;
-  l.style.animationDuration=`${dur}s`;
-  l.style.animationDelay=`${-Math.random()*12}s`;
-  l.style.fontSize=`${10+Math.floor(Math.random()*10)}px`;
-  lc.appendChild(l);
-}
-
-resize();
-window.addEventListener('resize', resize);
-
-// ─────────────────────────────────────────
-// INSTRUCTION + VIDEO FLOW
-// ─────────────────────────────────────────
-
-/* ═══════════════════════════════════════════
-   AUTUMN INSTRUCTION MESSAGES — edit here
-   Each string = one dialog page. \n = line break.
-═══════════════════════════════════════════ */
-const MESSAGES = [
-  "Welcome to Autumn.",
-  "Two people.\nTwo cities.\nOne season.",
-  "Melbourne is golden.\nParis is golden.\nSo is this moment.",
-  "No matter the distance —\nAutumn finds you both.",
-  "Watch closely.",
-];
-/* ═══════════════════════════════════════════ */
-
-const instrOverlay = document.getElementById('instr-overlay');
-const instrText    = document.getElementById('instr-text');
-const instrArrow   = document.getElementById('instr-arrow');
-const instrCounter = document.getElementById('instr-counter');
-const videoOverlay = document.getElementById('video-overlay');
-const autumnVideo  = document.getElementById('autumn-video');
-const continueBtn  = document.getElementById('continue-btn');
-
-let msgIdx=0, typing=false, typeTout=null, curFull='', charIdx=0;
-
-function updateCounter(){ instrCounter.textContent=`${msgIdx+1} / ${MESSAGES.length}`; }
-
-function typeMsg(text){
-  instrText.classList.remove('done');
-  instrArrow.classList.remove('visible');
-  curFull=text; charIdx=0; typing=true;
-  instrText.textContent='';
-  updateCounter();
-  function tick(){
-    if(charIdx<curFull.length){
-      instrText.textContent=curFull.slice(0,++charIdx);
-      typeTout=setTimeout(tick,36);
-    } else {
-      typing=false; instrText.classList.add('done');
-      if(msgIdx<MESSAGES.length-1){ instrArrow.classList.add('visible'); }
+    function skipToEnd() {
+      clearTimeout(typeTout); typing = false;
+      instrText.textContent = curFull; instrText.classList.add('done');
+      if (msgIdx < MESSAGES.length - 1) { instrArrow.classList.add('visible'); }
       else { setTimeout(showVideo, 500); }
     }
-  }
-  tick();
-}
 
-function skipToEnd(){
-  clearTimeout(typeTout); typing=false;
-  instrText.textContent=curFull; instrText.classList.add('done');
-  if(msgIdx<MESSAGES.length-1){ instrArrow.classList.add('visible'); }
-  else { setTimeout(showVideo, 500); }
-}
+    function advance() {
+      if (typing) { skipToEnd(); return; }
+      if (msgIdx >= MESSAGES.length - 1) return;
+      msgIdx++; typeMsg(MESSAGES[msgIdx]);
+    }
 
-function advance(){
-  if(typing){ skipToEnd(); return; }
-  if(msgIdx>=MESSAGES.length-1) return;
-  msgIdx++; typeMsg(MESSAGES[msgIdx]);
-}
+    instrOverlay.addEventListener('click', advance);
 
-instrOverlay.addEventListener('click', advance);
+    function showVideo() {
+      instrOverlay.classList.remove('show');
+      videoOverlay.classList.add('show');
+      const p = autumnVideo.play();
+      if (p !== undefined) { p.then(() => continueBtn.classList.add('visible')).catch(() => continueBtn.classList.add('visible')); }
+      else { continueBtn.classList.add('visible'); }
+      autumnVideo.addEventListener('play', () => continueBtn.classList.add('visible'), { once: true });
+      autumnVideo.addEventListener('ended', () => continueBtn.classList.add('visible'), { once: true });
+    }
 
-function showVideo(){
-  instrOverlay.classList.remove('show');
-  videoOverlay.classList.add('show');
-  const p=autumnVideo.play();
-  if(p!==undefined){ p.then(()=>continueBtn.classList.add('visible')).catch(()=>continueBtn.classList.add('visible')); }
-  else { continueBtn.classList.add('visible'); }
-  autumnVideo.addEventListener('play',()=>continueBtn.classList.add('visible'),{once:true});
-  autumnVideo.addEventListener('ended',()=>continueBtn.classList.add('visible'),{once:true});
-}
+    // play button starts the flow
+    document.getElementById('play-btn').addEventListener('click', () => {
+      const tw = document.getElementById('title-wrap');
+      tw.style.opacity = '0'; tw.style.transition = 'opacity 0.4s';
+      setTimeout(() => { tw.style.display = 'none'; instrOverlay.classList.add('show'); typeMsg(MESSAGES[0]); }, 420);
+    });
 
-// play button starts the flow
-document.getElementById('play-btn').addEventListener('click',()=>{
-  const tw=document.getElementById('title-wrap');
-  tw.style.opacity='0'; tw.style.transition='opacity 0.4s';
-  setTimeout(()=>{ tw.style.display='none'; instrOverlay.classList.add('show'); typeMsg(MESSAGES[0]); }, 420);
-});
+    // global click guard
+    document.body.addEventListener('click', (e) => {
+      if (instrOverlay.classList.contains('show')) return;
+      if (videoOverlay.classList.contains('show')) return;
+    });
 
-// global click guard
-document.body.addEventListener('click',(e)=>{
-  if(instrOverlay.classList.contains('show')) return;
-  if(videoOverlay.classList.contains('show')) return;
-});
-
-</script>
+  </script>
 </body>
+
 </html>

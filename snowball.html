@@ -149,12 +149,12 @@
 <canvas id="game-canvas" style="display:none;"></canvas>
 <div id="game-ui" style="display:none;">
   <div class="ui-side">
-    <div class="ui-name" style="color:#ff88cc;">💗 GIRL (YOU)</div>
+    <div class="ui-name" style="color:#ff88cc;">💗 Ha Linh</div>
     <div class="ui-hearts" id="girl-hearts">❤️❤️❤️</div>
   </div>
   <div><div id="turn-banner">YOUR TURN</div></div>
   <div class="ui-side" style="align-items:flex-end;">
-    <div class="ui-name" style="color:#88ccff;">💙 BOY (AI)</div>
+    <div class="ui-name" style="color:#88ccff;">💙 Minh Quan</div>
     <div class="ui-hearts" id="boy-hearts">❤️❤️❤️</div>
   </div>
 </div>
@@ -184,6 +184,18 @@
   <canvas id="house-canvas" width="600" height="400"></canvas>
   <button class="pxbtn" id="spring-btn" style="display:none;">CONTINUE TO SPRING ▶</button>
 </div>
+
+<audio id="bg-music" src="public/musicwinternew.mp3" loop preload="auto"></audio>
+
+<script>
+// ── Background music — autoplay on first interaction ──
+(function(){
+  var m = document.getElementById('bg-music');
+  m.volume = 0.5;
+  m.play().catch(function(){});
+  document.addEventListener('click', function(){ m.play(); }, {once:true});
+})();
+</script>
 
 <script>
 // ═══════════════════════════════════════════

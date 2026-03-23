@@ -1,37 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gold Miner - Paris Ticket</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pacifico&display=swap');
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { background:#1a0800; overflow:hidden; width:100vw; height:100vh; font-family:'Press Start 2P',monospace; }
-    canvas { display:block; position:absolute; top:0; left:0; }
 
-    .overlay { display:none; position:fixed; inset:0; align-items:center; justify-content:center; z-index:30; }
-    .overlay.show { display:flex; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    #start-screen { background:linear-gradient(160deg,#1a0800,#3a1a00); flex-direction:column; align-items:center; gap:22px; text-align:center; }
-    #start-screen h1 { font-family:'Pacifico',cursive; font-size:clamp(28px,5vw,58px); color:#ffd700; text-shadow:3px 3px 0 #aa6600,0 0 40px #ffd700aa; }
-    #start-screen p { color:#ffcc88; font-size:8px; line-height:2.5; max-width:500px; }
+    body {
+      background: #1a0800;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    #start-screen {
+      background: linear-gradient(160deg, #1a0800, #3a1a00);
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      text-align: center;
+    }
+
+    #start-screen h1 {
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(28px, 5vw, 58px);
+      color: #ffd700;
+      text-shadow: 3px 3px 0 #aa6600, 0 0 40px #ffd700aa;
+    }
+
+    #start-screen p {
+      color: #ffcc88;
+      font-size: 8px;
+      line-height: 2.5;
+      max-width: 500px;
+    }
 
     .pxbtn {
-      background:linear-gradient(135deg,#c87000,#ffd700); color:#1a0800;
-      border:none; border-bottom:4px solid #7a3c00;
-      padding:14px 44px; font-family:'Press Start 2P',monospace; font-size:11px;
-      cursor:pointer; letter-spacing:2px; transition:transform 0.08s;
+      background: linear-gradient(135deg, #c87000, #ffd700);
+      color: #1a0800;
+      border: none;
+      border-bottom: 4px solid #7a3c00;
+      padding: 14px 44px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: transform 0.08s;
     }
-    .pxbtn:hover { filter:brightness(1.15); }
-    .pxbtn:active { transform:translateY(3px); border-bottom-width:1px; }
 
-    #gameover-screen { background:#0a0000f0; flex-direction:column; align-items:center; gap:22px; text-align:center; }
-    #gameover-screen h2 { color:#ff4444; font-size:24px; text-shadow:0 0 20px #ff0000; }
-    #gameover-screen p { color:#ffaa88; font-size:9px; }
+    .pxbtn:hover {
+      filter: brightness(1.15);
+    }
 
-    #win-screen { background:#000; }
-    #win-canvas  { position:absolute; top:0; left:0; width:100%; height:100%; }
+    .pxbtn:active {
+      transform: translateY(3px);
+      border-bottom-width: 1px;
+    }
+
+    #gameover-screen {
+      background: #0a0000f0;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      text-align: center;
+    }
+
+    #gameover-screen h2 {
+      color: #ff4444;
+      font-size: 24px;
+      text-shadow: 0 0 20px #ff0000;
+    }
+
+    #gameover-screen p {
+      color: #ffaa88;
+      font-size: 9px;
+    }
+
+    #win-screen {
+      background: #000;
+    }
+
+    #win-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
 
     /* ── Visa Form screen ── */
     #form-screen {
@@ -40,21 +124,25 @@
       align-items: flex-start;
       padding: 30px 0;
     }
+
     #form-paper {
       background: #faf8f2;
       width: min(680px, 95vw);
       margin: 0 auto;
-      box-shadow: 0 4px 30px rgba(0,0,0,0.5), inset 0 0 0 1px #d4c8a0;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px #d4c8a0;
       font-family: 'Courier New', Courier, monospace;
       position: relative;
       border: 1px solid #bba87a;
     }
+
     /* paper texture lines */
     #form-paper::before {
-      content:'';
-      position:absolute; inset:0; pointer-events:none;
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
       background: repeating-linear-gradient(transparent 0px, transparent 27px, #d4c8a022 27px, #d4c8a022 28px);
-      z-index:0;
+      z-index: 0;
     }
 
     /* ── Header band ── */
@@ -62,30 +150,62 @@
       background: #003580;
       color: #ffffff;
       padding: 14px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: relative; z-index:1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
     }
-    #visa-header-left { display:flex; flex-direction:column; gap:3px; }
-    #visa-country { font-size: clamp(13px,2.5vw,20px); font-weight:900; letter-spacing:3px; font-family:'Arial Black',sans-serif; }
-    #visa-subtitle { font-size: clamp(7px,1.2vw,10px); letter-spacing:2px; opacity:0.85; font-family:Arial,sans-serif; }
+
+    #visa-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    #visa-country {
+      font-size: clamp(13px, 2.5vw, 20px);
+      font-weight: 900;
+      letter-spacing: 3px;
+      font-family: 'Arial Black', sans-serif;
+    }
+
+    #visa-subtitle {
+      font-size: clamp(7px, 1.2vw, 10px);
+      letter-spacing: 2px;
+      opacity: 0.85;
+      font-family: Arial, sans-serif;
+    }
+
     #visa-logo {
-      width: 56px; height: 56px; border-radius:50%;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
       background: radial-gradient(circle at 40% 40%, #ffffff33, transparent);
       border: 3px solid #ffffff55;
-      display:flex; align-items:center; justify-content:center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 28px;
     }
+
     #visa-doc-type {
-      background:#c8102e; color:#fff;
-      padding:4px 14px; font-size:11px; letter-spacing:4px;
-      font-family:Arial,sans-serif; font-weight:700;
-      margin-top:3px; display:inline-block;
+      background: #c8102e;
+      color: #fff;
+      padding: 4px 14px;
+      font-size: 11px;
+      letter-spacing: 4px;
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+      margin-top: 3px;
+      display: inline-block;
     }
 
     /* ── Form body ── */
     #form-body {
       padding: 20px 28px 28px;
-      position:relative; z-index:1;
+      position: relative;
+      z-index: 1;
     }
 
     .visa-section-title {
@@ -105,13 +225,17 @@
       gap: 14px;
       margin-bottom: 12px;
     }
-    .visa-row.full { grid-template-columns: 1fr; }
+
+    .visa-row.full {
+      grid-template-columns: 1fr;
+    }
 
     .visa-field {
       display: flex;
       flex-direction: column;
       gap: 3px;
     }
+
     .visa-field label {
       font-family: Arial, sans-serif;
       font-size: 8px;
@@ -120,10 +244,15 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
+
     .visa-field .field-num {
-      font-size: 7px; color: #888; font-weight:400;
+      font-size: 7px;
+      color: #888;
+      font-weight: 400;
     }
-    .visa-field input, .visa-field select {
+
+    .visa-field input,
+    .visa-field select {
       background: transparent;
       border: none;
       border-bottom: 1.5px solid #555;
@@ -135,31 +264,84 @@
       width: 100%;
       letter-spacing: 1px;
     }
-    .visa-field input:focus { border-bottom-color: #003580; background: #eff4ff44; }
-    .visa-field input.correct { border-bottom-color: #007a30; color: #005a22; background:#e8ffee44; }
-    .visa-field input.wrong   { border-bottom-color: #c8102e; color: #c8102e; animation: fshake 0.3s ease; }
-    @keyframes fshake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
-    .visa-field .field-err { color:#c8102e; font-size:7px; font-family:Arial,sans-serif; display:none; margin-top:2px; }
+
+    .visa-field input:focus {
+      border-bottom-color: #003580;
+      background: #eff4ff44;
+    }
+
+    .visa-field input.correct {
+      border-bottom-color: #007a30;
+      color: #005a22;
+      background: #e8ffee44;
+    }
+
+    .visa-field input.wrong {
+      border-bottom-color: #c8102e;
+      color: #c8102e;
+      animation: fshake 0.3s ease;
+    }
+
+    @keyframes fshake {
+
+      0%,
+      100% {
+        transform: translateX(0)
+      }
+
+      25% {
+        transform: translateX(-5px)
+      }
+
+      75% {
+        transform: translateX(5px)
+      }
+    }
+
+    .visa-field .field-err {
+      color: #c8102e;
+      font-size: 7px;
+      font-family: Arial, sans-serif;
+      display: none;
+      margin-top: 2px;
+    }
 
     /* static display fields */
     .visa-field .static-val {
-      font-family:'Courier New',monospace; font-size:clamp(9px,1.4vw,13px);
-      color:#222; padding: 5px 4px;
+      font-family: 'Courier New', monospace;
+      font-size: clamp(9px, 1.4vw, 13px);
+      color: #222;
+      padding: 5px 4px;
       border-bottom: 1.5px solid #aaa;
-      letter-spacing:1px;
+      letter-spacing: 1px;
     }
 
     /* ── Photo box ── */
     #photo-box {
-      width: 88px; height: 108px;
+      width: 88px;
+      height: 108px;
       border: 1.5px solid #888;
-      float: right; margin: 0 0 8px 16px;
-      display:flex; flex-direction:column;
-      align-items:center; justify-content:center;
-      background:#e8e4d8; gap:4px;
+      float: right;
+      margin: 0 0 8px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #e8e4d8;
+      gap: 4px;
     }
-    #photo-box span { font-size:28px; }
-    #photo-box p { font-size:6px; color:#555; font-family:Arial,sans-serif; text-align:center; line-height:1.5; }
+
+    #photo-box span {
+      font-size: 28px;
+    }
+
+    #photo-box p {
+      font-size: 6px;
+      color: #555;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      line-height: 1.5;
+    }
 
     /* ── Machine readable zone ── */
     #mrz-zone {
@@ -167,918 +349,1020 @@
       border-top: 1.5px solid #bba87a;
       padding: 12px 28px;
       font-family: 'Courier New', monospace;
-      font-size: clamp(7px,1.1vw,11px);
+      font-size: clamp(7px, 1.1vw, 11px);
       letter-spacing: 3px;
       color: #333;
-      position:relative; z-index:1;
+      position: relative;
+      z-index: 1;
     }
-    #mrz-zone p { margin:2px 0; }
+
+    #mrz-zone p {
+      margin: 2px 0;
+    }
 
     /* ── Official stamp area ── */
     #stamp-area {
-      position:absolute; bottom:60px; right:36px;
-      width:80px; height:80px;
+      position: absolute;
+      bottom: 60px;
+      right: 36px;
+      width: 80px;
+      height: 80px;
       border: 3px solid #003580cc;
-      border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      opacity:0.18;
-      pointer-events:none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.18;
+      pointer-events: none;
     }
-    #stamp-area span { font-size:9px; color:#003580; font-family:Arial,sans-serif; font-weight:900; text-align:center; line-height:1.5; letter-spacing:1px; }
+
+    #stamp-area span {
+      font-size: 9px;
+      color: #003580;
+      font-family: Arial, sans-serif;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.5;
+      letter-spacing: 1px;
+    }
 
     /* ── Submit + success ── */
-    #form-submit-btn { display:block; margin:20px auto 0; }
+    #form-submit-btn {
+      display: block;
+      margin: 20px auto 0;
+    }
+
     #form-success {
-      margin-top:16px; text-align:center; padding:14px;
-      border: 2px solid #007a30; background:#e8fff0;
+      margin-top: 16px;
+      text-align: center;
+      padding: 14px;
+      border: 2px solid #007a30;
+      background: #e8fff0;
     }
+
     #success-text {
-      color:#007a30; font-family:'Arial Black',sans-serif;
-      font-size:clamp(10px,1.8vw,15px); line-height:1.8; letter-spacing:1px;
-      animation:glow-green 1s ease-in-out infinite alternate;
+      color: #007a30;
+      font-family: 'Arial Black', sans-serif;
+      font-size: clamp(10px, 1.8vw, 15px);
+      line-height: 1.8;
+      letter-spacing: 1px;
+      animation: glow-green 1s ease-in-out infinite alternate;
     }
+
     @keyframes glow-green {
-      from { text-shadow:0 0 8px #00aa4455; }
-      to   { text-shadow:0 0 20px #00cc5599; }
+      from {
+        text-shadow: 0 0 8px #00aa4455;
+      }
+
+      to {
+        text-shadow: 0 0 20px #00cc5599;
+      }
     }
 
     #ui {
-      position:fixed; top:0; left:0; right:0; padding:12px 22px;
-      display:flex; justify-content:space-between; align-items:center;
-      z-index:20; pointer-events:none;
-      background:linear-gradient(to bottom,#000000aa,transparent);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+      pointer-events: none;
+      background: linear-gradient(to bottom, #000000aa, transparent);
     }
-    .ui-box { display:flex; flex-direction:column; gap:4px; }
-    .ui-label { color:#ffd700; font-size:7px; letter-spacing:1px; }
-    .ui-val { color:#ffffff; font-size:13px; }
-    #timer { color:#ffcc44; font-size:16px; text-align:center; }
 
-    #hint { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); color:#ffffff55; font-size:7px; letter-spacing:2px; z-index:20; pointer-events:none; }
+    .ui-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .ui-label {
+      color: #ffd700;
+      font-size: 7px;
+      letter-spacing: 1px;
+    }
+
+    .ui-val {
+      color: #ffffff;
+      font-size: 13px;
+    }
+
+    #timer {
+      color: #ffcc44;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    #hint {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #ffffff55;
+      font-size: 7px;
+      letter-spacing: 2px;
+      z-index: 20;
+      pointer-events: none;
+    }
   </style>
 </head>
+
 <body>
 
-<canvas id="c"></canvas>
+  <canvas id="c"></canvas>
 
-<div id="ui">
-  <div class="ui-box"><div class="ui-label">🥇 GOLD LEFT</div><div class="ui-val" id="gold-count">-</div></div>
-  <div class="ui-box" style="align-items:center"><div class="ui-label">TIME</div><div id="timer">300</div></div>
-  <div class="ui-box" style="align-items:flex-end"><div class="ui-label">SCORE</div><div class="ui-val" id="score">0</div></div>
-</div>
-<div id="hint">SPACE / CLICK / TAP — FIRE HOOK</div>
-
-<!-- START -->
-<div class="overlay show" id="start-screen">
-  <h1>Gold Miner ⛏️</h1>
-  <p>Swing your grappling hook to grab the gold!<br/>
-     Hit DYNAMITE = instant game over 💥<br/>
-     Collect ALL gold to win.<br/>
-     60 seconds. Good luck!</p>
-  <button class="pxbtn" id="start-btn">▶ MINE NOW</button>
-  <!-- REMOVABLE: skip button — delete this block to remove -->
-  <button class="pxbtn" id="skip-btn" style="background:#444;border-bottom-color:#222;color:#aaa;font-size:9px;padding:10px 24px;margin-top:-8px;">⏭ SKIP TO WIN</button>
-  <!-- REMOVABLE -->
-</div>
-
-<!-- GAME OVER -->
-<div class="overlay" id="gameover-screen">
-  <h2>💥 BOOM!</h2>
-  <p>You hit the dynamite!</p>
-  <button class="pxbtn" id="retry-btn">↺ TRY AGAIN</button>
-</div>
-
-<!-- FORM (shown after winning, before animation) -->
-<div class="overlay" id="form-screen">
-  <div id="form-paper">
-
-    <!-- Header -->
-    <div id="visa-header">
-      <div id="visa-header-left">
-        <div id="visa-country">REPUBLIC OF LOVE</div>
-        <div id="visa-subtitle">MINISTRY OF LONG DISTANCE AFFAIRS</div>
-        <div id="visa-doc-type">PARIS ENTRY VISA</div>
-      </div>
-      <div id="visa-logo">🛂</div>
+  <div id="ui">
+    <div class="ui-box">
+      <div class="ui-label">🥇 GOLD LEFT</div>
+      <div class="ui-val" id="gold-count">-</div>
     </div>
-
-    <div id="form-body">
-
-      <!-- Photo placeholder -->
-      <div id="photo-box">
-        <span>👤</span>
-        <p>PHOTO<br/>3.5×4.5cm</p>
-      </div>
-
-      <!-- Section A: Personal -->
-      <div class="visa-section-title">Section A — Personal Information</div>
-      <div class="visa-row">
-        <div class="visa-field">
-          <label>Surname <span class="field-num">(1)</span></label>
-          <div class="static-val">NGUYEN</div>
-        </div>
-        <div class="visa-field">
-          <label>Given Names <span class="field-num">(2)</span></label>
-          <div class="static-val">HA LINH</div>
-        </div>
-      </div>
-      <div class="visa-row">
-        <div class="visa-field">
-          <label>Nationality <span class="field-num">(3)</span></label>
-          <div class="static-val">VIETNAMESE</div>
-        </div>
-        <div class="visa-field">
-          <label>Passport No. <span class="field-num">(4)</span></label>
-          <div class="static-val">B████████</div>
-        </div>
-      </div>
-
-      <!-- Section B: Travel -->
-      <div class="visa-section-title">Section B — Travel Details</div>
-      <div class="visa-row">
-        <div class="visa-field">
-          <label>Date of Arrival in Paris <span class="field-num">(5)</span> — DD/MM/YYYY</label>
-          <input type="text" id="q1" placeholder="DD/MM/YYYY" maxlength="10" autocomplete="off" spellcheck="false"/>
-          <div class="field-err" id="e1">⚠ Incorrect date — please verify</div>
-        </div>
-        <div class="visa-field">
-          <label>Port of Entry <span class="field-num">(6)</span></label>
-          <div class="static-val">CDG — CHARLES DE GAULLE</div>
-        </div>
-      </div>
-      <div class="visa-row full">
-        <div class="visa-field">
-          <label>Date visited Grand Palais, Paris <span class="field-num">(7)</span> — DD/MM/YYYY</label>
-          <input type="text" id="q2" placeholder="DD/MM/YYYY" maxlength="10" autocomplete="off" spellcheck="false"/>
-          <div class="field-err" id="e2">⚠ Incorrect date — please verify</div>
-        </div>
-      </div>
-
-      <!-- Section C: Security -->
-      <div class="visa-section-title">Section C — Security Clearance</div>
-      <div class="visa-row full">
-        <div class="visa-field">
-          <label>Access Code <span class="field-num">(8)</span> &nbsp;—&nbsp; <em style="color:#c8102e;font-style:normal;">Hint: Facebook username</em></label>
-          <input type="password" id="q3" placeholder="Enter access code" autocomplete="off"/>
-          <div class="field-err" id="e3">⚠ Access denied — invalid code</div>
-        </div>
-      </div>
-
-      <!-- Section D: Declaration -->
-      <div class="visa-section-title">Section D — Applicant Declaration</div>
-      <div class="visa-row full">
-        <div class="visa-field">
-          <label>Do you love Ha Linh...? <span class="field-num">(9)</span></label>
-          <input type="text" id="q4" placeholder="Your answer" maxlength="50" autocomplete="off" spellcheck="false"/>
-          <div class="field-err" id="e4">⚠ Incorrect — think harder ❤</div>
-        </div>
-      </div>
-
-      <button class="pxbtn" id="form-submit-btn">SUBMIT APPLICATION ▶</button>
-
-      <div id="form-success" style="display:none">
-        <div id="success-text">✅ APPLICATION APPROVED<br/>YOU HAVE ACQUIRED A TICKET TO PARIS! ✈️</div>
-      </div>
-
-    </div><!-- /form-body -->
-
-    <!-- Stamp -->
-    <div id="stamp-area"><span>OFFICIAL<br/>STAMP<br/>★</span></div>
-
-    <!-- MRZ zone -->
-    <div id="mrz-zone">
-      <p>V&lt;VNM NGUYEN&lt;&lt;HA&lt;LINH&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
-      <p>B████████&lt;VNM9████████&lt;F2512████&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;0</p>
+    <div class="ui-box" style="align-items:center">
+      <div class="ui-label">TIME</div>
+      <div id="timer">300</div>
     </div>
+    <div class="ui-box" style="align-items:flex-end">
+      <div class="ui-label">SCORE</div>
+      <div class="ui-val" id="score">0</div>
+    </div>
+  </div>
+  <div id="hint">SPACE / CLICK / TAP — FIRE HOOK</div>
 
-  </div><!-- /form-paper -->
-</div>
+  <!-- START -->
+  <div class="overlay show" id="start-screen">
+    <h1>Gold Miner ⛏️</h1>
+    <p>Swing your grappling hook to grab the gold!<br />
+      Hit DYNAMITE = instant game over 💥<br />
+      Collect ALL gold to win.<br />
+      300 seconds. Good luck Ha Linh. Ehmm I mean Minh Quan!</p>
+    <button class="pxbtn" id="start-btn">▶ MINE NOW</button>
+    <!-- REMOVABLE: skip button — delete this block to remove -->
+    <button class="pxbtn" id="skip-btn"
+      style="background:#444;border-bottom-color:#222;color:#aaa;font-size:9px;padding:10px 24px;margin-top:-8px;">⏭
+      SKIP TO WIN</button>
+    <!-- REMOVABLE -->
+  </div>
 
-<!-- WIN — full screen animation -->
-<div class="overlay" id="win-screen">
-  <canvas id="win-canvas"></canvas>
-  <button class="pxbtn" id="next-btn" style="position:absolute;bottom:32px;right:36px;display:none;">CONTINUE ▶</button>
-</div>
+  <!-- GAME OVER -->
+  <div class="overlay" id="gameover-screen">
+    <h2>💥 BOOM!</h2>
+    <p>You hit the dynamite!</p>
+    <button class="pxbtn" id="retry-btn">↺ TRY AGAIN</button>
+  </div>
 
-<script>
-// ════════════════════════════════════════════════════
-// SETUP
-// ════════════════════════════════════════════════════
-const c   = document.getElementById('c');
-const ctx = c.getContext('2d');
+  <!-- FORM (shown after winning, before animation) -->
+  <div class="overlay" id="form-screen">
+    <div id="form-paper">
 
-function resize(){ c.width=innerWidth; c.height=innerHeight; }
-resize(); addEventListener('resize', resize);
+      <!-- Header -->
+      <div id="visa-header">
+        <div id="visa-header-left">
+          <div id="visa-country">REPUBLIC OF LOVE</div>
+          <div id="visa-subtitle">MINISTRY OF LONG DISTANCE AFFAIRS</div>
+          <div id="visa-doc-type">PARIS ENTRY VISA</div>
+        </div>
+        <div id="visa-logo">🛂</div>
+      </div>
 
-// ════════════════════════════════════════════════════
-// CONSTANTS
-// ════════════════════════════════════════════════════
-const PX          = 5;          // pixel art unit (screen px per "pixel")
-const SURFACE_Y   = ()=> 90;    // y where miner stands (screen px)
-const MINER_X     = ()=> c.width/2;
+      <div id="form-body">
 
-// Pendulum physics
-const SWING_HALF  = Math.PI * 0.48;  // max swing angle from vertical
-const SWING_OMEGA = 0.55;             // angular frequency (controls speed)
-let   swingPhase  = 0;               // time counter for pendulum
+        <!-- Photo placeholder -->
+        <div id="photo-box">
+          <span>👤</span>
+          <p>PHOTO<br />3.5×4.5cm</p>
+        </div>
 
-// Hook states
-const S_IDLE    = 0;
-const S_EXTEND  = 1;
-const S_RETRACT = 2;
+        <!-- Section A: Personal -->
+        <div class="visa-section-title">Section A — Personal Information</div>
+        <div class="visa-row">
+          <div class="visa-field">
+            <label>Surname <span class="field-num">(1)</span></label>
+            <div class="static-val">NGUYEN</div>
+          </div>
+          <div class="visa-field">
+            <label>Given Names <span class="field-num">(2)</span></label>
+            <div class="static-val">Minh Quan</div>
+          </div>
+        </div>
+        <div class="visa-row">
+          <div class="visa-field">
+            <label>Nationality <span class="field-num">(3)</span></label>
+            <div class="static-val">VIETNAMESE</div>
+          </div>
+          <div class="visa-field">
+            <label>Passport No. <span class="field-num">(4)</span></label>
+            <div class="static-val">B████████</div>
+          </div>
+        </div>
 
-let state      = S_IDLE;
-let hookAngle  = 0;
-let hookLen    = 0;
-let grabbed    = null;
-const EXTEND_SPD  = 9;    // px per frame
-const BASE_RETRACT = 9;
+        <!-- Section B: Travel -->
+        <div class="visa-section-title">Section B — Travel Details</div>
+        <div class="visa-row">
+          <div class="visa-field">
+            <label>Date of Arrival in Paris <span class="field-num">(5)</span> — DD/MM/YYYY</label>
+            <input type="text" id="q1" placeholder="DD/MM/YYYY" maxlength="10" autocomplete="off" spellcheck="false" />
+            <div class="field-err" id="e1">⚠ Incorrect date — please verify</div>
+          </div>
+          <div class="visa-field">
+            <label>Port of Entry <span class="field-num">(6)</span></label>
+            <div class="static-val">CDG — CHARLES DE GAULLE</div>
+          </div>
+        </div>
+        <div class="visa-row full">
+          <div class="visa-field">
+            <label>Date visited Grand Palais, Paris <span class="field-num">(7)</span> — DD/MM/YYYY</label>
+            <input type="text" id="q2" placeholder="DD/MM/YYYY" maxlength="10" autocomplete="off" spellcheck="false" />
+            <div class="field-err" id="e2">⚠ Incorrect date — please verify</div>
+          </div>
+        </div>
 
-let score        = 0;
-let timeLeft     = 300;
-let timerInt     = null;
-let running      = false;
-let goldTotal    = 0;
-let goldLeft     = 0;
-let tick         = 0;
+        <!-- Section C: Security -->
+        <div class="visa-section-title">Section C — Security Clearance</div>
+        <div class="visa-row full">
+          <div class="visa-field">
+            <label>Access Code <span class="field-num">(8)</span> &nbsp;—&nbsp; <em
+                style="color:#c8102e;font-style:normal;">Hint: Facebook username</em></label>
+            <input type="password" id="q3" placeholder="Enter access code" autocomplete="off" />
+            <div class="field-err" id="e3">⚠ Access denied — invalid code</div>
+          </div>
+        </div>
 
-let items = [];
+        <!-- Section D: Declaration -->
+        <div class="visa-section-title">Section D — Applicant Declaration</div>
+        <div class="visa-row full">
+          <div class="visa-field">
+            <label>Do you love Ha Linh...? <span class="field-num">(9)</span></label>
+            <input type="text" id="q4" placeholder="Your answer" maxlength="50" autocomplete="off" spellcheck="false" />
+            <div class="field-err" id="e4">⚠ Incorrect — think harder ❤</div>
+          </div>
+        </div>
 
-// ════════════════════════════════════════════════════
-// ITEM SETUP
-// ════════════════════════════════════════════════════
-function initItems(){
-  items = [];
-  const minY = SURFACE_Y() + 80;
-  const maxY = c.height - 40;
-  const minX = 60, maxX = c.width - 60;
+        <button class="pxbtn" id="form-submit-btn">SUBMIT APPLICATION ▶</button>
 
-  function randPos(){
-    for(let t=0;t<50;t++){
-      const x = minX + Math.random()*(maxX-minX);
-      const y = minY + Math.random()*(maxY-minY);
-      let ok=true;
-      for(const it of items) if(Math.hypot(it.x-x,it.y-y)<it.r*2+30){ ok=false; break; }
-      if(ok) return {x,y};
+        <div id="form-success" style="display:none">
+          <div id="success-text"> APPLICATION APPROVED<br />YOU HAVE ACQUIRED A TICKET TO PARIS!</div>
+        </div>
+
+      </div><!-- /form-body -->
+
+      <!-- Stamp -->
+      <div id="stamp-area"><span>OFFICIAL<br />STAMP<br />★</span></div>
+
+      <!-- MRZ zone -->
+      <div id="mrz-zone">
+        <p>V&lt;VNM
+          NGUYEN&lt;&lt;HA&lt;LINH&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+        </p>
+        <p>B████████&lt;VNM9████████&lt;F2512████&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;0</p>
+      </div>
+
+    </div><!-- /form-paper -->
+  </div>
+
+  <!-- WIN — full screen animation -->
+  <div class="overlay" id="win-screen">
+    <canvas id="win-canvas"></canvas>
+    <button class="pxbtn" id="next-btn" style="position:absolute;bottom:32px;right:36px;display:none;">CONTINUE
+      ▶</button>
+  </div>
+
+  <audio id="bg-music" src="public/gold.mp3" loop preload="auto"></audio>
+  <script>
+    (function () {
+      var m = document.getElementById('bg-music');
+      m.volume = 0.5;
+      m.play().catch(function () { });
+      document.addEventListener('click', function () { m.play(); }, { once: true });
+    })();
+  </script>
+
+  <script>
+    // ════════════════════════════════════════════════════
+    // SETUP
+    // ════════════════════════════════════════════════════
+    const c = document.getElementById('c');
+    const ctx = c.getContext('2d');
+
+    function resize() { c.width = innerWidth; c.height = innerHeight; }
+    resize(); addEventListener('resize', resize);
+
+    // ════════════════════════════════════════════════════
+    // CONSTANTS
+    // ════════════════════════════════════════════════════
+    const PX = 5;          // pixel art unit (screen px per "pixel")
+    const SURFACE_Y = () => 90;    // y where miner stands (screen px)
+    const MINER_X = () => c.width / 2;
+
+    // Pendulum physics
+    const SWING_HALF = Math.PI * 0.48;  // max swing angle from vertical
+    const SWING_OMEGA = 0.55;             // angular frequency (controls speed)
+    let swingPhase = 0;               // time counter for pendulum
+
+    // Hook states
+    const S_IDLE = 0;
+    const S_EXTEND = 1;
+    const S_RETRACT = 2;
+
+    let state = S_IDLE;
+    let hookAngle = 0;
+    let hookLen = 0;
+    let grabbed = null;
+    const EXTEND_SPD = 9;    // px per frame
+    const BASE_RETRACT = 9;
+
+    let score = 0;
+    let timeLeft = 300;
+    let timerInt = null;
+    let running = false;
+    let goldTotal = 0;
+    let goldLeft = 0;
+    let tick = 0;
+
+    let items = [];
+
+    // ════════════════════════════════════════════════════
+    // ITEM SETUP
+    // ════════════════════════════════════════════════════
+    function initItems() {
+      items = [];
+      const minY = SURFACE_Y() + 80;
+      const maxY = c.height - 40;
+      const minX = 60, maxX = c.width - 60;
+
+      function randPos() {
+        for (let t = 0; t < 50; t++) {
+          const x = minX + Math.random() * (maxX - minX);
+          const y = minY + Math.random() * (maxY - minY);
+          let ok = true;
+          for (const it of items) if (Math.hypot(it.x - x, it.y - y) < it.r * 2 + 30) { ok = false; break; }
+          if (ok) return { x, y };
+        }
+        return { x: minX + Math.random() * (maxX - minX), y: minY + Math.random() * (maxY - minY) };
+      }
+
+      // Big gold pieces — much larger
+      const golds = [
+        { r: 70, value: 500, c1: '#ffe566', c2: '#ffd700', c3: '#c89000' },
+        { r: 58, value: 300, c1: '#ffe566', c2: '#ffd700', c3: '#c89000' },
+        { r: 48, value: 200, c1: '#ffdd44', c2: '#f0c000', c3: '#b07800' },
+        { r: 40, value: 120, c1: '#ffdd44', c2: '#f0c000', c3: '#b07800' },
+        { r: 34, value: 80, c1: '#ddbb22', c2: '#cc9900', c3: '#996600' },
+        { r: 34, value: 80, c1: '#ddbb22', c2: '#cc9900', c3: '#996600' },
+        { r: 26, value: 40, c1: '#ccaa00', c2: '#bb8800', c3: '#885500' },
+        { r: 26, value: 40, c1: '#ccaa00', c2: '#bb8800', c3: '#885500' },
+      ];
+      golds.forEach(g => {
+        const { x, y } = randPos();
+        items.push({
+          type: 'gold', x, y, r: g.r, value: g.value,
+          c1: g.c1, c2: g.c2, c3: g.c3,
+          collected: false, bob: Math.random() * Math.PI * 2,
+          weight: g.r / 8
+        });
+      });
+
+      // Dynamite
+      for (let i = 0; i < 2; i++) {
+        const { x, y } = randPos();
+        items.push({
+          type: 'dyna', x, y, r: 22, value: 0,
+          collected: false, bob: Math.random() * Math.PI * 2, weight: 1
+        });
+      }
+
+      goldTotal = items.filter(i => i.type === 'gold').length;
+      goldLeft = goldTotal;
+      updateHUD();
     }
-    return {x:minX+Math.random()*(maxX-minX), y:minY+Math.random()*(maxY-minY)};
-  }
 
-  // Big gold pieces — much larger
-  const golds=[
-    {r:70, value:500, c1:'#ffe566',c2:'#ffd700',c3:'#c89000'},
-    {r:58, value:300, c1:'#ffe566',c2:'#ffd700',c3:'#c89000'},
-    {r:48, value:200, c1:'#ffdd44',c2:'#f0c000',c3:'#b07800'},
-    {r:40, value:120, c1:'#ffdd44',c2:'#f0c000',c3:'#b07800'},
-    {r:34, value:80,  c1:'#ddbb22',c2:'#cc9900',c3:'#996600'},
-    {r:34, value:80,  c1:'#ddbb22',c2:'#cc9900',c3:'#996600'},
-    {r:26, value:40,  c1:'#ccaa00',c2:'#bb8800',c3:'#885500'},
-    {r:26, value:40,  c1:'#ccaa00',c2:'#bb8800',c3:'#885500'},
-  ];
-  golds.forEach(g=>{
-    const {x,y}=randPos();
-    items.push({type:'gold', x,y, r:g.r, value:g.value,
-      c1:g.c1, c2:g.c2, c3:g.c3,
-      collected:false, bob:Math.random()*Math.PI*2,
-      weight: g.r/8 });
-  });
+    // ════════════════════════════════════════════════════
+    // DRAW BACKGROUND
+    // ════════════════════════════════════════════════════
+    function drawBg() {
+      const W = c.width, H = c.height, SY = SURFACE_Y();
 
-  // Dynamite
-  for(let i=0;i<2;i++){
-    const {x,y}=randPos();
-    items.push({type:'dyna', x,y, r:22, value:0,
-      collected:false, bob:Math.random()*Math.PI*2, weight:1});
-  }
+      // Sky / surface
+      ctx.fillStyle = '#1a0a00'; ctx.fillRect(0, 0, W, SY + 20);
 
-  goldTotal = items.filter(i=>i.type==='gold').length;
-  goldLeft  = goldTotal;
-  updateHUD();
-}
+      // Underground layers
+      const layers = [
+        [SY + 20, 80, '#2e1400'],
+        [SY + 100, 80, '#261000'],
+        [SY + 180, 80, '#1e0c00'],
+        [SY + 260, 999, '#160800'],
+      ];
+      layers.forEach(([y, h, col]) => { ctx.fillStyle = col; ctx.fillRect(0, y, W, h); });
 
-// ════════════════════════════════════════════════════
-// DRAW BACKGROUND
-// ════════════════════════════════════════════════════
-function drawBg(){
-  const W=c.width, H=c.height, SY=SURFACE_Y();
+      // Rock texture
+      ctx.fillStyle = '#3a1e08';
+      for (let i = 0; i < 120; i++) {
+        const rx = (i * 173) % W, ry = SY + 20 + (i * 89) % (H - SY - 20);
+        ctx.fillRect(rx, ry, PX, PX);
+      }
+      ctx.fillStyle = '#180800';
+      for (let i = 0; i < 80; i++) {
+        const rx = (i * 139) % W, ry = SY + 20 + (i * 113) % (H - SY - 20);
+        ctx.fillRect(rx, ry, PX, PX);
+      }
 
-  // Sky / surface
-  ctx.fillStyle='#1a0a00'; ctx.fillRect(0,0,W,SY+20);
+      // Surface platform
+      ctx.fillStyle = '#5a3000'; ctx.fillRect(0, SY, W, 20);
+      ctx.fillStyle = '#7a4a10'; ctx.fillRect(0, SY, W, 4);
+      ctx.fillStyle = '#3a1800'; ctx.fillRect(0, SY + 16, W, 4);
+      // Planks
+      for (let x = 0; x < W; x += 60) {
+        ctx.fillStyle = '#4a2800'; ctx.fillRect(x, SY, 4, 20);
+        ctx.fillStyle = '#6a3808'; ctx.fillRect(x, SY, 2, 20);
+      }
+      // Grass edge
+      for (let x = 0; x < W; x += PX * 2) {
+        ctx.fillStyle = x % 20 < 10 ? '#3a6010' : '#2a4a0a';
+        ctx.fillRect(x, SY - 6, PX * 2, 8);
+      }
 
-  // Underground layers
-  const layers=[
-    [SY+20,  80, '#2e1400'],
-    [SY+100, 80, '#261000'],
-    [SY+180, 80, '#1e0c00'],
-    [SY+260, 999,'#160800'],
-  ];
-  layers.forEach(([y,h,col])=>{ ctx.fillStyle=col; ctx.fillRect(0,y,W,h); });
+      // Mine shaft walls hint
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.fillRect(0, SY + 20, 40, H); ctx.fillRect(W - 40, SY + 20, 40, H);
+    }
 
-  // Rock texture
-  ctx.fillStyle='#3a1e08';
-  for(let i=0;i<120;i++){
-    const rx=(i*173)%W, ry=SY+20+(i*89)%(H-SY-20);
-    ctx.fillRect(rx,ry,PX,PX);
-  }
-  ctx.fillStyle='#180800';
-  for(let i=0;i<80;i++){
-    const rx=(i*139)%W, ry=SY+20+(i*113)%(H-SY-20);
-    ctx.fillRect(rx,ry,PX,PX);
-  }
+    // ════════════════════════════════════════════════════
+    // DRAW MINER (boy with pixel grappling hook launcher)
+    // ════════════════════════════════════════════════════
+    function drawMiner() {
+      const mx = MINER_X() | 0, sy = SURFACE_Y();
+      const my = sy - 2; // feet at surface
 
-  // Surface platform
-  ctx.fillStyle='#5a3000'; ctx.fillRect(0,SY,W,20);
-  ctx.fillStyle='#7a4a10'; ctx.fillRect(0,SY,W,4);
-  ctx.fillStyle='#3a1800'; ctx.fillRect(0,SY+16,W,4);
-  // Planks
-  for(let x=0;x<W;x+=60){
-    ctx.fillStyle='#4a2800'; ctx.fillRect(x,SY,4,20);
-    ctx.fillStyle='#6a3808'; ctx.fillRect(x,SY,2,20);
-  }
-  // Grass edge
-  for(let x=0;x<W;x+=PX*2){
-    ctx.fillStyle=x%20<10?'#3a6010':'#2a4a0a';
-    ctx.fillRect(x,SY-6,PX*2,8);
-  }
+      function p(x, y, w, h, col) { ctx.fillStyle = col; ctx.fillRect(mx + x * PX, my + y * PX, w * PX, h * PX); }
 
-  // Mine shaft walls hint
-  ctx.fillStyle='rgba(0,0,0,0.35)';
-  ctx.fillRect(0,SY+20,40,H); ctx.fillRect(W-40,SY+20,40,H);
-}
+      // === BODY ===
+      // Boots
+      p(-3, 0, 2, 2, '#4a2800'); p(1, 0, 2, 2, '#4a2800');
+      p(-4, 0, 2, 1, '#3a1a00'); p(1, 0, 2, 1, '#3a1a00');
+      // Legs (skin)
+      p(-2, -3, 2, 3, '#f9c87a'); p(1, -3, 2, 3, '#f9c87a');
+      // Pink-red shorts
+      p(-3, -5, 6, 3, '#cc2244');
+      p(-3, -5, 1, 1, '#aa1133'); p(2, -5, 1, 1, '#aa1133');
+      // Orange jacket
+      p(-3, -9, 6, 4, '#ff6600');
+      p(-3, -9, 1, 4, '#dd4400'); // shadow side
+      // Jacket zipper
+      p(-1, -8, 1, 3, '#ffaa00');
+      // Suspenders
+      p(-2, -9, 1, 4, '#cc5500'); p(1, -9, 1, 4, '#cc5500');
+      // Head
+      p(-2, -13, 4, 4, '#f9c87a');
+      // Hair
+      p(-2, -14, 4, 2, '#3a2008');
+      p(-3, -13, 1, 3, '#3a2008');
+      // Mining helmet
+      p(-3, -15, 6, 3, '#ffd700');
+      p(-2, -16, 4, 1, '#e8b800');
+      p(-3, -15, 1, 3, '#cc9900'); // shadow
+      // Helmet lamp
+      p(-1, -16, 2, 2, '#ffffff');
+      p(-1, -15, 1, 1, '#ffffaa');
+      // Face
+      p(-1, -12, 1, 1, '#111'); p(0, -12, 1, 1, '#111'); // eyes - spaced
+      p(-1, -11, 2, 1, '#aa5030'); // mouth
 
-// ════════════════════════════════════════════════════
-// DRAW MINER (boy with pixel grappling hook launcher)
-// ════════════════════════════════════════════════════
-function drawMiner(){
-  const mx=MINER_X()|0, sy=SURFACE_Y();
-  const my = sy - 2; // feet at surface
+      // === GRAPPLING HOOK LAUNCHER (pixel art gun/device) ===
+      // Launcher body — worn on right arm
+      const ls = state; // current state
+      p(2, -8, 4, 2, '#555555');   // barrel outer
+      p(2, -8, 3, 1, '#777777');   // barrel top highlight
+      p(3, -7, 2, 1, '#333333');   // barrel shadow
+      p(2, -7, 1, 1, '#888888');   // nozzle tip highlight
+      p(5, -9, 2, 3, '#444444');   // grip
+      p(5, -9, 1, 2, '#666666');   // grip highlight
+      p(5, -8, 2, 1, '#888800');   // trigger guard
+      p(4, -8, 1, 1, '#999999');   // junction
+      // Spool on launcher
+      p(6, -10, 3, 2, '#cc8800'); // spool
+      p(6, -10, 1, 2, '#eebb00'); // spool shine
+      p(7, -9, 1, 1, '#aa6600');  // spool center
+      // Hook chain visible coil when idle
+      if (state === S_IDLE) {
+        p(3, -6, 1, 1, '#888'); p(4, -6, 1, 1, '#aaa');
+      }
 
-  function p(x,y,w,h,col){ ctx.fillStyle=col; ctx.fillRect(mx+x*PX, my+y*PX, w*PX, h*PX); }
+      // Arm holding launcher
+      p(2, -10, 3, 2, '#ff6600'); // arm extension of jacket
+      p(2, -9, 1, 2, '#f9c87a'); // wrist skin
+    }
 
-  // === BODY ===
-  // Boots
-  p(-3,0,2,2,'#4a2800'); p(1,0,2,2,'#4a2800');
-  p(-4,0,2,1,'#3a1a00'); p(1,0,2,1,'#3a1a00');
-  // Legs (skin)
-  p(-2,-3,2,3,'#f9c87a'); p(1,-3,2,3,'#f9c87a');
-  // Pink-red shorts
-  p(-3,-5,6,3,'#cc2244');
-  p(-3,-5,1,1,'#aa1133'); p(2,-5,1,1,'#aa1133');
-  // Orange jacket
-  p(-3,-9,6,4,'#ff6600');
-  p(-3,-9,1,4,'#dd4400'); // shadow side
-  // Jacket zipper
-  p(-1,-8,1,3,'#ffaa00');
-  // Suspenders
-  p(-2,-9,1,4,'#cc5500'); p(1,-9,1,4,'#cc5500');
-  // Head
-  p(-2,-13,4,4,'#f9c87a');
-  // Hair
-  p(-2,-14,4,2,'#3a2008');
-  p(-3,-13,1,3,'#3a2008');
-  // Mining helmet
-  p(-3,-15,6,3,'#ffd700');
-  p(-2,-16,4,1,'#e8b800');
-  p(-3,-15,1,3,'#cc9900'); // shadow
-  // Helmet lamp
-  p(-1,-16,2,2,'#ffffff');
-  p(-1,-15,1,1,'#ffffaa');
-  // Face
-  p(-1,-12,1,1,'#111'); p(0,-12,1,1,'#111'); // eyes - spaced
-  p(-1,-11,2,1,'#aa5030'); // mouth
+    // ════════════════════════════════════════════════════
+    // DRAW ROPE + HOOK — always visible (idle swing too)
+    // ════════════════════════════════════════════════════
+    function drawRopeAndHook() {
+      const lx = ropeOriginX();
+      const ly = ropeOriginY();
 
-  // === GRAPPLING HOOK LAUNCHER (pixel art gun/device) ===
-  // Launcher body — worn on right arm
-  const ls = state; // current state
-  p(2,-8,4,2,'#555555');   // barrel outer
-  p(2,-8,3,1,'#777777');   // barrel top highlight
-  p(3,-7,2,1,'#333333');   // barrel shadow
-  p(2,-7,1,1,'#888888');   // nozzle tip highlight
-  p(5,-9,2,3,'#444444');   // grip
-  p(5,-9,1,2,'#666666');   // grip highlight
-  p(5,-8,2,1,'#888800');   // trigger guard
-  p(4,-8,1,1,'#999999');   // junction
-  // Spool on launcher
-  p(6,-10,3,2,'#cc8800'); // spool
-  p(6,-10,1,2,'#eebb00'); // spool shine
-  p(7,-9,1,1,'#aa6600');  // spool center
-  // Hook chain visible coil when idle
-  if(state===S_IDLE){
-    p(3,-6,1,1,'#888'); p(4,-6,1,1,'#aaa');
-  }
+      // tip position
+      const tx = grabbed ? grabbed.x : hookX();
+      const ty = grabbed ? grabbed.y : hookY();
 
-  // Arm holding launcher
-  p(2,-10,3,2,'#ff6600'); // arm extension of jacket
-  p(2,-9,1,2,'#f9c87a'); // wrist skin
-}
+      // Rope — pixelated chain links
+      const dx = tx - lx, dy = ty - ly;
+      const dist = Math.hypot(dx, dy);
+      const steps = Math.max(1, dist / 8 | 0);
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const rx = (lx + dx * t) | 0, ry = (ly + dy * t) | 0;
+        const col = i % 3 === 0 ? '#999' : i % 3 === 1 ? '#bbb' : '#777';
+        ctx.fillStyle = col;
+        ctx.fillRect(rx, ry, 4, 4);
+      }
 
-// ════════════════════════════════════════════════════
-// DRAW ROPE + HOOK — always visible (idle swing too)
-// ════════════════════════════════════════════════════
-function drawRopeAndHook(){
-  const lx = ropeOriginX();
-  const ly  = ropeOriginY();
-
-  // tip position
-  const tx = grabbed ? grabbed.x : hookX();
-  const ty = grabbed ? grabbed.y : hookY();
-
-  // Rope — pixelated chain links
-  const dx=tx-lx, dy=ty-ly;
-  const dist=Math.hypot(dx,dy);
-  const steps=Math.max(1,dist/8|0);
-  for(let i=0;i<=steps;i++){
-    const t=i/steps;
-    const rx=(lx+dx*t)|0, ry=(ly+dy*t)|0;
-    const col = i%3===0 ? '#999' : i%3===1 ? '#bbb' : '#777';
-    ctx.fillStyle=col;
-    ctx.fillRect(rx,ry,4,4);
-  }
-
-  // C-shaped grappling hook at hook position (180° flipped)
-  if(!grabbed){
-    const hx=hookX()|0, hy=hookY()|0;
-    ctx.strokeStyle='#cccccc';
-    ctx.lineWidth=4;
-    ctx.lineCap='round';
-    ctx.lineJoin='round';
-    // Draw C-shape flipped 180 degrees
-    ctx.beginPath();
-    ctx.moveTo(hx-8, hy-6);   // Start top-left
-    ctx.quadraticCurveTo(hx-12, hy+4, hx-6, hy+12);  // Curve bottom-left
-    ctx.quadraticCurveTo(hx+6, hy+14, hx+10, hy+6);  // Curve to bottom-right
-    ctx.stroke();
-    // Connection point at middle
-    ctx.fillStyle='#999999';
-    ctx.beginPath();
-    ctx.arc(hx, hy, 3, 0, Math.PI*2);
-    ctx.fill();
-  }
-}
-
-// Rope pivot — single source of truth
-function ropeOriginX(){ return MINER_X() + 6*PX; }
-function ropeOriginY(){ return SURFACE_Y() - 8*PX; }
-function hookX(){ return ropeOriginX() + Math.sin(hookAngle)*hookLen; }
-function hookY(){ return ropeOriginY() + Math.cos(hookAngle)*hookLen; }
-
-// ════════════════════════════════════════════════════
-// DRAW GOLD
-// ════════════════════════════════════════════════════
-function drawGold(it){
-  if(it.collected) return;
-  const x=it.x|0, y=it.y|0;
-  const bob = (grabbed===it) ? 0 : Math.sin(it.bob)*3;
-  const r   = it.r;
-
-  // shadow
-  ctx.fillStyle='rgba(0,0,0,0.4)';
-  ctx.beginPath(); ctx.ellipse(x, y+r+bob+6, r*0.75, r*0.25, 0, 0, Math.PI*2); ctx.fill();
-
-  // pixel-art nugget: draw concentric pixel rings
-  const steps = Math.ceil(r/PX);
-  for(let ring=steps; ring>=0; ring--){
-    const frac = ring/steps;
-    const col  = frac>0.75 ? it.c3 : frac>0.4 ? it.c2 : it.c1;
-    ctx.fillStyle = col;
-    for(let dy=-ring; dy<=ring; dy++){
-      for(let dx=-ring; dx<=ring; dx++){
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if(d>ring||d<ring-1) continue;
-        ctx.fillRect((x+dx*PX-PX/2)|0,(y+dy*PX-PX/2+bob)|0,PX,PX);
+      // C-shaped grappling hook at hook position (180° flipped)
+      if (!grabbed) {
+        const hx = hookX() | 0, hy = hookY() | 0;
+        ctx.strokeStyle = '#cccccc';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        // Draw C-shape flipped 180 degrees
+        ctx.beginPath();
+        ctx.moveTo(hx - 8, hy - 6);   // Start top-left
+        ctx.quadraticCurveTo(hx - 12, hy + 4, hx - 6, hy + 12);  // Curve bottom-left
+        ctx.quadraticCurveTo(hx + 6, hy + 14, hx + 10, hy + 6);  // Curve to bottom-right
+        ctx.stroke();
+        // Connection point at middle
+        ctx.fillStyle = '#999999';
+        ctx.beginPath();
+        ctx.arc(hx, hy, 3, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
-  }
-  // inner shine
-  ctx.fillStyle='#ffffffcc';
-  ctx.fillRect((x-r*0.35)|0,(y-r*0.45+bob)|0,PX*2,PX);
-  ctx.fillStyle='#ffffff88';
-  ctx.fillRect((x-r*0.2)|0,(y-r*0.3+bob)|0,PX,PX*2);
 
-  // value label on big pieces
-  if(r>=28){
-    ctx.fillStyle='#3a1a00';
-    ctx.font=`bold ${PX*2}px "Press Start 2P"`;
-    ctx.textAlign='center';
-    ctx.fillText(`$${it.value}`, x, y+r*0.35+bob);
-  }
-}
+    // Rope pivot — single source of truth
+    function ropeOriginX() { return MINER_X() + 6 * PX; }
+    function ropeOriginY() { return SURFACE_Y() - 8 * PX; }
+    function hookX() { return ropeOriginX() + Math.sin(hookAngle) * hookLen; }
+    function hookY() { return ropeOriginY() + Math.cos(hookAngle) * hookLen; }
 
-// ════════════════════════════════════════════════════
-// DRAW DYNAMITE
-// ════════════════════════════════════════════════════
-function drawDynamite(it){
-  if(it.collected) return;
-  const x=it.x|0, y=it.y|0;
-  const bob = Math.sin(it.bob)*3;
-  const s=PX;
-  const flash = Math.floor(Date.now()/200)%2;
+    // ════════════════════════════════════════════════════
+    // DRAW GOLD
+    // ════════════════════════════════════════════════════
+    function drawGold(it) {
+      if (it.collected) return;
+      const x = it.x | 0, y = it.y | 0;
+      const bob = (grabbed === it) ? 0 : Math.sin(it.bob) * 3;
+      const r = it.r;
 
-  // shadow
-  ctx.fillStyle='rgba(0,0,0,0.3)';
-  ctx.beginPath(); ctx.ellipse(x,y+22+bob,14,5,0,0,Math.PI*2); ctx.fill();
+      // shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.beginPath(); ctx.ellipse(x, y + r + bob + 6, r * 0.75, r * 0.25, 0, 0, Math.PI * 2); ctx.fill();
 
-  // stick body
-  ctx.fillStyle='#cc2222'; ctx.fillRect(x-2*s,y-4*s+bob,4*s,6*s);
-  ctx.fillStyle='#ee3333'; ctx.fillRect(x-2*s,y-4*s+bob,s,6*s);
-  ctx.fillStyle='#aa1111'; ctx.fillRect(x+s,y-4*s+bob,s,6*s);
-  // top cap
-  ctx.fillStyle='#555'; ctx.fillRect(x-2*s,y-4*s+bob,4*s,s);
-  // bottom cap
-  ctx.fillStyle='#555'; ctx.fillRect(x-2*s,y+2*s+bob,4*s,s);
-  // TNT label
-  ctx.fillStyle='#ffffff'; ctx.font=`bold ${s*2}px "Press Start 2P"`;
-  ctx.textAlign='center'; ctx.fillText('TNT',x,y+bob+4);
-
-  // fuse (wavy)
-  ctx.fillStyle='#888'; ctx.fillRect(x,y-5*s+bob,s,s);
-  ctx.fillStyle='#666'; ctx.fillRect(x-s,y-6*s+bob,s,s);
-  ctx.fillStyle='#888'; ctx.fillRect(x,y-7*s+bob,s,s);
-  ctx.fillStyle='#666'; ctx.fillRect(x-s,y-8*s+bob,s,s);
-
-  // Spark at fuse tip (flashing)
-  if(flash){
-    ctx.fillStyle='#ffff00'; ctx.fillRect(x-s,y-9*s+bob,2*s,2*s);
-    ctx.fillStyle='#ff8800'; ctx.fillRect(x-2*s,y-9*s+bob,s,s);
-    ctx.fillStyle='#ff8800'; ctx.fillRect(x,y-10*s+bob,s,s);
-  } else {
-    ctx.fillStyle='#ff6600'; ctx.fillRect(x-s,y-9*s+bob,s,s);
-  }
-
-  // WARNING text
-  ctx.fillStyle='#ff4444';
-  ctx.font=`${s*1.5}px "Press Start 2P"`;
-  ctx.textAlign='center';
-  ctx.fillText('⚠️',x,y-9*s+bob-4);
-}
-
-// ════════════════════════════════════════════════════
-// HOOK PHYSICS — smooth pendulum
-// ════════════════════════════════════════════════════
-const ROPE_ORIGIN_X = ropeOriginX;
-const ROPE_ORIGIN_Y = ropeOriginY;
-
-function updateHook(){
-  if(state===S_IDLE){
-    // TRUE pendulum: angle = amplitude * sin(omega*t)
-    swingPhase += 0.04;
-    hookAngle   = SWING_HALF * Math.sin(swingPhase * SWING_OMEGA);
-    hookLen     = PX * 22; // long enough to see clearly
-
-  } else if(state===S_EXTEND){
-    hookLen += EXTEND_SPD;
-
-    const hx=hookX(), hy=hookY();
-
-    // Off screen / hit floor
-    if(hx<0||hx>c.width||hy>c.height-10||hookLen>Math.hypot(c.width,c.height)){
-      state=S_RETRACT; grabbed=null; return;
-    }
-
-    // Collision check
-    for(const it of items){
-      if(it.collected) continue;
-      if(Math.hypot(hx-it.x, hy-it.y) < it.r+8){
-        if(it.type==='dyna'){ gameOver(); return; }
-        grabbed=it; state=S_RETRACT;
-        return;
-      }
-    }
-
-  } else if(state===S_RETRACT){
-    const retSpd = grabbed ? Math.max(2.5, BASE_RETRACT - grabbed.weight*0.4) : BASE_RETRACT*1.5;
-    hookLen -= retSpd;
-
-    if(grabbed){
-      grabbed.x = hookX();
-      grabbed.y = hookY();
-    }
-
-    if(hookLen <= PX*22){
-      if(grabbed){
-        grabbed.collected=true;
-        score+=grabbed.value;
-        goldLeft--;
-        grabbed=null;
-        updateHUD();
-        if(goldLeft<=0) triggerWin();
-      }
-      state=S_IDLE;
-      hookLen=PX*22;
-    }
-  }
-
-  // bob items
-  items.forEach(it=>{ it.bob+=0.04; });
-}
-
-function fireHook(){
-  if(state!==S_IDLE) return;
-  state=S_EXTEND;
-}
-
-// ════════════════════════════════════════════════════
-// HUD
-// ════════════════════════════════════════════════════
-function updateHUD(){
-  document.getElementById('gold-count').textContent=`${goldLeft}`;
-  document.getElementById('score').textContent=score;
-  document.getElementById('timer').textContent=timeLeft;
-}
-
-// ════════════════════════════════════════════════════
-// STATE TRANSITIONS
-// ════════════════════════════════════════════════════
-function gameOver(){
-  running=false; clearInterval(timerInt);
-  document.getElementById('gameover-screen').classList.add('show');
-}
-function triggerWin(){
-  running=false; clearInterval(timerInt);
-  document.getElementById('form-screen').classList.add('show');
-}
-function resetGame(){
-  score=0; timeLeft=300; tick=0;
-  state=S_IDLE; hookLen=PX*6; hookAngle=0; swingPhase=0; grabbed=null;
-  initItems(); updateHUD();
-}
-function startTimer(){
-  clearInterval(timerInt);
-  timerInt=setInterval(()=>{
-    if(!running) return;
-    timeLeft--; document.getElementById('timer').textContent=timeLeft;
-    if(timeLeft<=0){ clearInterval(timerInt); gameOver(); }
-  },1000);
-}
-
-// ════════════════════════════════════════════════════
-// FORM VALIDATION
-// ════════════════════════════════════════════════════
-const ANSWERS = {
-  q1: ['16/12/2025','16/12/25'],
-  q2: ['29/12/2025','29/12/25'],
-  q3: ['cayvuonlanha'],
-  q4: ['yes'], // any case accepted
-};
-
-document.getElementById('form-submit-btn').addEventListener('click', ()=>{
-  const v1 = document.getElementById('q1').value.trim();
-  const v2 = document.getElementById('q2').value.trim();
-  const v3 = document.getElementById('q3').value.trim().toLowerCase();
-  const v4 = document.getElementById('q4').value.trim().toLowerCase();
-
-  const ok1 = ANSWERS.q1.includes(v1);
-  const ok2 = ANSWERS.q2.includes(v2);
-  const ok3 = ANSWERS.q3.includes(v3);
-  const ok4 = v4.includes('yes');
-
-  ['q1','q2','q3','q4'].forEach((id,i)=>{
-    const ok=[ok1,ok2,ok3,ok4][i];
-    const inp=document.getElementById(id);
-    const err=document.getElementById('e'+(i+1));
-    inp.classList.toggle('correct', ok);
-    inp.classList.toggle('wrong', !ok);
-    err.style.display = ok ? 'none' : 'block';
-  });
-
-  if(ok1 && ok2 && ok3 && ok4){
-    document.getElementById('form-submit-btn').style.display='none';
-    document.getElementById('form-success').style.display='block';
-    setTimeout(()=>{
-      document.getElementById('form-screen').classList.remove('show');
-      document.getElementById('win-screen').classList.add('show');
-      runWinAnim();
-    }, 2400);
-  }
-});
-
-// ════════════════════════════════════════════════════
-// WIN ANIMATION — fullscreen ticket + plane to Paris
-// ════════════════════════════════════════════════════
-function runWinAnim(){
-  const wc = document.getElementById('win-canvas');
-  wc.width  = innerWidth;
-  wc.height = innerHeight;
-  const wg  = wc.getContext('2d');
-  wg.imageSmoothingEnabled = false;
-  const W=wc.width, H=wc.height;
-  let wt=0, planeX=W+100;
-  const nextBtn = document.getElementById('next-btn');
-
-  // persistent confetti store
-  const confetti=[];
-  for(let i=0;i<80;i++) confetti.push({
-    x:Math.random()*W, y:Math.random()*H,
-    vx:(Math.random()-0.5)*2, vy:0.5+Math.random()*2,
-    col:['#ffd700','#ff4488','#44aaff','#ff8800','#88ff44','#ffffff'][i%6],
-    w:4+Math.random()*6|0, h:6+Math.random()*10|0,
-    rot:Math.random()*Math.PI*2, rotV:(Math.random()-0.5)*0.15,
-  });
-
-  function frame(){
-    wg.clearRect(0,0,W,H);
-
-    // ── BACKGROUND — night sky ──────────────────────
-    const g=wg.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#02040c'); g.addColorStop(0.6,'#060e22'); g.addColorStop(1,'#0a1830');
-    wg.fillStyle=g; wg.fillRect(0,0,W,H);
-
-    // stars
-    for(let i=0;i<80;i++){
-      const sx=(i*179.3)%W, sy=(i*67.7)%(H*0.75);
-      wg.globalAlpha=0.2+Math.sin(Date.now()/600+i)*0.35;
-      wg.fillStyle='#ffffff'; wg.fillRect(sx|0,sy|0,i%5===0?3:2,i%5===0?3:2);
-    }
-    wg.globalAlpha=1;
-
-    // city silhouette at bottom
-    wg.fillStyle='#080f1a';
-    const cw=80;
-    for(let bx=0;bx<W;bx+=cw){
-      const bh=40+((bx*37)%60);
-      wg.fillRect(bx, H-bh, cw-4, bh);
-      // windows
-      wg.fillStyle='#ffee8844';
-      for(let wy=H-bh+6;wy<H-6;wy+=12){
-        for(let wx=bx+6;wx<bx+cw-10;wx+=14){
-          if((wx+wy)%3!==0) wg.fillRect(wx,wy,6,8);
+      // pixel-art nugget: draw concentric pixel rings
+      const steps = Math.ceil(r / PX);
+      for (let ring = steps; ring >= 0; ring--) {
+        const frac = ring / steps;
+        const col = frac > 0.75 ? it.c3 : frac > 0.4 ? it.c2 : it.c1;
+        ctx.fillStyle = col;
+        for (let dy = -ring; dy <= ring; dy++) {
+          for (let dx = -ring; dx <= ring; dx++) {
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d > ring || d < ring - 1) continue;
+            ctx.fillRect((x + dx * PX - PX / 2) | 0, (y + dy * PX - PX / 2 + bob) | 0, PX, PX);
+          }
         }
       }
-      wg.fillStyle='#080f1a';
+      // inner shine
+      ctx.fillStyle = '#ffffffcc';
+      ctx.fillRect((x - r * 0.35) | 0, (y - r * 0.45 + bob) | 0, PX * 2, PX);
+      ctx.fillStyle = '#ffffff88';
+      ctx.fillRect((x - r * 0.2) | 0, (y - r * 0.3 + bob) | 0, PX, PX * 2);
+
+      // value label on big pieces
+      if (r >= 28) {
+        ctx.fillStyle = '#3a1a00';
+        ctx.font = `bold ${PX * 2}px "Press Start 2P"`;
+        ctx.textAlign = 'center';
+        ctx.fillText(`$${it.value}`, x, y + r * 0.35 + bob);
+      }
     }
 
-    // ── GROUND LINE ─────────────────────────────────
-    wg.fillStyle='#0d1a2a'; wg.fillRect(0,H-42,W,42);
-    wg.fillStyle='#1a2a3a'; wg.fillRect(0,H-44,W,4);
+    // ════════════════════════════════════════════════════
+    // DRAW DYNAMITE
+    // ════════════════════════════════════════════════════
+    function drawDynamite(it) {
+      if (it.collected) return;
+      const x = it.x | 0, y = it.y | 0;
+      const bob = Math.sin(it.bob) * 3;
+      const s = PX;
+      const flash = Math.floor(Date.now() / 200) % 2;
 
-    // ── BIG TICKET — centered ───────────────────────
-    const ticketA = Math.min(1, wt/40);
-    wg.globalAlpha = ticketA;
-    const tw=Math.min(480, W*0.55)|0, th=200;
-    const tx=(W-tw)/2|0, ty=(H*0.12)|0;
+      // shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath(); ctx.ellipse(x, y + 22 + bob, 14, 5, 0, 0, Math.PI * 2); ctx.fill();
 
-    // ticket body
-    wg.fillStyle='#fff8e0'; wg.fillRect(tx,ty,tw,th);
-    // gold header bar
-    wg.fillStyle='#ffd700'; wg.fillRect(tx,ty,tw,22);
-    // header text
-    wg.fillStyle='#1a0800'; wg.font=`bold ${tw/26|0}px "Press Start 2P"`; wg.textAlign='center';
-    wg.fillText('✈  FLIGHT TICKET  ✈', tx+tw/2, ty+16);
-    // tear perforation bottom
-    wg.fillStyle='#02040c';
-    for(let cx=tx+6;cx<tx+tw-6;cx+=10){ wg.beginPath(); wg.arc(cx,ty+th,5,0,Math.PI*2); wg.fill(); }
-    // destination
-    wg.fillStyle='#cc2244'; wg.font=`bold ${tw/14|0}px "Press Start 2P"`;
-    wg.fillText('→ PARIS', tx+tw/2, ty+70);
-    // details
-    wg.fillStyle='#555'; wg.font=`${tw/40|0}px "Press Start 2P"`;
-    wg.fillText('ONE WAY  •  ECONOMY CLASS  •  SEAT 12A', tx+tw/2, ty+100);
-    // airline line
-    wg.fillStyle='#8a8a8a'; wg.fillRect(tx+20,ty+110,tw-40,1);
-    // departure / arrival
-    wg.fillStyle='#1a0800'; wg.font=`bold ${tw/32|0}px "Press Start 2P"`;
-    wg.textAlign='left';  wg.fillText('FROM: SGN', tx+28, ty+138);
-    wg.textAlign='right'; wg.fillText('TO: CDG', tx+tw-28, ty+138);
-    // barcode
-    wg.textAlign='center'; wg.fillStyle='#aaa'; wg.font=`${tw/55|0}px "Press Start 2P"`;
-    wg.fillText('| ||| || | || ||| | || |', tx+tw/2, ty+165);
-    wg.fillText('16/12/2025', tx+tw/2, ty+182);
-    // French flag
-    wg.fillStyle='#002395'; wg.fillRect(tx+10,ty+26,14,18);
-    wg.fillStyle='#ffffff'; wg.fillRect(tx+24,ty+26,14,18);
-    wg.fillStyle='#ed2939'; wg.fillRect(tx+38,ty+26,14,18);
-    wg.globalAlpha=1;
+      // stick body
+      ctx.fillStyle = '#cc2222'; ctx.fillRect(x - 2 * s, y - 4 * s + bob, 4 * s, 6 * s);
+      ctx.fillStyle = '#ee3333'; ctx.fillRect(x - 2 * s, y - 4 * s + bob, s, 6 * s);
+      ctx.fillStyle = '#aa1111'; ctx.fillRect(x + s, y - 4 * s + bob, s, 6 * s);
+      // top cap
+      ctx.fillStyle = '#555'; ctx.fillRect(x - 2 * s, y - 4 * s + bob, 4 * s, s);
+      // bottom cap
+      ctx.fillStyle = '#555'; ctx.fillRect(x - 2 * s, y + 2 * s + bob, 4 * s, s);
+      // TNT label
+      ctx.fillStyle = '#ffffff'; ctx.font = `bold ${s * 2}px "Press Start 2P"`;
+      ctx.textAlign = 'center'; ctx.fillText('TNT', x, y + bob + 4);
 
-    // ── PLANE ───────────────────────────────────────
-    if(wt>30){
-      planeX -= 3.5;
-      if(planeX < -200) planeX = W+100;
-      const py = H*0.42;
-      const s  = Math.max(6, W/80|0);
-      wg.save(); wg.translate(planeX|0, py|0);
-      // fuselage
-      wg.fillStyle='#c0c8e8'; wg.fillRect(-s*3,0,s*6,s*2);
-      // nose
-      wg.fillStyle='#9098c8';
-      wg.beginPath(); wg.moveTo(-s*3,0); wg.lineTo(-s*5,s); wg.lineTo(-s*3,s*2); wg.closePath(); wg.fill();
-      // tail fin
-      wg.fillStyle='#8080b8'; wg.fillRect(s*2,-s*2,s*2,s*2); wg.fillRect(s*2,0,s*3,s*2);
-      wg.fillRect(0,-s*2,s*2,s*2);
-      // wings
-      wg.fillStyle='#9898c8'; wg.fillRect(-s*3,s*2,s*7,s*1.5|0);
-      // windows row
-      wg.fillStyle='#88ddffcc';
-      for(let i=0;i<4;i++) wg.fillRect((-s*2+i*s*1.2)|0, 0, s*0.8|0, s*2);
-      // boy in window
-      wg.fillStyle='#f9c87a'; wg.fillRect(-s*2,0,s*0.7|0,s);
-      wg.fillStyle='#ff6600'; wg.fillRect(-s*2,s,s*0.7|0,s);
-      // contrail
-      wg.globalAlpha=0.12; wg.fillStyle='#fff';
-      for(let t=1;t<=10;t++) wg.fillRect(s*3+t*16,s/2,10,4);
-      wg.globalAlpha=1;
-      wg.restore();
-      // Paris label
-      wg.font=`bold ${Math.max(9,W/100|0)}px "Press Start 2P"`;
-      wg.textAlign='center'; wg.fillStyle='#ffaacc';
-      wg.fillText('✈ PARIS', planeX, py-20);
+      // fuse (wavy)
+      ctx.fillStyle = '#888'; ctx.fillRect(x, y - 5 * s + bob, s, s);
+      ctx.fillStyle = '#666'; ctx.fillRect(x - s, y - 6 * s + bob, s, s);
+      ctx.fillStyle = '#888'; ctx.fillRect(x, y - 7 * s + bob, s, s);
+      ctx.fillStyle = '#666'; ctx.fillRect(x - s, y - 8 * s + bob, s, s);
+
+      // Spark at fuse tip (flashing)
+      if (flash) {
+        ctx.fillStyle = '#ffff00'; ctx.fillRect(x - s, y - 9 * s + bob, 2 * s, 2 * s);
+        ctx.fillStyle = '#ff8800'; ctx.fillRect(x - 2 * s, y - 9 * s + bob, s, s);
+        ctx.fillStyle = '#ff8800'; ctx.fillRect(x, y - 10 * s + bob, s, s);
+      } else {
+        ctx.fillStyle = '#ff6600'; ctx.fillRect(x - s, y - 9 * s + bob, s, s);
+      }
+
+      // WARNING text
+      ctx.fillStyle = '#ff4444';
+      ctx.font = `${s * 1.5}px "Press Start 2P"`;
+      ctx.textAlign = 'center';
+      ctx.fillText('⚠️', x, y - 9 * s + bob - 4);
     }
 
-    // ── BOY WAVING ──────────────────────────────────
-    if(wt>20){
-      const bx=W/2|0, by=(H-42)|0;
-      const s=Math.max(4, W/120|0);
-      // boots
-      wg.fillStyle='#4a2800'; wg.fillRect(bx-2*s,by,2*s,s); wg.fillRect(bx,by,2*s,s);
-      // legs
-      wg.fillStyle='#f9c87a'; wg.fillRect(bx-s,by-3*s,s,3*s); wg.fillRect(bx,by-3*s,s,3*s);
-      // shorts
-      wg.fillStyle='#cc2244'; wg.fillRect(bx-2*s,by-5*s,4*s,2*s);
-      // jacket
-      wg.fillStyle='#ff6600'; wg.fillRect(bx-2*s,by-9*s,4*s,4*s);
-      wg.fillStyle='#ffaa00'; wg.fillRect(bx,by-8*s,s,2*s);
-      // head
-      wg.fillStyle='#f9c87a'; wg.fillRect(bx-s,by-13*s,2*s,4*s);
-      // hair
-      wg.fillStyle='#3a2008'; wg.fillRect(bx-s,by-14*s,2*s,s);
-      // helmet
-      wg.fillStyle='#ffd700'; wg.fillRect(bx-2*s,by-15*s,4*s,2*s);
-      wg.fillStyle='#fff'; wg.fillRect(bx-s,by-15*s,s,s);
-      // waving arm
-      const wv=Math.sin(wt*0.1);
-      wg.fillStyle='#f9c87a';
-      wg.fillRect((bx+2*s+wv*s*2)|0,(by-11*s+wv*s)|0,s,s*3);
-      // other arm down
-      wg.fillRect(bx-3*s,by-8*s,s,s*2);
+    // ════════════════════════════════════════════════════
+    // HOOK PHYSICS — smooth pendulum
+    // ════════════════════════════════════════════════════
+    const ROPE_ORIGIN_X = ropeOriginX;
+    const ROPE_ORIGIN_Y = ropeOriginY;
+
+    function updateHook() {
+      if (state === S_IDLE) {
+        // TRUE pendulum: angle = amplitude * sin(omega*t)
+        swingPhase += 0.04;
+        hookAngle = SWING_HALF * Math.sin(swingPhase * SWING_OMEGA);
+        hookLen = PX * 22; // long enough to see clearly
+
+      } else if (state === S_EXTEND) {
+        hookLen += EXTEND_SPD;
+
+        const hx = hookX(), hy = hookY();
+
+        // Off screen / hit floor
+        if (hx < 0 || hx > c.width || hy > c.height - 10 || hookLen > Math.hypot(c.width, c.height)) {
+          state = S_RETRACT; grabbed = null; return;
+        }
+
+        // Collision check
+        for (const it of items) {
+          if (it.collected) continue;
+          if (Math.hypot(hx - it.x, hy - it.y) < it.r + 8) {
+            if (it.type === 'dyna') { gameOver(); return; }
+            grabbed = it; state = S_RETRACT;
+            return;
+          }
+        }
+
+      } else if (state === S_RETRACT) {
+        const retSpd = grabbed ? Math.max(2.5, BASE_RETRACT - grabbed.weight * 0.4) : BASE_RETRACT * 1.5;
+        hookLen -= retSpd;
+
+        if (grabbed) {
+          grabbed.x = hookX();
+          grabbed.y = hookY();
+        }
+
+        if (hookLen <= PX * 22) {
+          if (grabbed) {
+            grabbed.collected = true;
+            score += grabbed.value;
+            goldLeft--;
+            grabbed = null;
+            updateHUD();
+            if (goldLeft <= 0) triggerWin();
+          }
+          state = S_IDLE;
+          hookLen = PX * 22;
+        }
+      }
+
+      // bob items
+      items.forEach(it => { it.bob += 0.04; });
     }
 
-    // ── CONFETTI ────────────────────────────────────
-    if(wt>50){
-      confetti.forEach(p=>{
-        wg.save();
-        wg.translate(p.x,p.y); wg.rotate(p.rot);
-        wg.fillStyle=p.col; wg.fillRect(-p.w/2,-p.h/2,p.w,p.h);
-        wg.restore();
-        p.x+=p.vx; p.y+=p.vy; p.rot+=p.rotV;
-        if(p.y>H){ p.y=-10; p.x=Math.random()*W; }
+    function fireHook() {
+      if (state !== S_IDLE) return;
+      state = S_EXTEND;
+    }
+
+    // ════════════════════════════════════════════════════
+    // HUD
+    // ════════════════════════════════════════════════════
+    function updateHUD() {
+      document.getElementById('gold-count').textContent = `${goldLeft}`;
+      document.getElementById('score').textContent = score;
+      document.getElementById('timer').textContent = timeLeft;
+    }
+
+    // ════════════════════════════════════════════════════
+    // STATE TRANSITIONS
+    // ════════════════════════════════════════════════════
+    function gameOver() {
+      running = false; clearInterval(timerInt);
+      document.getElementById('gameover-screen').classList.add('show');
+    }
+    function triggerWin() {
+      running = false; clearInterval(timerInt);
+      document.getElementById('form-screen').classList.add('show');
+    }
+    function resetGame() {
+      score = 0; timeLeft = 300; tick = 0;
+      state = S_IDLE; hookLen = PX * 6; hookAngle = 0; swingPhase = 0; grabbed = null;
+      initItems(); updateHUD();
+    }
+    function startTimer() {
+      clearInterval(timerInt);
+      timerInt = setInterval(() => {
+        if (!running) return;
+        timeLeft--; document.getElementById('timer').textContent = timeLeft;
+        if (timeLeft <= 0) { clearInterval(timerInt); gameOver(); }
+      }, 1000);
+    }
+
+    // ════════════════════════════════════════════════════
+    // FORM VALIDATION
+    // ════════════════════════════════════════════════════
+    const ANSWERS = {
+      q1: ['16/12/2025', '16/12/25'],
+      q2: ['29/12/2025', '29/12/25'],
+      q3: ['cayvuonlanha'],
+      q4: ['yes'], // any case accepted
+    };
+
+    document.getElementById('form-submit-btn').addEventListener('click', () => {
+      const v1 = document.getElementById('q1').value.trim();
+      const v2 = document.getElementById('q2').value.trim();
+      const v3 = document.getElementById('q3').value.trim().toLowerCase();
+      const v4 = document.getElementById('q4').value.trim().toLowerCase();
+
+      const ok1 = ANSWERS.q1.includes(v1);
+      const ok2 = ANSWERS.q2.includes(v2);
+      const ok3 = ANSWERS.q3.includes(v3);
+      const ok4 = v4.includes('yes');
+
+      ['q1', 'q2', 'q3', 'q4'].forEach((id, i) => {
+        const ok = [ok1, ok2, ok3, ok4][i];
+        const inp = document.getElementById(id);
+        const err = document.getElementById('e' + (i + 1));
+        inp.classList.toggle('correct', ok);
+        inp.classList.toggle('wrong', !ok);
+        err.style.display = ok ? 'none' : 'block';
       });
+
+      if (ok1 && ok2 && ok3 && ok4) {
+        document.getElementById('form-submit-btn').style.display = 'none';
+        document.getElementById('form-success').style.display = 'block';
+        setTimeout(() => {
+          document.getElementById('form-screen').classList.remove('show');
+          document.getElementById('win-screen').classList.add('show');
+          runWinAnim();
+        }, 2400);
+      }
+    });
+
+    // ════════════════════════════════════════════════════
+    // WIN ANIMATION — fullscreen ticket + plane to Paris
+    // ════════════════════════════════════════════════════
+    function runWinAnim() {
+      const wc = document.getElementById('win-canvas');
+      wc.width = innerWidth;
+      wc.height = innerHeight;
+      const wg = wc.getContext('2d');
+      wg.imageSmoothingEnabled = false;
+      const W = wc.width, H = wc.height;
+      let wt = 0, planeX = W + 100;
+      const nextBtn = document.getElementById('next-btn');
+
+      // persistent confetti store
+      const confetti = [];
+      for (let i = 0; i < 80; i++) confetti.push({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 2, vy: 0.5 + Math.random() * 2,
+        col: ['#ffd700', '#ff4488', '#44aaff', '#ff8800', '#88ff44', '#ffffff'][i % 6],
+        w: 4 + Math.random() * 6 | 0, h: 6 + Math.random() * 10 | 0,
+        rot: Math.random() * Math.PI * 2, rotV: (Math.random() - 0.5) * 0.15,
+      });
+
+      function frame() {
+        wg.clearRect(0, 0, W, H);
+
+        // ── BACKGROUND — night sky ──────────────────────
+        const g = wg.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, '#02040c'); g.addColorStop(0.6, '#060e22'); g.addColorStop(1, '#0a1830');
+        wg.fillStyle = g; wg.fillRect(0, 0, W, H);
+
+        // stars
+        for (let i = 0; i < 80; i++) {
+          const sx = (i * 179.3) % W, sy = (i * 67.7) % (H * 0.75);
+          wg.globalAlpha = 0.2 + Math.sin(Date.now() / 600 + i) * 0.35;
+          wg.fillStyle = '#ffffff'; wg.fillRect(sx | 0, sy | 0, i % 5 === 0 ? 3 : 2, i % 5 === 0 ? 3 : 2);
+        }
+        wg.globalAlpha = 1;
+
+        // city silhouette at bottom
+        wg.fillStyle = '#080f1a';
+        const cw = 80;
+        for (let bx = 0; bx < W; bx += cw) {
+          const bh = 40 + ((bx * 37) % 60);
+          wg.fillRect(bx, H - bh, cw - 4, bh);
+          // windows
+          wg.fillStyle = '#ffee8844';
+          for (let wy = H - bh + 6; wy < H - 6; wy += 12) {
+            for (let wx = bx + 6; wx < bx + cw - 10; wx += 14) {
+              if ((wx + wy) % 3 !== 0) wg.fillRect(wx, wy, 6, 8);
+            }
+          }
+          wg.fillStyle = '#080f1a';
+        }
+
+        // ── GROUND LINE ─────────────────────────────────
+        wg.fillStyle = '#0d1a2a'; wg.fillRect(0, H - 42, W, 42);
+        wg.fillStyle = '#1a2a3a'; wg.fillRect(0, H - 44, W, 4);
+
+        // ── BIG TICKET — centered ───────────────────────
+        const ticketA = Math.min(1, wt / 40);
+        wg.globalAlpha = ticketA;
+        const tw = Math.min(480, W * 0.55) | 0, th = 200;
+        const tx = (W - tw) / 2 | 0, ty = (H * 0.12) | 0;
+
+        // ticket body
+        wg.fillStyle = '#fff8e0'; wg.fillRect(tx, ty, tw, th);
+        // gold header bar
+        wg.fillStyle = '#ffd700'; wg.fillRect(tx, ty, tw, 22);
+        // header text
+        wg.fillStyle = '#1a0800'; wg.font = `bold ${tw / 26 | 0}px "Press Start 2P"`; wg.textAlign = 'center';
+        wg.fillText('✈  FLIGHT TICKET  ✈', tx + tw / 2, ty + 16);
+        // tear perforation bottom
+        wg.fillStyle = '#02040c';
+        for (let cx = tx + 6; cx < tx + tw - 6; cx += 10) { wg.beginPath(); wg.arc(cx, ty + th, 5, 0, Math.PI * 2); wg.fill(); }
+        // destination
+        wg.fillStyle = '#cc2244'; wg.font = `bold ${tw / 14 | 0}px "Press Start 2P"`;
+        wg.fillText('→ PARIS', tx + tw / 2, ty + 70);
+        // details
+        wg.fillStyle = '#555'; wg.font = `${tw / 40 | 0}px "Press Start 2P"`;
+        wg.fillText('ONE WAY  •  ECONOMY CLASS  •  SEAT 12A', tx + tw / 2, ty + 100);
+        // airline line
+        wg.fillStyle = '#8a8a8a'; wg.fillRect(tx + 20, ty + 110, tw - 40, 1);
+        // departure / arrival
+        wg.fillStyle = '#1a0800'; wg.font = `bold ${tw / 32 | 0}px "Press Start 2P"`;
+        wg.textAlign = 'left'; wg.fillText('FROM: MEL', tx + 28, ty + 138);
+        wg.textAlign = 'right'; wg.fillText('TO: CDG', tx + tw - 28, ty + 138);
+        // barcode
+        wg.textAlign = 'center'; wg.fillStyle = '#aaa'; wg.font = `${tw / 55 | 0}px "Press Start 2P"`;
+        wg.fillText('| ||| || | || ||| | || |', tx + tw / 2, ty + 165);
+        wg.fillText('16/12/2025', tx + tw / 2, ty + 182);
+        // French flag
+        wg.fillStyle = '#002395'; wg.fillRect(tx + 10, ty + 26, 14, 18);
+        wg.fillStyle = '#ffffff'; wg.fillRect(tx + 24, ty + 26, 14, 18);
+        wg.fillStyle = '#ed2939'; wg.fillRect(tx + 38, ty + 26, 14, 18);
+        wg.globalAlpha = 1;
+
+        // ── PLANE ───────────────────────────────────────
+        if (wt > 30) {
+          planeX -= 3.5;
+          if (planeX < -200) planeX = W + 100;
+          const py = H * 0.42;
+          const s = Math.max(6, W / 80 | 0);
+          wg.save(); wg.translate(planeX | 0, py | 0);
+          // fuselage
+          wg.fillStyle = '#c0c8e8'; wg.fillRect(-s * 3, 0, s * 6, s * 2);
+          // nose
+          wg.fillStyle = '#9098c8';
+          wg.beginPath(); wg.moveTo(-s * 3, 0); wg.lineTo(-s * 5, s); wg.lineTo(-s * 3, s * 2); wg.closePath(); wg.fill();
+          // tail fin
+          wg.fillStyle = '#8080b8'; wg.fillRect(s * 2, -s * 2, s * 2, s * 2); wg.fillRect(s * 2, 0, s * 3, s * 2);
+          wg.fillRect(0, -s * 2, s * 2, s * 2);
+          // wings
+          wg.fillStyle = '#9898c8'; wg.fillRect(-s * 3, s * 2, s * 7, s * 1.5 | 0);
+          // windows row
+          wg.fillStyle = '#88ddffcc';
+          for (let i = 0; i < 4; i++) wg.fillRect((-s * 2 + i * s * 1.2) | 0, 0, s * 0.8 | 0, s * 2);
+          // boy in window
+          wg.fillStyle = '#f9c87a'; wg.fillRect(-s * 2, 0, s * 0.7 | 0, s);
+          wg.fillStyle = '#ff6600'; wg.fillRect(-s * 2, s, s * 0.7 | 0, s);
+          // contrail
+          wg.globalAlpha = 0.12; wg.fillStyle = '#fff';
+          for (let t = 1; t <= 10; t++) wg.fillRect(s * 3 + t * 16, s / 2, 10, 4);
+          wg.globalAlpha = 1;
+          wg.restore();
+          // Paris label
+          wg.font = `bold ${Math.max(9, W / 100 | 0)}px "Press Start 2P"`;
+          wg.textAlign = 'center'; wg.fillStyle = '#ffaacc';
+          wg.fillText('✈ PARIS', planeX, py - 20);
+        }
+
+        // ── BOY WAVING ──────────────────────────────────
+        if (wt > 20) {
+          const bx = W / 2 | 0, by = (H - 42) | 0;
+          const s = Math.max(4, W / 120 | 0);
+          // boots
+          wg.fillStyle = '#4a2800'; wg.fillRect(bx - 2 * s, by, 2 * s, s); wg.fillRect(bx, by, 2 * s, s);
+          // legs
+          wg.fillStyle = '#f9c87a'; wg.fillRect(bx - s, by - 3 * s, s, 3 * s); wg.fillRect(bx, by - 3 * s, s, 3 * s);
+          // shorts
+          wg.fillStyle = '#cc2244'; wg.fillRect(bx - 2 * s, by - 5 * s, 4 * s, 2 * s);
+          // jacket
+          wg.fillStyle = '#ff6600'; wg.fillRect(bx - 2 * s, by - 9 * s, 4 * s, 4 * s);
+          wg.fillStyle = '#ffaa00'; wg.fillRect(bx, by - 8 * s, s, 2 * s);
+          // head
+          wg.fillStyle = '#f9c87a'; wg.fillRect(bx - s, by - 13 * s, 2 * s, 4 * s);
+          // hair
+          wg.fillStyle = '#3a2008'; wg.fillRect(bx - s, by - 14 * s, 2 * s, s);
+          // helmet
+          wg.fillStyle = '#ffd700'; wg.fillRect(bx - 2 * s, by - 15 * s, 4 * s, 2 * s);
+          wg.fillStyle = '#fff'; wg.fillRect(bx - s, by - 15 * s, s, s);
+          // waving arm
+          const wv = Math.sin(wt * 0.1);
+          wg.fillStyle = '#f9c87a';
+          wg.fillRect((bx + 2 * s + wv * s * 2) | 0, (by - 11 * s + wv * s) | 0, s, s * 3);
+          // other arm down
+          wg.fillRect(bx - 3 * s, by - 8 * s, s, s * 2);
+        }
+
+        // ── CONFETTI ────────────────────────────────────
+        if (wt > 50) {
+          confetti.forEach(p => {
+            wg.save();
+            wg.translate(p.x, p.y); wg.rotate(p.rot);
+            wg.fillStyle = p.col; wg.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            wg.restore();
+            p.x += p.vx; p.y += p.vy; p.rot += p.rotV;
+            if (p.y > H) { p.y = -10; p.x = Math.random() * W; }
+          });
+        }
+
+        // show continue button when plane has appeared
+        if (wt > 80 && nextBtn.style.display === 'none') nextBtn.style.display = 'block';
+
+        wt++;
+        requestAnimationFrame(frame);
+      }
+      frame();
     }
 
-    // show continue button when plane has appeared
-    if(wt>80 && nextBtn.style.display==='none') nextBtn.style.display='block';
+    // ════════════════════════════════════════════════════
+    // MAIN LOOP
+    // ════════════════════════════════════════════════════
+    function loop() {
+      ctx.clearRect(0, 0, c.width, c.height);
+      ctx.imageSmoothingEnabled = false;
+      tick++;
+      drawBg();
+      items.forEach(it => { if (it.type === 'gold') drawGold(it); else drawDynamite(it); });
+      if (running) updateHook();
+      drawRopeAndHook();
+      drawMiner();
+      requestAnimationFrame(loop);
+    }
 
-    wt++;
-    requestAnimationFrame(frame);
-  }
-  frame();
-}
+    // ════════════════════════════════════════════════════
+    // INPUT
+    // ════════════════════════════════════════════════════
+    addEventListener('keydown', e => {
+      if (!running) return;
+      if (e.code === 'Space' || e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') { e.preventDefault(); fireHook(); }
+    });
+    c.addEventListener('click', () => { if (running) fireHook(); });
+    c.addEventListener('touchstart', e => { e.preventDefault(); if (running) fireHook(); }, { passive: false });
 
-// ════════════════════════════════════════════════════
-// MAIN LOOP
-// ════════════════════════════════════════════════════
-function loop(){
-  ctx.clearRect(0,0,c.width,c.height);
-  ctx.imageSmoothingEnabled=false;
-  tick++;
-  drawBg();
-  items.forEach(it=>{ if(it.type==='gold') drawGold(it); else drawDynamite(it); });
-  if(running) updateHook();
-  drawRopeAndHook();
-  drawMiner();
-  requestAnimationFrame(loop);
-}
+    // ════════════════════════════════════════════════════
+    // BUTTONS
+    // ════════════════════════════════════════════════════
+    document.getElementById('start-btn').addEventListener('click', () => {
+      document.getElementById('start-screen').classList.remove('show');
+      resetGame(); running = true; startTimer();
+    });
+    document.getElementById('retry-btn').addEventListener('click', () => {
+      document.getElementById('gameover-screen').classList.remove('show');
+      resetGame(); running = true; startTimer();
+    });
+    document.getElementById('next-btn').addEventListener('click', () => {
+      window.location.href = 'winter.html';
+    });
 
-// ════════════════════════════════════════════════════
-// INPUT
-// ════════════════════════════════════════════════════
-addEventListener('keydown',e=>{
-  if(!running) return;
-  if(e.code==='Space'||e.key==='ArrowDown'||e.key==='s'||e.key==='S'){ e.preventDefault(); fireHook(); }
-});
-c.addEventListener('click', ()=>{ if(running) fireHook(); });
-c.addEventListener('touchstart', e=>{ e.preventDefault(); if(running) fireHook(); },{passive:false});
+    // REMOVABLE: skip handler — delete this block to remove
+    document.getElementById('skip-btn').addEventListener('click', () => {
+      document.getElementById('start-screen').classList.remove('show');
+      resetGame();
+      triggerWin();
+    });
+    // REMOVABLE
 
-// ════════════════════════════════════════════════════
-// BUTTONS
-// ════════════════════════════════════════════════════
-document.getElementById('start-btn').addEventListener('click',()=>{
-  document.getElementById('start-screen').classList.remove('show');
-  resetGame(); running=true; startTimer();
-});
-document.getElementById('retry-btn').addEventListener('click',()=>{
-  document.getElementById('gameover-screen').classList.remove('show');
-  resetGame(); running=true; startTimer();
-});
-document.getElementById('next-btn').addEventListener('click',()=>{
-  window.location.href='winter.html';
-});
-
-// REMOVABLE: skip handler — delete this block to remove
-document.getElementById('skip-btn').addEventListener('click',()=>{
-  document.getElementById('start-screen').classList.remove('show');
-  resetGame();
-  triggerWin();
-});
-// REMOVABLE
-
-loop();
-</script>
+    loop();
+  </script>
 </body>
+
 </html>

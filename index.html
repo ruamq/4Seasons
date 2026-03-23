@@ -414,6 +414,16 @@
     </div>
   </div>
 
+  <audio id="bg-music" src="public/index.mp3" loop preload="auto"></audio>
+  <script>
+  (function(){
+    var m = document.getElementById('bg-music');
+    m.volume = 0.5;
+    m.play().catch(function(){});
+    document.addEventListener('click', function(){ m.play(); }, {once:true});
+  })();
+  </script>
+
   <script>
 
     /* ═══════════════════════════════════════════════════════

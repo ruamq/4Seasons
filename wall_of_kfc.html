@@ -1,1466 +1,1644 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Wall of KFC – Spring Edition</title>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-  background: #1a2e10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  font-family: 'Courier New', monospace;
-  overflow: hidden;
-  user-select: none;
-}
-canvas {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  border: 3px solid #cc0000;
-  box-shadow: 0 0 30px rgba(200,0,0,0.4), 0 0 60px rgba(255,180,0,0.1);
-}
-</style>
+    <meta charset="UTF-8">
+    <title>Wall of KFC – Spring Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a2e10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            border: 3px solid #cc0000;
+            box-shadow: 0 0 30px rgba(200, 0, 0, 0.4), 0 0 60px rgba(255, 180, 0, 0.1);
+        }
+    </style>
 </head>
+
 <body>
-<canvas id="c" width="1380" height="780"></canvas>
-<button onclick="G.phase='won'" style="
+    <canvas id="c" width="1380" height="780"></canvas>
+    <button onclick="G.phase='won'" style="
   position:fixed; bottom:48px; right:20px; z-index:50;
   padding:7px 18px; background:rgba(0,0,0,0.6);
   border:1px solid rgba(255,220,0,0.4); color:rgba(255,220,0,0.7);
   font-family:'Courier New',monospace; font-size:10px; letter-spacing:3px;
   cursor:pointer; border-radius:3px;
 " title="Jump to victory cinematic">WIN ★</button>
-<script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-ctx.imageSmoothingEnabled = false;
-const W = 1380, H = 780;
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        const W = 1380, H = 780;
 
-const C = {
-  sky0:'#7ec8e3', sky1:'#b8e9c8',
-  grass:'#5aaa28', grassD:'#3d8010', dirt:'#8b5e2a', dirtD:'#5a3a10',
-  petal:'#ff88cc', petalY:'#ffee44', stem:'#44aa22',
-  blos:'#ffb3cc', blosD:'#ff88aa',
-  pBody:'#2255cc', pBodyD:'#1133aa',
-  pWhite:'#ddeeff', pYellow:'#ffdd22',
-  pCap:'#cc1100',
-  pSkin:'#ffcba4',
-  pGlider:'#88ccee', pGliderD:'#5599bb', pGliderE:'#bbddff',
-  kRed:'#cc1100', kRedD:'#881000', kWhite:'#f5f0e8', kEdge:'#440000',
-  feather:'#f0ead0', featherD:'#c8b870',
-  beak:'#ffaa22', beakD:'#bb7010',
-  comb:'#ee2222', wattle:'#cc1818',
-  egg:'#f2dfa0', eggD:'#c0a060', eggShine:'#fffde0',
-  tShell:'#3aaa44', tShellD:'#1a7722', tShellL:'#66cc66',
-  tPattern:'#116622', tEdge:'#0a4418',
-  snow:'#e8f5ff', snowB:'#99ccee', snowShine:'#ffffff',
-  mega:'#aaddff', megaB:'#4488cc', megaShine:'#ffffff',
-  bShirt:'#2244cc', bPants:'#11227a', bCap:'#aa0000', bHair:'#111111',
-  hitB:'#88ccff', hitO:'#ff9933', hitS:'#ffff66', hitP:'#ffaacc',
-};
+        const C = {
+            sky0: '#7ec8e3', sky1: '#b8e9c8',
+            grass: '#5aaa28', grassD: '#3d8010', dirt: '#8b5e2a', dirtD: '#5a3a10',
+            petal: '#ff88cc', petalY: '#ffee44', stem: '#44aa22',
+            blos: '#ffb3cc', blosD: '#ff88aa',
+            pBody: '#2255cc', pBodyD: '#1133aa',
+            pWhite: '#ddeeff', pYellow: '#ffdd22',
+            pCap: '#cc1100',
+            pSkin: '#ffcba4',
+            pGlider: '#88ccee', pGliderD: '#5599bb', pGliderE: '#bbddff',
+            kRed: '#cc1100', kRedD: '#881000', kWhite: '#f5f0e8', kEdge: '#440000',
+            feather: '#f0ead0', featherD: '#c8b870',
+            beak: '#ffaa22', beakD: '#bb7010',
+            comb: '#ee2222', wattle: '#cc1818',
+            egg: '#f2dfa0', eggD: '#c0a060', eggShine: '#fffde0',
+            tShell: '#3aaa44', tShellD: '#1a7722', tShellL: '#66cc66',
+            tPattern: '#116622', tEdge: '#0a4418',
+            snow: '#e8f5ff', snowB: '#99ccee', snowShine: '#ffffff',
+            mega: '#aaddff', megaB: '#4488cc', megaShine: '#ffffff',
+            bShirt: '#2244cc', bPants: '#11227a', bCap: '#aa0000', bHair: '#111111',
+            hitB: '#88ccff', hitO: '#ff9933', hitS: '#ffff66', hitP: '#ffaacc',
+        };
 
-let G;
-function newGame() {
-  G = {
-    phase:'playing',
-    playerY: H*0.45, playerVY:0,
-    shootCd:0,
-    shotCount:0,
-    megaReady:false,
-    eggHits: 0,
-    wallX: W - 96,
-    wallHP: 1000,
-    snowballs:[],
-    eggs:[],
-    turtleShells:[],
-    particles:[],
-    boy:null, boyTimer:0, boyInterval:15000,
-    bgX:0,
-    headTimers:[0, 900, 1800],
-    headIntervals:[2600, 2900, 3100],
-    lastTs:0,
-    blossoms: Array.from({length:8}, () => ({
-      x: Math.random()*W, y: Math.random()*H*0.65,
-      vy: 18 + Math.random()*22, vx: -8 + Math.random()*16,
-      rot: Math.random()*6.28, sz: 3+Math.floor(Math.random()*4),
-      col: [C.blos, C.blosD, '#ffddee','#ff99bb','#ffffff','#ffe0ee'][Math.floor(Math.random()*6)]
-    })),
-  };
-}
-newGame();
+        let G;
+        function newGame() {
+            G = {
+                phase: 'playing',
+                playerY: H * 0.45, playerVY: 0,
+                shootCd: 0,
+                shotCount: 0,
+                megaReady: false,
+                eggHits: 0,
+                wallX: W - 96,
+                wallHP: 1000,
+                snowballs: [],
+                eggs: [],
+                turtleShells: [],
+                particles: [],
+                boy: null, boyTimer: 0, boyInterval: 15000,
+                bgX: 0,
+                headTimers: [0, 900, 1800],
+                headIntervals: [2600, 2900, 3100],
+                lastTs: 0,
+                blossoms: Array.from({ length: 8 }, () => ({
+                    x: Math.random() * W, y: Math.random() * H * 0.65,
+                    vy: 18 + Math.random() * 22, vx: -8 + Math.random() * 16,
+                    rot: Math.random() * 6.28, sz: 3 + Math.floor(Math.random() * 4),
+                    col: [C.blos, C.blosD, '#ffddee', '#ff99bb', '#ffffff', '#ffe0ee'][Math.floor(Math.random() * 6)]
+                })),
+            };
+        }
+        newGame();
 
-const keys = {};
-window.addEventListener('keydown', e => {
-  keys[e.code] = true;
-  if (e.code === 'Space') e.preventDefault();
-  if (e.code === 'KeyR') {
-    if (G.phase !== 'playing') { newGame(); return; }
-    doMega();
-  }
-  if (e.code === 'KeyW' && e.shiftKey) { G.phase = 'won'; }
-});
-window.addEventListener('keyup', e => { keys[e.code] = false; });
-canvas.addEventListener('click', doShoot);
+        const keys = {};
+        window.addEventListener('keydown', e => {
+            keys[e.code] = true;
+            if (e.code === 'Space') e.preventDefault();
+            if (e.code === 'KeyR') {
+                if (G.phase !== 'playing') { newGame(); return; }
+                doMega();
+            }
+            if (e.code === 'KeyW' && e.shiftKey) { G.phase = 'won'; }
+        });
+        window.addEventListener('keyup', e => { keys[e.code] = false; });
+        canvas.addEventListener('click', doShoot);
 
-function doShoot() {
-  if (G.phase !== 'playing') return;
-  if (G.shootCd > 0) return;
-  G.snowballs.push({ x:98, y:G.playerY, vx:500, big:false });
-  G.shootCd = 260;
-  G.shotCount++;
-  if (G.shotCount >= 30 && !G.megaReady) G.megaReady = true;
-}
+        function doShoot() {
+            if (G.phase !== 'playing') return;
+            if (G.shootCd > 0) return;
+            G.snowballs.push({ x: 98, y: G.playerY, vx: 500, big: false });
+            G.shootCd = 260;
+            G.shotCount++;
+            if (G.shotCount >= 30 && !G.megaReady) G.megaReady = true;
+        }
 
-function doMega() {
-  if (!G.megaReady || G.phase !== 'playing') return;
-  G.snowballs.push({ x:98, y:G.playerY, vx:330, big:true });
-  G.megaReady = false;
-  G.shotCount = 0;
-  burst(100, G.playerY, C.mega, 14);
-  burst(100, G.playerY, C.snowShine, 8);
-}
+        function doMega() {
+            if (!G.megaReady || G.phase !== 'playing') return;
+            G.snowballs.push({ x: 98, y: G.playerY, vx: 330, big: true });
+            G.megaReady = false;
+            G.shotCount = 0;
+            burst(100, G.playerY, C.mega, 14);
+            burst(100, G.playerY, C.snowShine, 8);
+        }
 
-function update(dt) {
-  if (G.phase !== 'playing') return;
-  G.bgX += dt * 30;
+        function update(dt) {
+            if (G.phase !== 'playing') return;
+            G.bgX += dt * 30;
 
-  const up = keys['ArrowUp']||keys['KeyW'];
-  const dn = keys['ArrowDown']||keys['KeyS'];
-  if (up)  G.playerVY -= 2200*dt;
-  if (dn)  G.playerVY += 2200*dt;
-  G.playerVY *= Math.pow(0.001, dt);
-  G.playerY = Math.max(40, Math.min(H-65, G.playerY + G.playerVY*dt));
-  G.shootCd = Math.max(0, G.shootCd - dt*1000);
+            const up = keys['ArrowUp'] || keys['KeyW'];
+            const dn = keys['ArrowDown'] || keys['KeyS'];
+            if (up) G.playerVY -= 2200 * dt;
+            if (dn) G.playerVY += 2200 * dt;
+            G.playerVY *= Math.pow(0.001, dt);
+            G.playerY = Math.max(40, Math.min(H - 65, G.playerY + G.playerVY * dt));
+            G.shootCd = Math.max(0, G.shootCd - dt * 1000);
 
-  if (keys['Space'] && G.shootCd <= 0) doShoot();
+            if (keys['Space'] && G.shootCd <= 0) doShoot();
 
-  G.wallX -= 4.5*dt;
+            G.wallX -= 4.5 * dt;
 
-  const headYs = [H*0.2, H*0.5, H*0.78];
-  for (let i=0; i<3; i++) {
-    G.headTimers[i] += dt*1000;
-    if (G.headTimers[i] >= G.headIntervals[i]) {
-      G.headTimers[i] = 0;
-      G.eggs.push({ x: G.wallX-20, y: G.playerY, vx:-195 });
-    }
-  }
+            for (let i = 0; i < 3; i++) {
+                G.headTimers[i] += dt * 1000;
+                if (G.headTimers[i] >= G.headIntervals[i]) {
+                    G.headTimers[i] = 0;
+                    G.eggs.push({ x: G.wallX - 20, y: G.playerY, vx: -195 });
+                }
+            }
 
-  G.snowballs = G.snowballs.filter(s => {
-    s.x += s.vx*dt;
-    if (s.x >= G.wallX-24) {
-      const dmg = s.big ? 40 : 3;
-      G.wallHP = Math.max(0, G.wallHP - dmg);
-      burst(s.x, s.y, s.big ? C.mega : C.hitB, s.big ? 18 : 5);
-      if (s.big) burst(s.x, s.y, C.hitS, 12);
-      return false;
-    }
-    return s.x < W+10;
-  });
+            G.snowballs = G.snowballs.filter(s => {
+                s.x += s.vx * dt;
+                if (s.x >= G.wallX - 24) {
+                    const dmg = s.big ? 40 : 3;
+                    G.wallHP = Math.max(0, G.wallHP - dmg);
+                    burst(s.x, s.y, s.big ? C.mega : C.hitB, s.big ? 18 : 5);
+                    if (s.big) burst(s.x, s.y, C.hitS, 12);
+                    return false;
+                }
+                return s.x < W + 10;
+            });
 
-  G.eggs = G.eggs.filter(e => {
-    e.x += e.vx*dt;
-    const px=65, py=G.playerY;
-    if (Math.abs(e.x-px)<16 && Math.abs(e.y-py)<18) {
-      burst(e.x, e.y, C.hitS, 5);
-      burst(e.x, e.y, '#ffddaa', 4);
-      G.eggHits++;
-      if (G.eggHits >= 15) G.phase = 'lost';
-      return false;
-    }
-    return e.x > -20;
-  });
+            G.eggs = G.eggs.filter(e => {
+                e.x += e.vx * dt;
+                const px = 65, py = G.playerY;
+                if (Math.abs(e.x - px) < 16 && Math.abs(e.y - py) < 18) {
+                    burst(e.x, e.y, C.hitS, 5);
+                    burst(e.x, e.y, '#ffddaa', 4);
+                    G.eggHits++;
+                    if (G.eggHits >= 15) G.phase = 'lost';
+                    return false;
+                }
+                return e.x > -20;
+            });
 
-  G.turtleShells = G.turtleShells.filter(s => {
-    s.x += s.vx*dt; s.y += s.vy*dt;
-    s.vy += 850*dt;
-    s.rot += dt*9;
-    if (s.x >= G.wallX-22 && s.y < H+10) {
-      const dmg = 50;
-      G.wallHP = Math.max(0, G.wallHP - dmg);
-      burst(s.x, s.y, C.tShellL, 10);
-      burst(s.x+8, s.y-8, C.hitS, 6);
-      return false;
-    }
-    return s.x < W+30 && s.y < H+40;
-  });
+            G.turtleShells = G.turtleShells.filter(s => {
+                s.x += s.vx * dt; s.y += s.vy * dt;
+                s.vy += 850 * dt;
+                s.rot += dt * 9;
+                if (s.x >= G.wallX - 22 && s.y < H + 10) {
+                    G.wallHP = Math.max(0, G.wallHP - 50);
+                    burst(s.x, s.y, C.tShellL, 10);
+                    burst(s.x + 8, s.y - 8, C.hitS, 6);
+                    return false;
+                }
+                return s.x < W + 30 && s.y < H + 40;
+            });
 
-  G.boyTimer += dt*1000;
-  if (G.boyTimer >= G.boyInterval && !G.boy) {
-    G.boyTimer = 0;
-    G.boy = { t:0, thrown:false };
-  }
-  if (G.boy) {
-    G.boy.t += dt*1000;
-    if (!G.boy.thrown && G.boy.t > 1100) {
-      G.boy.thrown = true;
-      const hits = Math.random() < 0.8;
-      G.turtleShells.push({
-        x:62, y:H-98,
-        vx: hits ? 1200 : 900,
-        vy: hits ? -500 : -1100,
-        rot:0, willHit: hits
-      });
-    }
-    if (G.boy.t > 2600) G.boy = null;
-  }
+            G.boyTimer += dt * 1000;
+            if (G.boyTimer >= G.boyInterval && !G.boy) {
+                G.boyTimer = 0;
+                G.boy = { t: 0, thrown: false };
+            }
+            if (G.boy) {
+                G.boy.t += dt * 1000;
+                if (!G.boy.thrown && G.boy.t > 1100) {
+                    G.boy.thrown = true;
+                    const hits = Math.random() < 0.8;
+                    G.turtleShells.push({
+                        x: 62, y: H - 98,
+                        vx: hits ? 1200 : 900,
+                        vy: hits ? -500 : -1100,
+                        rot: 0, willHit: hits
+                    });
+                }
+                if (G.boy.t > 2600) G.boy = null;
+            }
 
-  G.particles = G.particles.filter(p => {
-    p.x += p.vx*dt; p.y += p.vy*dt;
-    p.vy += 400*dt; p.life -= dt*1000;
-    return p.life > 0;
-  });
+            G.particles = G.particles.filter(p => {
+                p.x += p.vx * dt; p.y += p.vy * dt;
+                p.vy += 400 * dt; p.life -= dt * 1000;
+                return p.life > 0;
+            });
 
-  G.blossoms.forEach(b => {
-    b.x += b.vx*dt; b.y += b.vy*dt; b.rot += dt*1.5;
-    if (b.y > H+10) { b.y=-6; b.x=Math.random()*W; }
-  });
+            G.blossoms.forEach(b => {
+                b.x += b.vx * dt; b.y += b.vy * dt; b.rot += dt * 1.5;
+                if (b.y > H + 10) { b.y = -6; b.x = Math.random() * W; }
+            });
 
-  if (G.wallHP <= 0) G.phase = 'won';
-  if (G.wallX < 120) G.phase = 'lost';
-}
+            if (G.wallHP <= 0) G.phase = 'won';
+            if (G.wallX < 120) G.phase = 'lost';
+        }
 
-function burst(x, y, col, n) {
-  for (let i=0; i<n; i++) {
-    const a = Math.random()*Math.PI*2, sp = 80+Math.random()*220;
-    G.particles.push({ x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-60,
-      col, life:350+Math.random()*300, sz:2+Math.random()*3 });
-  }
-}
+        function burst(x, y, col, n) {
+            for (let i = 0; i < n; i++) {
+                const a = Math.random() * Math.PI * 2, sp = 80 + Math.random() * 220;
+                G.particles.push({
+                    x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 60,
+                    col, life: 350 + Math.random() * 300, sz: 2 + Math.random() * 3
+                });
+            }
+        }
 
-function r(x, y, w, h, col) {
-  ctx.fillStyle = col;
-  ctx.fillRect(x|0, y|0, w, h);
-}
+        function r(x, y, w, h, col) {
+            ctx.fillStyle = col;
+            ctx.fillRect(x | 0, y | 0, w, h);
+        }
 
-function drawBG() {
-  const sky = ctx.createLinearGradient(0,0,0,H*0.68);
-  sky.addColorStop(0,'#7ec8e3'); sky.addColorStop(1,'#c8f0c0');
-  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H*0.68);
+        function drawBG() {
+            const sky = ctx.createLinearGradient(0, 0, 0, H * 0.68);
+            sky.addColorStop(0, '#7ec8e3'); sky.addColorStop(1, '#c8f0c0');
+            ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H * 0.68);
 
-  r(1200,28,50,50,'#ffe055');
-  r(1198,24,54,10,'#ffe055'); r(1222,18,10,62,'#ffe055');
-  r(1192,48,68,10,'#ffe055'); r(1202,30,46,40,'#fff7aa');
-  r(1208,36,34,28,'rgba(255,255,255,0.5)');
+            r(1200, 28, 50, 50, '#ffe055');
+            r(1198, 24, 54, 10, '#ffe055'); r(1222, 18, 10, 62, '#ffe055');
+            r(1192, 48, 68, 10, '#ffe055'); r(1202, 30, 46, 40, '#fff7aa');
+            r(1208, 36, 34, 28, 'rgba(255,255,255,0.5)');
 
-  drawCloud(40 + ((G.bgX*0.28)%340|0), 50);
-  drawCloud(280 + ((G.bgX*0.18)%380|0), 82);
-  drawCloud(540 + ((G.bgX*0.22)%360|0), 38);
+            drawCloud(40 + ((G.bgX * 0.28) % 340 | 0), 50);
+            drawCloud(280 + ((G.bgX * 0.18) % 380 | 0), 82);
+            drawCloud(540 + ((G.bgX * 0.22) % 360 | 0), 38);
 
-  r(0, H*0.68, W, H*0.32, '#8b5e2a');
-  for (let y=H*0.68+20; y<H; y+=24) r(0,y,W,3,'rgba(0,0,0,0.1)');
+            r(0, H * 0.68, W, H * 0.32, '#8b5e2a');
+            for (let y = H * 0.68 + 20; y < H; y += 24) r(0, y, W, 3, 'rgba(0,0,0,0.1)');
 
-  for (let x=-((G.bgX%64)|0); x<W+64; x+=64) {
-    r(x,   H*0.68,   63, 9,  '#5aaa28');
-    r(x,   H*0.68,   63, 3,  '#3d8010');
-    r(x+5, H*0.68-6, 4, 6, '#5aaa28');
-    r(x+18,H*0.68-8, 4, 8, '#5aaa28');
-    r(x+32,H*0.68-5, 4, 5, '#5aaa28');
-    r(x+48,H*0.68-7, 4, 7, '#5aaa28');
-  }
+            for (let x = -((G.bgX % 64) | 0); x < W + 64; x += 64) {
+                r(x, H * 0.68, 63, 9, '#5aaa28');
+                r(x, H * 0.68, 63, 3, '#3d8010');
+                r(x + 5, H * 0.68 - 6, 4, 6, '#5aaa28');
+                r(x + 18, H * 0.68 - 8, 4, 8, '#5aaa28');
+                r(x + 32, H * 0.68 - 5, 4, 5, '#5aaa28');
+                r(x + 48, H * 0.68 - 7, 4, 7, '#5aaa28');
+            }
 
-  for (let x=-((G.bgX*0.85%88)|0); x<W+88; x+=88) {
-    drawFlower(x+10, H*0.68+2, '#ff88cc');
-    drawFlower(x+40, H*0.68+3, '#ffee44');
-    drawFlower(x+66, H*0.68+1, '#ffffff');
-  }
+            for (let x = -((G.bgX * 0.85 % 88) | 0); x < W + 88; x += 88) {
+                drawFlower(x + 10, H * 0.68 + 2, '#ff88cc');
+                drawFlower(x + 40, H * 0.68 + 3, '#ffee44');
+                drawFlower(x + 66, H * 0.68 + 1, '#ffffff');
+            }
 
-  G.blossoms.forEach(b => {
-    ctx.save();
-    ctx.translate(b.x|0, b.y|0);
-    ctx.rotate(b.rot);
-    r(-b.sz/2,-b.sz/2, b.sz, b.sz, b.col);
-    r(-b.sz/2-b.sz, 0, b.sz, b.sz, b.col);
-    r(b.sz/2, 0, b.sz, b.sz, b.col);
-    r(0,-b.sz/2-b.sz, b.sz, b.sz, b.col);
-    r(0, b.sz/2, b.sz, b.sz, b.col);
-    ctx.restore();
-  });
-}
+            G.blossoms.forEach(b => {
+                ctx.save();
+                ctx.translate(b.x | 0, b.y | 0);
+                ctx.rotate(b.rot);
+                r(-b.sz / 2, -b.sz / 2, b.sz, b.sz, b.col);
+                r(-b.sz / 2 - b.sz, 0, b.sz, b.sz, b.col);
+                r(b.sz / 2, 0, b.sz, b.sz, b.col);
+                r(0, -b.sz / 2 - b.sz, b.sz, b.sz, b.col);
+                r(0, b.sz / 2, b.sz, b.sz, b.col);
+                ctx.restore();
+            });
+        }
 
-function drawCloud(x,y) {
-  r(x,   y,   80,18,'rgba(255,255,255,0.82)');
-  r(x+12,y-12,56,14,'rgba(255,255,255,0.82)');
-  r(x+26,y-22,32,12,'rgba(255,255,255,0.82)');
-  r(x+2, y+4, 76, 6,'rgba(255,255,255,0.4)');
-}
+        function drawCloud(x, y) {
+            r(x, y, 80, 18, 'rgba(255,255,255,0.82)');
+            r(x + 12, y - 12, 56, 14, 'rgba(255,255,255,0.82)');
+            r(x + 26, y - 22, 32, 12, 'rgba(255,255,255,0.82)');
+            r(x + 2, y + 4, 76, 6, 'rgba(255,255,255,0.4)');
+        }
 
-function drawFlower(x,y,col) {
-  r(x+2,y-14,2,14,'#44aa22');
-  r(x-2,y-18,8,4,col);
-  r(x+1,y-21,4,9,col);
-  r(x+1,y-18,3,3,'#ffee44');
-}
+        function drawFlower(x, y, col) {
+            r(x + 2, y - 14, 2, 14, '#44aa22');
+            r(x - 2, y - 18, 8, 4, col);
+            r(x + 1, y - 21, 4, 9, col);
+            r(x + 1, y - 18, 3, 3, '#ffee44');
+        }
 
-function drawWall() {
-  const wx=G.wallX|0;
-  const ww=W-wx+4;
-  for(let y=0;y<H;y+=24)
-    r(wx,y,ww,24,((y/24|0)%2===0)?'#cc1100':'#f5f0e8');
-  ctx.fillStyle='rgba(0,0,0,0.08)';
-  for(let y=0;y<H;y+=4) ctx.fillRect(wx,y,ww,1);
-  r(wx,0,10,H,'#440000');
-  r(wx+10,0,5,H,'rgba(0,0,0,0.2)');
-  drawBucket(wx+18, H/2-42);
-  [H*0.2, H*0.5, H*0.78].forEach(hy=>drawChickenHead(wx-36, hy));
-}
+        function drawWall() {
+            const wx = G.wallX | 0;
+            const ww = W - wx + 4;
+            for (let y = 0; y < H; y += 24)
+                r(wx, y, ww, 24, ((y / 24 | 0) % 2 === 0) ? '#cc1100' : '#f5f0e8');
+            ctx.fillStyle = 'rgba(0,0,0,0.08)';
+            for (let y = 0; y < H; y += 4) ctx.fillRect(wx, y, ww, 1);
+            r(wx, 0, 10, H, '#440000');
+            r(wx + 10, 0, 5, H, 'rgba(0,0,0,0.2)');
+            drawBucket(wx + 18, H / 2 - 42);
+            [H * 0.2, H * 0.5, H * 0.78].forEach(hy => drawChickenHead(wx - 36, hy));
+        }
 
-function drawBucket(x,y) {
-  r(x,y,46,54,'#cc1100');
-  r(x-4,y-3,54,9,'#ee1100');
-  r(x+4,y+14,38,3,'#ff9977');
-  r(x+4,y+24,38,3,'#ff9977');
-  r(x+4,y+34,38,2,'#ff9977');
-  ctx.fillStyle='#fff';
-  r(x+6,y+38,3,12,'#fff'); r(x+9,y+41,3,3,'#fff');
-  r(x+12,y+38,3,5,'#fff'); r(x+12,y+45,3,5,'#fff');
-  r(x+18,y+38,3,12,'#fff'); r(x+21,y+38,6,3,'#fff'); r(x+21,y+43,5,3,'#fff');
-  r(x+30,y+38,3,12,'#fff'); r(x+33,y+38,6,3,'#fff'); r(x+33,y+47,6,3,'#fff');
-  r(x,y,6,54,'rgba(255,255,255,0.1)');
-}
+        function drawBucket(x, y) {
+            r(x, y, 46, 54, '#cc1100');
+            r(x - 4, y - 3, 54, 9, '#ee1100');
+            r(x + 4, y + 14, 38, 3, '#ff9977');
+            r(x + 4, y + 24, 38, 3, '#ff9977');
+            r(x + 4, y + 34, 38, 2, '#ff9977');
+            ctx.fillStyle = '#fff';
+            r(x + 6, y + 38, 3, 12, '#fff'); r(x + 9, y + 41, 3, 3, '#fff');
+            r(x + 12, y + 38, 3, 5, '#fff'); r(x + 12, y + 45, 3, 5, '#fff');
+            r(x + 18, y + 38, 3, 12, '#fff'); r(x + 21, y + 38, 6, 3, '#fff'); r(x + 21, y + 43, 5, 3, '#fff');
+            r(x + 30, y + 38, 3, 12, '#fff'); r(x + 33, y + 38, 6, 3, '#fff'); r(x + 33, y + 47, 6, 3, '#fff');
+            r(x, y, 6, 54, 'rgba(255,255,255,0.1)');
+        }
 
-function drawChickenHead(x,y) {
-  y=y|0;
-  r(x+11,y,12,11,C.feather);
-  r(x+13,y,8,4,C.featherD);
-  r(x,y-28,34,28,C.feather);
-  [[2,-26,5,5],[11,-24,5,5],[20,-26,5,5],[28,-24,4,5],
-   [4,-14,5,4],[14,-12,4,4],[24,-14,4,4]].forEach(([dx,dy,w,h])=>r(x+dx,y+dy,w,h,C.featherD));
-  r(x+5,y-22,10,10,'#e8e0c8');
-  r(x+6,y-21,9,9,'#ffffff');
-  r(x+7,y-19,6,6,'#111');
-  r(x+7,y-19,2,2,'rgba(255,255,255,0.5)');
-  r(x-11,y-19,13,6,C.beak); r(x-7,y-14,9,5,C.beak);
-  r(x-11,y-19,13,2,C.beakD); r(x-7,y-14,9,2,C.beakD);
-  r(x-5,y-17,2,2,C.beakD);
-  r(x+3,y-34,7,7,C.comb); r(x+12,y-37,8,9,C.comb); r(x+22,y-33,7,7,C.comb);
-  r(x+12,y-40,4,4,'#ff5555');
-  r(x+2,y-6,7,12,C.wattle); r(x+4,y-4,4,9,'#ff4444');
-  r(x+3,y-25,12,2,'#887022'); r(x+2,y-26,4,2,'#887022');
-  r(x+28,y-28,6,28,'rgba(0,0,0,0.15)');
-}
+        function drawChickenHead(x, y) {
+            y = y | 0;
+            r(x + 11, y, 12, 11, C.feather);
+            r(x + 13, y, 8, 4, C.featherD);
+            r(x, y - 28, 34, 28, C.feather);
+            [[2, -26, 5, 5], [11, -24, 5, 5], [20, -26, 5, 5], [28, -24, 4, 5],
+            [4, -14, 5, 4], [14, -12, 4, 4], [24, -14, 4, 4]].forEach(([dx, dy, w, h]) => r(x + dx, y + dy, w, h, C.featherD));
+            r(x + 5, y - 22, 10, 10, '#e8e0c8');
+            r(x + 6, y - 21, 9, 9, '#ffffff');
+            r(x + 7, y - 19, 6, 6, '#111');
+            r(x + 7, y - 19, 2, 2, 'rgba(255,255,255,0.5)');
+            r(x - 11, y - 19, 13, 6, C.beak); r(x - 7, y - 14, 9, 5, C.beak);
+            r(x - 11, y - 19, 13, 2, C.beakD); r(x - 7, y - 14, 9, 2, C.beakD);
+            r(x - 5, y - 17, 2, 2, C.beakD);
+            r(x + 3, y - 34, 7, 7, C.comb); r(x + 12, y - 37, 8, 9, C.comb); r(x + 22, y - 33, 7, 7, C.comb);
+            r(x + 12, y - 40, 4, 4, '#ff5555');
+            r(x + 2, y - 6, 7, 12, C.wattle); r(x + 4, y - 4, 4, 9, '#ff4444');
+            r(x + 3, y - 25, 12, 2, '#887022'); r(x + 2, y - 26, 4, 2, '#887022');
+            r(x + 28, y - 28, 6, 28, 'rgba(0,0,0,0.15)');
+        }
 
-function drawPlayer() {
-  const bx=30;
-  const py=G.playerY|0;
+        function drawPlayer() {
+            const bx = 30;
+            const py = G.playerY | 0;
 
-  r(bx-88, py-6, 88, 10, C.pGlider);
-  r(bx-88, py-6, 88, 3,  C.pGliderE);
-  r(bx-88, py+1, 88, 3,  C.pGliderD);
-  r(bx-90, py-12, 6, 22, C.pGliderD);
-  r(bx-90, py-12, 6, 5,  C.pGliderE);
-  r(bx-90, py+6,  6, 4,  C.pGliderD);
+            r(bx - 88, py - 6, 88, 10, C.pGlider);
+            r(bx - 88, py - 6, 88, 3, C.pGliderE);
+            r(bx - 88, py + 1, 88, 3, C.pGliderD);
+            r(bx - 90, py - 12, 6, 22, C.pGliderD);
+            r(bx - 90, py - 12, 6, 5, C.pGliderE);
+            r(bx - 90, py + 6, 6, 4, C.pGliderD);
 
-  r(bx+18, py-6, 88, 10, C.pGlider);
-  r(bx+18, py-6, 88, 3,  C.pGliderE);
-  r(bx+18, py+1, 88, 3,  C.pGliderD);
-  r(bx+102,py-12, 6, 22, C.pGliderD);
-  r(bx+102,py-12, 6, 5,  C.pGliderE);
-  r(bx+102,py+6,  6, 4,  C.pGliderD);
+            r(bx + 18, py - 6, 88, 10, C.pGlider);
+            r(bx + 18, py - 6, 88, 3, C.pGliderE);
+            r(bx + 18, py + 1, 88, 3, C.pGliderD);
+            r(bx + 102, py - 12, 6, 22, C.pGliderD);
+            r(bx + 102, py - 12, 6, 5, C.pGliderE);
+            r(bx + 102, py + 6, 6, 4, C.pGliderD);
 
-  r(bx-2, py-14, 22, 8, C.pGliderD);
-  r(bx,   py-12, 18, 5, C.pGlider);
+            r(bx - 2, py - 14, 22, 8, C.pGliderD);
+            r(bx, py - 12, 18, 5, C.pGlider);
 
-  r(bx,    py-2,  18, 22, C.pBody);
-  r(bx,    py-2,  4,  22, C.pBodyD);
-  r(bx,    py-2,  18, 5,  C.pWhite);
-  r(bx,    py-2,  4,  5,  '#bbddee');
-  r(bx,    py+10, 18, 4,  C.pYellow);
-  r(bx+6,  py+9,  6,  6,  '#ccaa00');
+            r(bx, py - 2, 18, 22, C.pBody);
+            r(bx, py - 2, 4, 22, C.pBodyD);
+            r(bx, py - 2, 18, 5, C.pWhite);
+            r(bx, py - 2, 4, 5, '#bbddee');
+            r(bx, py + 10, 18, 4, C.pYellow);
+            r(bx + 6, py + 9, 6, 6, '#ccaa00');
 
-  r(bx+2,  py+20, 6, 10, C.pBodyD);
-  r(bx+10, py+20, 6, 10, C.pBodyD);
-  r(bx+1,  py+28, 8, 4, '#224466');
-  r(bx+9,  py+28, 8, 4, '#224466');
+            r(bx + 2, py + 20, 6, 10, C.pBodyD);
+            r(bx + 10, py + 20, 6, 10, C.pBodyD);
+            r(bx + 1, py + 28, 8, 4, '#224466');
+            r(bx + 9, py + 28, 8, 4, '#224466');
 
-  r(bx-5, py+1, 6, 8, C.pSkin);
-  r(bx+17,py+1, 6, 8, C.pSkin);
+            r(bx - 5, py + 1, 6, 8, C.pSkin);
+            r(bx + 17, py + 1, 6, 8, C.pSkin);
 
-  r(bx+21, py+2, 14, 5, '#3355bb');
-  r(bx+30, py+3, 9,  3, '#5577dd');
-  r(bx+37, py+4, 6,  2, '#aabbff');
-  r(bx+23, py+4, 2,  2, C.snowB);
-  r(bx+26, py+2, 2,  2, C.snowB);
+            r(bx + 21, py + 2, 14, 5, '#3355bb');
+            r(bx + 30, py + 3, 9, 3, '#5577dd');
+            r(bx + 37, py + 4, 6, 2, '#aabbff');
+            r(bx + 23, py + 4, 2, 2, C.snowB);
+            r(bx + 26, py + 2, 2, 2, C.snowB);
 
-  r(bx+2,  py-14, 14, 11, C.pSkin);
-  r(bx+2,  py-14, 5,  6,  '#ffddc0');
-  r(bx+10, py-11, 3,  4, '#111');
-  r(bx+10, py-11, 1,  1, '#fff');
-  r(bx+5,  py-10, 2,  2, '#111');
-  r(bx+5,  py-10, 1,  1, '#fff');
-  r(bx+3,  py-9, 3, 2, 'rgba(255,140,140,0.45)');
-  r(bx+12, py-9, 3, 2, 'rgba(255,140,140,0.45)');
+            r(bx + 2, py - 14, 14, 11, C.pSkin);
+            r(bx + 2, py - 14, 5, 6, '#ffddc0');
+            r(bx + 10, py - 11, 3, 4, '#111');
+            r(bx + 10, py - 11, 1, 1, '#fff');
+            r(bx + 5, py - 10, 2, 2, '#111');
+            r(bx + 5, py - 10, 1, 1, '#fff');
+            r(bx + 3, py - 9, 3, 2, 'rgba(255,140,140,0.45)');
+            r(bx + 12, py - 9, 3, 2, 'rgba(255,140,140,0.45)');
 
-  r(bx+1,  py-15, 16, 3, C.pCap);
-  r(bx+3,  py-19, 12, 5, C.pCap);
-  r(bx+14, py-13, 5,  2, C.pCap);
-  r(bx+5,  py-21, 4,  2, '#ff3333');
+            r(bx + 1, py - 15, 16, 3, C.pCap);
+            r(bx + 3, py - 19, 12, 5, C.pCap);
+            r(bx + 14, py - 13, 5, 2, C.pCap);
+            r(bx + 5, py - 21, 4, 2, '#ff3333');
 
-  r(bx+2,  py-16, 4, 4, '#7B3F00');
-  r(bx+14, py-15, 4, 3, '#7B3F00');
-  r(bx+15, py-11, 6, 4, '#7B3F00');
-  r(bx+17, py-8,  5, 8, '#7B3F00');
-  r(bx+16, py,    4, 6, '#7B3F00');
-}
+            r(bx + 2, py - 16, 4, 4, '#7B3F00');
+            r(bx + 14, py - 15, 4, 3, '#7B3F00');
+            r(bx + 15, py - 11, 6, 4, '#7B3F00');
+            r(bx + 17, py - 8, 5, 8, '#7B3F00');
+            r(bx + 16, py, 4, 6, '#7B3F00');
+        }
 
-function drawBoy() {
-  if (!G.boy) return;
-  const b=G.boy;
-  let rawY=H-88, alpha=1;
-  if (b.t<400)       rawY=H+50-(b.t/400)*(H+50-(H-88));
-  else if (b.t>1900) { const f=(b.t-1900)/700; alpha=1-f; rawY=(H-88)+f*140; }
-  ctx.globalAlpha=Math.max(0,alpha);
-  const bx=24, by=(rawY-38)|0;
+        function drawBoy() {
+            if (!G.boy) return;
+            const b = G.boy;
+            let rawY = H - 88, alpha = 1;
+            if (b.t < 400) rawY = H + 50 - (b.t / 400) * (H + 50 - (H - 88));
+            else if (b.t > 1900) { const f = (b.t - 1900) / 700; alpha = 1 - f; rawY = (H - 88) + f * 140; }
+            ctx.globalAlpha = Math.max(0, alpha);
+            const bx = 24, by = (rawY - 38) | 0;
 
-  r(bx+2, by+26,5,12,C.bPants); r(bx+10,by+26,5,12,C.bPants);
-  r(bx+1, by+36,7,4,'#222');    r(bx+8, by+36,7,4,'#222');
-  r(bx,   by+13,16,14,C.bShirt); r(bx+1,by+13,4,14,'#3355ee');
-  r(bx-4, by+15,5,9,C.pSkin);
+            r(bx + 2, by + 26, 5, 12, C.bPants); r(bx + 10, by + 26, 5, 12, C.bPants);
+            r(bx + 1, by + 36, 7, 4, '#222'); r(bx + 8, by + 36, 7, 4, '#222');
+            r(bx, by + 13, 16, 14, C.bShirt); r(bx + 1, by + 13, 4, 14, '#3355ee');
+            r(bx - 4, by + 15, 5, 9, C.pSkin);
 
-  if (!b.thrown) {
-    r(bx+16,by+4,5,8,C.pSkin);
-    r(bx+19,by,4,6,C.pSkin);
-    r(bx+20,by-5,10,7,C.tShell);
-    r(bx+21,by-5,8,2,C.tShellL);
-    r(bx+22,by-2,3,3,C.tPattern);
-    r(bx+27,by-2,3,3,C.tPattern);
-  } else {
-    r(bx+16,by+15,5,9,C.pSkin);
-  }
+            if (!b.thrown) {
+                r(bx + 16, by + 4, 5, 8, C.pSkin);
+                r(bx + 19, by, 4, 6, C.pSkin);
+                r(bx + 20, by - 5, 10, 7, C.tShell);
+                r(bx + 21, by - 5, 8, 2, C.tShellL);
+                r(bx + 22, by - 2, 3, 3, C.tPattern);
+                r(bx + 27, by - 2, 3, 3, C.tPattern);
+            } else {
+                r(bx + 16, by + 15, 5, 9, C.pSkin);
+            }
 
-  r(bx+2,by+2,12,12,C.pSkin); r(bx+2,by+2,4,6,'#ffddc0');
-  r(bx+4,by+6,2,2,'#111'); r(bx+9,by+6,2,2,'#111');
-  r(bx+1,by-2,14,3,C.bCap); r(bx+3,by-6,10,5,C.bCap); r(bx+12,by+1,5,2,C.bCap);
-  r(bx+1,by+1,14,3,C.bHair);
-  ctx.globalAlpha=1;
-}
+            r(bx + 2, by + 2, 12, 12, C.pSkin); r(bx + 2, by + 2, 4, 6, '#ffddc0');
+            r(bx + 4, by + 6, 2, 2, '#111'); r(bx + 9, by + 6, 2, 2, '#111');
+            r(bx + 1, by - 2, 14, 3, C.bCap); r(bx + 3, by - 6, 10, 5, C.bCap); r(bx + 12, by + 1, 5, 2, C.bCap);
+            r(bx + 1, by + 1, 14, 3, C.bHair);
+            ctx.globalAlpha = 1;
+        }
 
-function drawSnowballs() {
-  G.snowballs.forEach(s => {
-    if (s.big) {
-      r(s.x-22,s.y-3,16,4,'rgba(100,180,255,0.2)');
-      r(s.x-18,s.y-22,28,28,C.mega);
-      r(s.x-14,s.y-18,10,10,C.megaShine);
-      r(s.x-4, s.y-8, 8, 8, C.snowB);
-      r(s.x+2, s.y+2, 8, 8, C.megaB);
-      r(s.x-18,s.y-22,28,4,'#ddeeff');
-      const t=Date.now()*0.005;
-      [[0,-30],[20,-20],[30,0],[20,20],[0,30],[-20,20],[-30,0],[-20,-20]].forEach(([dx,dy],i)=>{
-        const a=0.4+0.4*Math.sin(t+i*0.78);
-        ctx.globalAlpha=a; r(s.x+dx-2,s.y+dy-2,5,5,'#ffffff'); ctx.globalAlpha=1;
-      });
-    } else {
-      r(s.x-18,s.y-2,12,4,'rgba(100,180,220,0.25)');
-      r(s.x-7, s.y-7,12,12,C.snow);
-      r(s.x-5, s.y-5, 4, 4,C.snowShine);
-      r(s.x+1, s.y+1, 4, 4,C.snowB);
-      r(s.x-7, s.y-7,12, 2,'#cce8ff');
-    }
-  });
-}
+        function drawSnowballs() {
+            G.snowballs.forEach(s => {
+                if (s.big) {
+                    r(s.x - 22, s.y - 3, 16, 4, 'rgba(100,180,255,0.2)');
+                    r(s.x - 18, s.y - 22, 28, 28, C.mega);
+                    r(s.x - 14, s.y - 18, 10, 10, C.megaShine);
+                    r(s.x - 4, s.y - 8, 8, 8, C.snowB);
+                    r(s.x + 2, s.y + 2, 8, 8, C.megaB);
+                    r(s.x - 18, s.y - 22, 28, 4, '#ddeeff');
+                    const t = Date.now() * 0.005;
+                    [[0, -30], [20, -20], [30, 0], [20, 20], [0, 30], [-20, 20], [-30, 0], [-20, -20]].forEach(([dx, dy], i) => {
+                        const a = 0.4 + 0.4 * Math.sin(t + i * 0.78);
+                        ctx.globalAlpha = a; r(s.x + dx - 2, s.y + dy - 2, 5, 5, '#ffffff'); ctx.globalAlpha = 1;
+                    });
+                } else {
+                    r(s.x - 18, s.y - 2, 12, 4, 'rgba(100,180,220,0.25)');
+                    r(s.x - 7, s.y - 7, 12, 12, C.snow);
+                    r(s.x - 5, s.y - 5, 4, 4, C.snowShine);
+                    r(s.x + 1, s.y + 1, 4, 4, C.snowB);
+                    r(s.x - 7, s.y - 7, 12, 2, '#cce8ff');
+                }
+            });
+        }
 
-function drawEggs() {
-  G.eggs.forEach(e => {
-    r(e.x-8,e.y-6,16,12,C.egg);
-    r(e.x-6,e.y-8,12,16,C.egg);
-    r(e.x-4,e.y-5, 4, 4,C.eggShine);
-    r(e.x,  e.y-4, 1, 8,C.eggD);
-    r(e.x-2,e.y,   4, 1,C.eggD);
-    r(e.x+4,e.y-6, 4,14,'rgba(0,0,0,0.1)');
-  });
-}
+        function drawEggs() {
+            G.eggs.forEach(e => {
+                r(e.x - 8, e.y - 6, 16, 12, C.egg);
+                r(e.x - 6, e.y - 8, 12, 16, C.egg);
+                r(e.x - 4, e.y - 5, 4, 4, C.eggShine);
+                r(e.x, e.y - 4, 1, 8, C.eggD);
+                r(e.x - 2, e.y, 4, 1, C.eggD);
+                r(e.x + 4, e.y - 6, 4, 14, 'rgba(0,0,0,0.1)');
+            });
+        }
 
-function drawTurtleShells() {
-  G.turtleShells.forEach(s => {
-    ctx.save();
-    ctx.translate(s.x|0, s.y|0);
-    ctx.rotate(s.rot);
-    r(-12,-8,24,16,C.tShell);
-    r(-10,-6,7,6,C.tPattern); r(3,-6,7,6,C.tPattern);
-    r(-4,2,8,4,C.tPattern);
-    r(-12,-8,24,3,C.tShellL); r(-12,-8,3,16,C.tShellL);
-    r(-12,-8,24,2,C.tEdge);   r(-12,-8,2,16,C.tEdge);
-    ctx.restore();
-  });
-}
+        function drawTurtleShells() {
+            G.turtleShells.forEach(s => {
+                ctx.save();
+                ctx.translate(s.x | 0, s.y | 0);
+                ctx.rotate(s.rot);
+                r(-12, -8, 24, 16, C.tShell);
+                r(-10, -6, 7, 6, C.tPattern); r(3, -6, 7, 6, C.tPattern);
+                r(-4, 2, 8, 4, C.tPattern);
+                r(-12, -8, 24, 3, C.tShellL); r(-12, -8, 3, 16, C.tShellL);
+                r(-12, -8, 24, 2, C.tEdge); r(-12, -8, 2, 16, C.tEdge);
+                ctx.restore();
+            });
+        }
 
-function drawParticles() {
-  G.particles.forEach(p => {
-    ctx.globalAlpha=Math.min(1,p.life/350);
-    r(p.x,p.y,p.sz,p.sz,p.col);
-  });
-  ctx.globalAlpha=1;
-}
+        function drawParticles() {
+            G.particles.forEach(p => {
+                ctx.globalAlpha = Math.min(1, p.life / 350);
+                r(p.x, p.y, p.sz, p.sz, p.col);
+            });
+            ctx.globalAlpha = 1;
+        }
 
-function drawHUD() {
-  const hp=G.wallHP/1000;
-  r(10,10,320,26,'rgba(0,0,0,0.7)');
-  const hcol=hp>0.5?'#dd2200':hp>0.25?'#dd7700':'#ffdd00';
-  r(12,12,Math.round(316*hp),22,hcol);
-  ctx.fillStyle='rgba(255,255,255,0.08)';
-  for(let x=12;x<12+316*hp;x+=10) ctx.fillRect(x,12,5,22);
-  if(hp<0.25){const p=0.3+0.3*Math.sin(Date.now()*0.006);ctx.fillStyle=`rgba(255,255,0,${p})`;ctx.fillRect(10,10,320,26);}
-  ctx.strokeStyle='#880000';ctx.lineWidth=2;ctx.strokeRect(10,10,320,26);
-  ctx.fillStyle='#fff';ctx.font='bold 11px "Courier New"';ctx.textAlign='left';
-  ctx.fillText('WALL OF KFC',15,26);
-  ctx.textAlign='right';ctx.fillText(`${G.wallHP} / 1000 HP`,328,26);ctx.textAlign='left';
+        function drawHUD() {
+            const hp = G.wallHP / 1000;
+            r(10, 10, 320, 26, 'rgba(0,0,0,0.7)');
+            const hcol = hp > 0.5 ? '#dd2200' : hp > 0.25 ? '#dd7700' : '#ffdd00';
+            r(12, 12, Math.round(316 * hp), 22, hcol);
+            ctx.fillStyle = 'rgba(255,255,255,0.08)';
+            for (let x = 12; x < 12 + 316 * hp; x += 10) ctx.fillRect(x, 12, 5, 22);
+            if (hp < 0.25) { const p = 0.3 + 0.3 * Math.sin(Date.now() * 0.006); ctx.fillStyle = `rgba(255,255,0,${p})`; ctx.fillRect(10, 10, 320, 26); }
+            ctx.strokeStyle = '#880000'; ctx.lineWidth = 2; ctx.strokeRect(10, 10, 320, 26);
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 11px "Courier New"'; ctx.textAlign = 'left';
+            ctx.fillText('WALL OF KFC', 15, 26);
+            ctx.textAlign = 'right'; ctx.fillText(`${G.wallHP} / 1000 HP`, 328, 26); ctx.textAlign = 'left';
 
-  const prog=Math.min(G.shotCount/30,1);
-  r(10,42,220,20,'rgba(0,0,0,0.65)');
-  r(12,44,Math.round(216*prog),16,G.megaReady?'#44aaff':'#226699');
-  if(G.megaReady){const p2=0.5+0.5*Math.sin(Date.now()*0.008);ctx.fillStyle=`rgba(100,200,255,${p2})`;ctx.fillRect(10,42,220,20);}
-  ctx.fillStyle=G.megaReady?'#aaeeff':'#6699bb';
-  ctx.font='11px "Courier New"';
-  ctx.fillText(G.megaReady?'★ PRESS R : MEGA SNOWBALL! ★':`SHOTS: ${G.shotCount}/30 → MEGA`,15,56);
+            const prog = Math.min(G.shotCount / 30, 1);
+            r(10, 42, 220, 20, 'rgba(0,0,0,0.65)');
+            r(12, 44, Math.round(216 * prog), 16, G.megaReady ? '#44aaff' : '#226699');
+            if (G.megaReady) { const p2 = 0.5 + 0.5 * Math.sin(Date.now() * 0.008); ctx.fillStyle = `rgba(100,200,255,${p2})`; ctx.fillRect(10, 42, 220, 20); }
+            ctx.fillStyle = G.megaReady ? '#aaeeff' : '#6699bb';
+            ctx.font = '11px "Courier New"';
+            ctx.fillText(G.megaReady ? '★ PRESS R : MEGA SNOWBALL! ★' : `SHOTS: ${G.shotCount}/30 → MEGA`, 15, 56);
 
-  const bl=G.boy?'★ THE BOY IS HERE! ★':`BOY IN: ${Math.max(0,(G.boyInterval-G.boyTimer)/1000).toFixed(1)}s`;
-  r(10,66,210,20,'rgba(0,0,0,0.65)');
-  ctx.fillStyle=G.boy?'#ffd700':'#aacc55';
-  ctx.font='11px "Courier New"';
-  ctx.fillText(bl,15,80);
+            const bl = G.boy ? '★ THE BOY IS HERE! ★' : `BOY IN: ${Math.max(0, (G.boyInterval - G.boyTimer) / 1000).toFixed(1)}s`;
+            r(10, 66, 210, 20, 'rgba(0,0,0,0.65)');
+            ctx.fillStyle = G.boy ? '#ffd700' : '#aacc55';
+            ctx.font = '11px "Courier New"';
+            ctx.fillText(bl, 15, 80);
 
-  const livesLeft = 15 - G.eggHits;
-  r(10,90,180,20,'rgba(0,0,0,0.65)');
-  ctx.fillStyle = livesLeft <= 5 ? '#ff4444' : '#ffddaa';
-  ctx.font='11px "Courier New"';
-  ctx.fillText(`LIVES: ${livesLeft} / 15  (dodge eggs!)`,15,104);
+            const livesLeft = 15 - G.eggHits;
+            r(10, 90, 180, 20, 'rgba(0,0,0,0.65)');
+            ctx.fillStyle = livesLeft <= 5 ? '#ff4444' : '#ffddaa';
+            ctx.font = '11px "Courier New"';
+            ctx.fillText(`LIVES: ${livesLeft} / 15  (dodge eggs!)`, 15, 104);
 
-  r(0,H-20,W,20,'rgba(0,0,0,0.55)');
-  ctx.fillStyle='rgba(255,255,255,0.38)';ctx.font='10px "Courier New"';
-  ctx.fillText('↑↓/WS: FLY   |   HOLD SPACE: SHOOT   |   R (after 30 shots): MEGA SNOWBALL   |   R: RESTART',10,H-6);
-}
+            r(0, H - 20, W, 20, 'rgba(0,0,0,0.55)');
+            ctx.fillStyle = 'rgba(255,255,255,0.38)'; ctx.font = '10px "Courier New"';
+            ctx.fillText('↑↓/WS: FLY   |   HOLD SPACE: SHOOT   |   R (after 30 shots): MEGA SNOWBALL   |   R: RESTART', 10, H - 6);
+        }
 
-function drawOverlay() {
-  if(G.phase==='playing') return;
-  if(G.phase==='won'){
-    ctx.fillStyle='rgba(0,0,0,0.65)';ctx.fillRect(0,0,W,H);
-  } else {
-    ctx.fillStyle='rgba(0,0,0,0.78)';ctx.fillRect(0,0,W,H);
-    ctx.textAlign='center';
-    ctx.fillStyle='#ff4422';ctx.font='bold 52px "Courier New"';
-    ctx.fillText('GAME OVER',W/2,H/2-20);
-    ctx.fillStyle='#ffccaa';ctx.font='18px "Courier New"';
-    const lostMsg = G.wallX < 120 ? 'The Wall of KFC reached you!' : 'You got egged 15 times! 🥚';
-    ctx.fillText(lostMsg,W/2,H/2+22);
-    ctx.fillStyle='#ff8866';ctx.font='14px "Courier New"';
-    ctx.fillText('Press  R  to try again',W/2,H/2+56);
-    ctx.textAlign='left';
-  }
-}
+        function drawOverlay() {
+            if (G.phase === 'playing') return;
+            if (G.phase === 'won') {
+                ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fillRect(0, 0, W, H);
+            } else {
+                ctx.fillStyle = 'rgba(0,0,0,0.78)'; ctx.fillRect(0, 0, W, H);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#ff4422'; ctx.font = 'bold 52px "Courier New"';
+                ctx.fillText('GAME OVER', W / 2, H / 2 - 20);
+                ctx.fillStyle = '#ffccaa'; ctx.font = '18px "Courier New"';
+                const lostMsg = G.wallX < 120 ? 'The Wall of KFC reached you!' : 'You got egged 15 times!';
+                ctx.fillText(lostMsg, W / 2, H / 2 + 22);
+                ctx.fillStyle = '#ff8866'; ctx.font = '14px "Courier New"';
+                ctx.fillText('Press  R  to try again', W / 2, H / 2 + 56);
+                ctx.textAlign = 'left';
+            }
+        }
 
-var victoryCinematicStarted = false;
-function checkWinTrigger() {
-  if(G.phase==='won' && !victoryCinematicStarted){
-    victoryCinematicStarted = true;
-    setTimeout(startVictoryCinematic, 800);
-  }
-}
+        var victoryCinematicStarted = false;
+        function checkWinTrigger() {
+            if (G.phase === 'won' && !victoryCinematicStarted) {
+                victoryCinematicStarted = true;
+                setTimeout(startVictoryCinematic, 800);
+            }
+        }
 
-function loop(ts) {
-  const dt=Math.min((ts-(G.lastTs||ts))/1000,0.05);
-  G.lastTs=ts;
-  ctx.clearRect(0,0,W,H);
-  drawBG();
-  if(G.phase==='playing') update(dt);
-  drawWall();
-  drawSnowballs();
-  drawEggs();
-  drawTurtleShells();
-  drawParticles();
-  drawPlayer();
-  drawBoy();
-  drawHUD();
-  drawOverlay();
-  checkWinTrigger();
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-</script>
+        function loop(ts) {
+            const dt = Math.min((ts - (G.lastTs || ts)) / 1000, 0.05);
+            G.lastTs = ts;
+            ctx.clearRect(0, 0, W, H);
+            drawBG();
+            if (G.phase === 'playing') update(dt);
+            drawWall();
+            drawSnowballs();
+            drawEggs();
+            drawTurtleShells();
+            drawParticles();
+            drawPlayer();
+            drawBoy();
+            drawHUD();
+            drawOverlay();
+            checkWinTrigger();
+            requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+    </script>
 
-<!-- ═══════════════════════════════════════════════════════
+    <!-- ═══════════════════════════════════════════════════════
      VICTORY CINEMATIC OVERLAY
 ═══════════════════════════════════════════════════════ -->
-<style>
-#vic-skip {
-  position:fixed; top:18px; right:24px; z-index:200;
-  padding:8px 22px; background:rgba(0,0,0,0.55);
-  border:1px solid rgba(255,255,255,0.3); color:rgba(255,255,255,0.6);
-  font-family:'Courier New',monospace; font-size:11px; letter-spacing:3px;
-  cursor:pointer; border-radius:3px; transition:background .2s, color .2s;
-}
-#vic-skip:hover { background:rgba(255,80,0,0.4); color:#fff; }
-
-#vic-overlay {
-  display:none; position:fixed; inset:0; z-index:100;
-  background:#000; overflow:hidden;
-  font-family:'Courier New',monospace;
-}
-#vic-overlay.show { display:block; }
-
-.vic-stage { display:none; position:absolute; inset:0; }
-.vic-stage.active { display:flex; flex-direction:column; align-items:center; justify-content:center; }
-
-/* ── Stage 1: Flags ── */
-#stage-flags { background:#000820; }
-#flags-title {
-  color:#ffe066; font-size:22px; letter-spacing:5px; font-weight:bold;
-  text-shadow:0 0 20px #ffcc00; margin-bottom:14px; flex-shrink:0;
-  animation:flagTitlePulse 1.5s ease-in-out infinite;
-}
-@keyframes flagTitlePulse{0%,100%{opacity:1}50%{opacity:0.7}}
-#flags-canvas { image-rendering:pixelated; image-rendering:crisp-edges; flex-shrink:0; }
-#flags-sub { color:#aac8ff; font-size:11px; letter-spacing:3px; margin-top:10px; flex-shrink:0; }
-#flags-next-btn {
-  flex-shrink:0; margin-top:16px; padding:10px 36px; background:transparent;
-  border:2px solid #ffe066; color:#ffe066;
-  font-family:'Courier New',monospace; font-size:13px; letter-spacing:4px;
-  cursor:pointer; transition:background .2s, color .2s;
-}
-#flags-next-btn:hover { background:#ffe066; color:#000; }
-
-/* ── Stage 2: 4 Season Planes — full screen canvas ── */
-#stage-planes {
-  background:#000;
-  overflow:hidden;
-  position:relative;
-  padding:0;
-}
-#planes-canvas {
-  display:block;
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-}
-#planes-next-btn {
-  position:absolute; bottom:22px; right:40px; z-index:10;
-  padding:10px 32px; background:rgba(0,0,0,0.6);
-  border:2px solid rgba(255,255,255,0.5); color:#fff;
-  font-family:'Courier New',monospace; font-size:13px; letter-spacing:4px;
-  cursor:pointer; transition:background .2s;
-  border-radius:3px;
-}
-#planes-next-btn:hover { background:rgba(255,255,255,0.15); }
-
-/* ── Stage 3: Earth ── */
-#stage-earth { background:radial-gradient(ellipse at center,#000820,#000); flex-direction:column; gap:24px; }
-#earth-title { color:#88ccff; font-size:20px; letter-spacing:6px; text-shadow:0 0 16px #4488ff; }
-#earth-canvas { border-radius:50%; box-shadow:0 0 60px #2255ff55, 0 0 20px #4488ff44; }
-#earth-caption { color:#aaccff; font-size:13px; letter-spacing:3px; opacity:0.75; }
-#earth-next-btn {
-  padding:14px 48px; background:linear-gradient(135deg,#1144cc,#2266ff);
-  border:2px solid #88aaff; color:#fff;
-  font-family:'Courier New',monospace; font-size:16px; letter-spacing:5px; font-weight:bold;
-  cursor:pointer; box-shadow:0 0 20px #2255ff88;
-  transition:transform .15s, box-shadow .15s;
-  animation:endBtnPulse 2s ease-in-out infinite;
-  border-radius:3px;
-}
-@keyframes endBtnPulse{0%,100%{box-shadow:0 0 20px #2255ff88}50%{box-shadow:0 0 40px #4488ffcc}}
-#earth-next-btn:hover { transform:scale(1.05); }
-</style>
-
-<div id="vic-overlay">
-  <button id="vic-skip" onclick="goToEnding()">SKIP ⏭</button>
-
-  <!-- STAGE 1: Flags -->
-  <div id="stage-flags" class="vic-stage">
-    <div id="flags-title">∈ EUROPE SALUTES YOUR VICTORY ∈</div>
-    <canvas id="flags-canvas" width="1200" height="440"></canvas>
-    <div id="flags-sub">flag 1 / 43</div>
-    <button id="flags-next-btn" onclick="showPlanesStage()">CONTINUE →</button>
-  </div>
-
-  <!-- STAGE 2: 4 Season Planes — horizontal flight -->
-  <div id="stage-planes" class="vic-stage">
-    <canvas id="planes-canvas"></canvas>
-    <button id="planes-next-btn" onclick="showEarthStage()">THE WORLD TOUR →</button>
-  </div>
-
-  <!-- STAGE 3: Earth + Planes -->
-  <div id="stage-earth" class="vic-stage">
-    <div id="earth-title">THE FOUR SEASONS FLY THE WORLD</div>
-    <canvas id="earth-canvas" width="420" height="420"></canvas>
-    <div id="earth-caption">4 SEASONS · 4 PLANES · ONE LEGEND</div>
-    <button id="earth-next-btn" onclick="goToEnding()">GO TO THE ENDING ✈</button>
-  </div>
-</div>
-
-<script>
-/* ═══ PIXEL FLAG DRAWING ENGINE ═══ */
-var FW=60, FH=40;
-
-function drawFlag(ctx, name) {
-  var c = ctx;
-  function r(x,y,w,h,col){c.fillStyle=col;c.fillRect(x,y,w,h);}
-  function stripe_h(cols){
-    var sh=FH/cols.length|0;
-    for(var i=0;i<cols.length;i++) r(0,i*sh,FW,i===cols.length-1?FH-i*sh:sh,cols[i]);
-  }
-  function stripe_v(cols){
-    var sw=FW/cols.length|0;
-    for(var i=0;i<cols.length;i++) r(i*sw,0,i===cols.length-1?FW-i*sw:sw,FH,cols[i]);
-  }
-  function drawStar5(cx,cy,ra,col){
-    c.fillStyle=col; c.beginPath();
-    for(var i=0;i<5;i++){
-      var a=Math.PI/2+i*Math.PI*2/5;
-      var b=a+Math.PI/5;
-      if(i===0){c.moveTo(cx+ra*Math.cos(a),cy-ra*Math.sin(a));}
-      else{c.lineTo(cx+ra*Math.cos(a),cy-ra*Math.sin(a));}
-      c.lineTo(cx+(ra*0.4)*Math.cos(b),cy-(ra*0.4)*Math.sin(b));
-    }
-    c.closePath(); c.fill();
-  }
-
-  switch(name){
-    case'ALBANIA':   r(0,0,FW,FH,'#e41e20');
-      c.fillStyle='#111'; c.fillRect(FW/2-8,FH/2-8,16,4); c.fillRect(FW/2-6,FH/2-4,12,4); c.fillRect(FW/2-4,FH/2,8,4); c.fillRect(FW/2-10,FH/2-6,4,10); c.fillRect(FW/2+6,FH/2-6,4,10); break;
-    case'ANDORRA':   stripe_v(['#003DA5','#FEDF00','#D00C27']); break;
-    case'AUSTRIA':   stripe_h(['#ED2939','#FFFFFF','#ED2939']); break;
-    case'BELARUS':   r(0,0,FW,FH*0.6|0,'#CF101A'); r(0,FH*0.6|0,FW,FH,'#009000'); r(0,0,8,FH,'#007520'); break;
-    case'BELGIUM':   stripe_v(['#1C1C1C','#FAE042','#EF3340']); break;
-    case'BOSNIA':    r(0,0,FW,FH,'#002395'); r(20,0,FW-20,FH,'#FFCD00'); break;
-    case'BULGARIA':  stripe_h(['#FFFFFF','#00966E','#D62612']); break;
-    case'CROATIA':   stripe_h(['#FF0000','#FFFFFF','#0000CC']); break;
-    case'CYPRUS':    r(0,0,FW,FH,'#FFFFFF'); c.fillStyle='#FF8C00'; c.beginPath(); c.ellipse(FW/2,FH/2-2,14,8,0,0,Math.PI*2); c.fill(); break;
-    case'CZECHIA':   r(0,0,FW,FH/2|0,'#FFFFFF'); r(0,FH/2|0,FW,FH/2,'#D7141A'); c.fillStyle='#11457E'; c.beginPath(); c.moveTo(0,0); c.lineTo(FW*0.45,FH/2); c.lineTo(0,FH); c.closePath(); c.fill(); break;
-    case'DENMARK':   r(0,0,FW,FH,'#C60C30'); r(FW*0.28|0,0,6,FH,'#FFFFFF'); r(0,FH*0.42|0,FW,6,'#FFFFFF'); break;
-    case'ESTONIA':   stripe_h(['#0072CE','#000000','#FFFFFF']); break;
-    case'FINLAND':   r(0,0,FW,FH,'#FFFFFF'); r(FW*0.28|0,0,7,FH,'#003580'); r(0,FH*0.42|0,FW,7,'#003580'); break;
-    case'FRANCE':    stripe_v(['#002395','#FFFFFF','#ED2939']); break;
-    case'GERMANY':   stripe_h(['#000000','#DD0000','#FFCE00']); break;
-    case'GREECE':    stripe_h(['#0D5EAF','#FFFFFF','#0D5EAF','#FFFFFF','#0D5EAF','#FFFFFF','#0D5EAF','#FFFFFF','#0D5EAF']); r(0,0,FW*0.38|0,FH*0.44|0,'#0D5EAF'); r(FW*0.38*0.4|0,0,5,FH*0.44|0,'#FFFFFF'); r(0,FH*0.44*0.45|0,FW*0.38|0,5,'#FFFFFF'); break;
-    case'HUNGARY':   stripe_h(['#CE2939','#FFFFFF','#477050']); break;
-    case'ICELAND':   r(0,0,FW,FH,'#003897'); r(FW*0.28|0,0,8,FH,'#FFFFFF'); r(0,FH*0.40|0,FW,8,'#FFFFFF'); r(FW*0.28+2|0,0,4,FH,'#D72828'); r(0,FH*0.40+2|0,FW,4,'#D72828'); break;
-    case'IRELAND':   stripe_v(['#169B62','#FFFFFF','#FF883E']); break;
-    case'ITALY':     stripe_v(['#009246','#FFFFFF','#CE2B37']); break;
-    case'LATVIA':    r(0,0,FW,FH,'#FFFFFF'); r(0,0,FW,FH*0.38|0,'#9E3039'); r(0,FH*0.62|0,FW,FH-FH*0.62|0,'#9E3039'); break;
-    case'LIECHTENSTEIN': stripe_h(['#002B7F','#CE1126']); r(3,3,12,12,'#FFD700'); break;
-    case'LITHUANIA': stripe_h(['#FDB913','#006A44','#C1272D']); break;
-    case'LUXEMBOURG':stripe_h(['#EF3340','#FFFFFF','#00A3E0']); break;
-    case'MALTA':     stripe_v(['#FFFFFF','#CF142B']); r(3,FH/2-5,10,10,'#AAAAAA'); break;
-    case'MOLDOVA':   stripe_v(['#003DA5','#FFD200','#CC0001']); break;
-    case'MONACO':    stripe_h(['#CE1126','#FFFFFF']); break;
-    case'MONTENEGRO':r(0,0,FW,FH,'#D4AF37'); r(4,4,FW-8,FH-8,'#CC0000'); break;
-    case'NETHERLANDS':stripe_h(['#AE1C28','#FFFFFF','#21468B']); break;
-    case'N.MACEDONIA':r(0,0,FW,FH,'#CE2028'); r(0,FH/2-1,FW,3,'#F7E400'); r(FW/2-1,0,3,FH,'#F7E400'); break;
-    case'NORWAY':    r(0,0,FW,FH,'#EF2B2D'); r(FW*0.28|0,0,8,FH,'#FFFFFF'); r(0,FH*0.38|0,FW,8,'#FFFFFF'); r(FW*0.28+2|0,0,4,FH,'#002868'); r(0,FH*0.38+2|0,FW,4,'#002868'); break;
-    case'POLAND':    stripe_h(['#FFFFFF','#DC143C']); break;
-    case'PORTUGAL':  r(0,0,FW*0.38|0,FH,'#006600'); r(FW*0.38|0,0,FW-FW*0.38|0,FH,'#FF0000'); break;
-    case'ROMANIA':   stripe_v(['#002B7F','#FCD116','#CE1126']); break;
-    case'SERBIA':    stripe_h(['#C6363C','#0C4076','#FFFFFF']); break;
-    case'SLOVAKIA':  stripe_h(['#FFFFFF','#0B4EA2','#EE1C25']); break;
-    case'SLOVENIA':  stripe_h(['#FFFFFF','#003DA5','#CE1126']); break;
-    case'SPAIN':     r(0,0,FW,FH*0.25|0,'#AA151B'); r(0,FH*0.75|0,FW,FH-FH*0.75|0,'#AA151B'); r(0,FH*0.25|0,FW,FH*0.5|0,'#F1BF00'); break;
-    case'SWEDEN':    r(0,0,FW,FH,'#006AA7'); r(FW*0.28|0,0,7,FH,'#FECC02'); r(0,FH*0.42|0,FW,7,'#FECC02'); break;
-    case'SWITZERLAND':r(0,0,FW,FH,'#FF0000'); r(FW/2-4,FH/2-10,8,20,'#FFFFFF'); r(FW/2-10,FH/2-4,20,8,'#FFFFFF'); break;
-    case'UKRAINE':   stripe_h(['#005BBB','#FFD500']); break;
-    case'UNITED KINGDOM':
-      c.fillStyle='#012169'; c.fillRect(0,0,FW,FH);
-      c.strokeStyle='#FFFFFF'; c.lineWidth=4; c.beginPath(); c.moveTo(0,0); c.lineTo(FW,FH); c.stroke(); c.beginPath(); c.moveTo(FW,0); c.lineTo(0,FH); c.stroke();
-      c.strokeStyle='#C8102E'; c.lineWidth=2; c.beginPath(); c.moveTo(0,0); c.lineTo(FW,FH); c.stroke(); c.beginPath(); c.moveTo(FW,0); c.lineTo(0,FH); c.stroke();
-      c.strokeStyle='#FFFFFF'; c.lineWidth=8; c.beginPath(); c.moveTo(FW/2,0); c.lineTo(FW/2,FH); c.stroke(); c.beginPath(); c.moveTo(0,FH/2); c.lineTo(FW,FH/2); c.stroke();
-      c.strokeStyle='#C8102E'; c.lineWidth=5; c.beginPath(); c.moveTo(FW/2,0); c.lineTo(FW/2,FH); c.stroke(); c.beginPath(); c.moveTo(0,FH/2); c.lineTo(FW,FH/2); c.stroke();
-      break;
-    case'VATICAN':   stripe_v(['#FFE000','#FFFFFF']); r(FW/2+5,FH/2-6,10,12,'#FFE000'); break;
-    default:         r(0,0,FW,FH,'#555566');
-  }
-  c.strokeStyle='rgba(255,255,255,0.3)'; c.lineWidth=1;
-  c.strokeRect(0.5,0.5,FW-1,FH-1);
-}
-
-var EU_FLAGS = [
-  'ALBANIA','ANDORRA','AUSTRIA','BELARUS','BELGIUM','BOSNIA','BULGARIA',
-  'CROATIA','CYPRUS','CZECHIA','DENMARK','ESTONIA','FINLAND','FRANCE',
-  'GERMANY','GREECE','HUNGARY','ICELAND','IRELAND','ITALY','LATVIA',
-  'LIECHTENSTEIN','LITHUANIA','LUXEMBOURG','MALTA','MOLDOVA','MONACO',
-  'MONTENEGRO','NETHERLANDS','N.MACEDONIA','NORWAY','POLAND','PORTUGAL',
-  'ROMANIA','SERBIA','SLOVAKIA','SLOVENIA','SPAIN','SWEDEN','SWITZERLAND',
-  'UKRAINE','UNITED KINGDOM','VATICAN'
-];
-
-var flagCanvases = [];
-function preRenderFlags() {
-  EU_FLAGS.forEach(function(name) {
-    var oc = document.createElement('canvas');
-    oc.width = FW; oc.height = FH;
-    var ox = oc.getContext('2d');
-    ox.imageSmoothingEnabled = false;
-    drawFlag(ox, name);
-    flagCanvases.push({name: name, canvas: oc});
-  });
-}
-
-var flagAnimID = null;
-
-function startVictoryCinematic() {
-  preRenderFlags();
-  document.getElementById('vic-overlay').classList.add('show');
-  document.getElementById('stage-flags').classList.add('active');
-  startFlagAnimation();
-}
-
-function startFlagAnimation() {
-  var fc = document.getElementById('flags-canvas');
-  fc.width  = Math.min(window.innerWidth - 40, 1200);
-  fc.height = 440;
-  var fx = fc.getContext('2d');
-  fx.imageSmoothingEnabled = false;
-
-  var CW = fc.width, CH = fc.height;
-  var COLS = 8, ROWS = 6;
-  var PAD = 8;
-  var cardW = (CW - PAD*(COLS+1)) / COLS | 0;
-  var cardH = (CH - PAD*(ROWS+1)) / ROWS | 0;
-  var flagW  = cardW - 8, flagH = flagW * FH / FW | 0;
-
-  var t0f = null;
-  var APPEAR_DUR = 2600;
-
-  function tickFlags(ts) {
-    if (!t0f) t0f = ts;
-    var elapsed = ts - t0f;
-    var T = elapsed / 1000;
-
-    fx.clearRect(0, 0, CW, CH);
-    fx.fillStyle = '#000820';
-    fx.fillRect(0, 0, CW, CH);
-
-    for (var i = 0; i < EU_FLAGS.length; i++) {
-      var col = i % COLS;
-      var row = Math.floor(i / COLS);
-      var delay = (row * COLS + col) * (APPEAR_DUR / (COLS * ROWS)) / 1000;
-      var prog  = Math.min(1, Math.max(0, (T - delay) / 0.55));
-      var ep = 1 - Math.pow(1 - prog, 3);
-
-      var cx = PAD + col*(cardW+PAD);
-      var cy = PAD + row*(cardH+PAD);
-      var slideX = cx + (1-ep)*(CW - cx + 60);
-      var waveY = ep >= 1 ? Math.sin(T*2.2 + i*0.45) * 3 : 0;
-      var drawX = slideX | 0;
-      var drawY = (cy + waveY) | 0;
-
-      fx.globalAlpha = ep;
-      fx.fillStyle = 'rgba(255,255,255,0.06)';
-      fx.fillRect(drawX, drawY, cardW, cardH);
-      fx.strokeStyle = 'rgba(255,220,80,' + (0.25*ep) + ')';
-      fx.lineWidth = 1;
-      fx.strokeRect(drawX+0.5, drawY+0.5, cardW-1, cardH-1);
-
-      var fc2 = flagCanvases[i];
-      if (fc2) {
-        var fX = drawX + ((cardW - flagW) / 2) | 0;
-        var fY = drawY + 5;
-        fx.imageSmoothingEnabled = false;
-        fx.drawImage(fc2.canvas, fX, fY, flagW, flagH);
-      }
-
-      fx.fillStyle = 'rgba(180,210,255,' + ep + ')';
-      fx.font = '8px "Courier New"';
-      fx.textAlign = 'center';
-      fx.fillText(EU_FLAGS[i], drawX + cardW/2, drawY + cardH - 5);
-      fx.globalAlpha = 1;
-    }
-
-    var shown = 0;
-    for (var j = 0; j < EU_FLAGS.length; j++) {
-      var d2 = (Math.floor(j/COLS)*COLS + j%COLS) * (APPEAR_DUR/(COLS*ROWS))/1000;
-      if (T > d2) shown++;
-    }
-    var sub = document.getElementById('flags-sub');
-    if (sub) sub.textContent = shown + ' / ' + EU_FLAGS.length + ' flags';
-
-    flagAnimID = requestAnimationFrame(tickFlags);
-  }
-
-  if (flagAnimID) cancelAnimationFrame(flagAnimID);
-  flagAnimID = requestAnimationFrame(tickFlags);
-}
-
-function showPlanesStage() {
-  if (flagAnimID) { cancelAnimationFrame(flagAnimID); flagAnimID = null; }
-  document.getElementById('stage-flags').classList.remove('active');
-  document.getElementById('stage-planes').classList.add('active');
-  startPlanesAnimation();
-}
-
-/* ═══════════════════════════════════════════════════════
-   4 SEASON PLANES — HORIZONTAL FLIGHT ANIMATION
-   Each season gets its own full horizontal band.
-   Planes fly LEFT → RIGHT with seasonal trail + particles.
-   Each plane is clearly themed: Spring=pink, Summer=gold,
-   Autumn=orange/red, Winter=ice-blue.
-═══════════════════════════════════════════════════════ */
-var planesAnimID = null;
-
-var SEASONS = [
-  {
-    name:    'SPRING',
-    sub:     'Cherry blossoms bloom in the wake of the cherry-pink wings',
-    emoji:   '🌸',
-    // Colors: soft pinks, fresh greens
-    body:    '#ff88cc',
-    bodyD:   '#dd5599',
-    wing:    '#ff55aa',
-    wingL:   '#ffbbdd',
-    cockpit: '#ffe8f4',
-    nose:    '#ff44aa',
-    engine:  '#ffaadd',
-    // Background: dawn-pink sky
-    bgGrad:  ['#1a0518','#2a0a28','#3d1040'],
-    // Trail: petals
-    trailCols: ['#ffb3cc','#ff88aa','#ff44aa','#ffddee','#ffffff','#ff99bb'],
-    // Particle type: blossom petals (small squares)
-    partCols:  ['#ffb3cc','#ff88aa','#ffffff','#ffe0ee','#ff66aa'],
-    // Ground detail color
-    groundCol: '#2a0628',
-    // HUD accent
-    accent: '#ff88cc',
-    // Speed variant
-    speed: 280,
-    // Vertical bob amplitude
-    bobAmp: 18,
-    bobFreq: 1.4,
-  },
-  {
-    name:    'SUMMER',
-    sub:     'Golden rays pierce cobalt skies — maximum altitude, maximum heat',
-    emoji:   '☀️',
-    // Colors: bright gold, orange, yellow
-    body:    '#ffcc00',
-    bodyD:   '#dd8800',
-    wing:    '#ff9900',
-    wingL:   '#ffee88',
-    cockpit: '#fffde0',
-    nose:    '#ff8800',
-    engine:  '#ffdd44',
-    bgGrad:  ['#080e00','#101800','#1c2800'],
-    trailCols: ['#ffee66','#ffcc00','#ff9900','#ffdd33','#fff8aa','#ffaa00'],
-    partCols:  ['#ffee88','#ffcc44','#ffaa00','#fff8aa','#ffdd22'],
-    groundCol: '#181e00',
-    accent: '#ffcc00',
-    speed: 310,
-    bobAmp: 12,
-    bobFreq: 1.1,
-  },
-  {
-    name:    'AUTUMN',
-    sub:     'Flames of amber and crimson — the harvest winds carry us onward',
-    emoji:   '🍂',
-    // Colors: deep oranges, rusty reds, warm browns
-    body:    '#ff6622',
-    bodyD:   '#cc3300',
-    wing:    '#dd4400',
-    wingL:   '#ffaa66',
-    cockpit: '#ffe8d0',
-    nose:    '#cc2200',
-    engine:  '#ff8844',
-    bgGrad:  ['#110600','#1e0a00','#2e1000'],
-    trailCols: ['#ff8844','#ff6622','#cc4400','#ffaa44','#ee3300','#ff9955'],
-    partCols:  ['#ff8844','#ff6622','#ffaa44','#cc6633','#dd4400'],
-    groundCol: '#1e0a00',
-    accent: '#ff7733',
-    speed: 295,
-    bobAmp: 22,
-    bobFreq: 1.6,
-  },
-  {
-    name:    'WINTER',
-    sub:     'Crystalline ice and snowflake trails — the coldest, bravest flight',
-    emoji:   '❄️',
-    // Colors: ice blues, whites, deep navy
-    body:    '#88ccff',
-    bodyD:   '#4488cc',
-    wing:    '#55aaee',
-    wingL:   '#cceeff',
-    cockpit: '#eef8ff',
-    nose:    '#4499dd',
-    engine:  '#aaddff',
-    bgGrad:  ['#000818','#001028','#001840'],
-    trailCols: ['#aaddff','#88ccff','#55aaee','#cceeff','#ffffff','#4488cc'],
-    partCols:  ['#cceeff','#aaddff','#ffffff','#88aacc','#66bbee'],
-    groundCol: '#001028',
-    accent: '#88ccff',
-    speed: 265,
-    bobAmp: 14,
-    bobFreq: 1.8,
-  }
-];
-
-function startPlanesAnimation() {
-  var pc = document.getElementById('planes-canvas');
-  var PW = window.innerWidth;
-  var PH = window.innerHeight;
-  pc.width  = PW;
-  pc.height = PH;
-  var px2 = pc.getContext('2d');
-  px2.imageSmoothingEnabled = false;
-
-  var BAND = Math.floor(PH / 4);  // height of each season's band
-
-  // Plane state — staggered starts so they don't all enter at once
-  var planes = SEASONS.map(function(s, i) {
-    return {
-      s:     s,
-      x:     -200 - i * 260,   // staggered off-screen left
-      bandY: i * BAND,          // top of this plane's band
-      trail: [],
-      particles: [],
-      labelAlpha: 0,
-      enteredOnce: false,
-    };
-  });
-
-  var t0p    = null;
-  var _last  = null;
-
-  /* ── Draw one pixel plane facing RIGHT ── */
-  function drawPlane(c, x, y, s, sc) {
-    sc = sc || 1;
-    c.save();
-    c.translate(x|0, y|0);
-
-    // Shadow under plane
-    c.globalAlpha = 0.18;
-    c.fillStyle = '#000000';
-    c.fillRect(-22*sc, 8*sc, 44*sc, 5*sc);
-    c.globalAlpha = 1;
-
-    // Fuselage body
-    c.fillStyle = s.body;
-    c.fillRect(-22*sc, -7*sc, 44*sc, 14*sc);
-    // Underside shading
-    c.fillStyle = s.bodyD;
-    c.fillRect(-22*sc, 3*sc, 44*sc, 4*sc);
-    // Top highlight
-    c.fillStyle = s.wingL;
-    c.fillRect(-20*sc, -7*sc, 40*sc, 3*sc);
-
-    // Nose cone (pointing RIGHT)
-    c.fillStyle = s.nose;
-    c.beginPath();
-    c.moveTo(22*sc, -7*sc);
-    c.lineTo(36*sc, 0);
-    c.lineTo(22*sc,  7*sc);
-    c.closePath();
-    c.fill();
-    // Nose highlight
-    c.fillStyle = s.wingL;
-    c.beginPath();
-    c.moveTo(22*sc, -7*sc);
-    c.lineTo(34*sc, -1*sc);
-    c.lineTo(22*sc, -1*sc);
-    c.closePath();
-    c.fill();
-
-    // Cockpit window
-    c.fillStyle = s.cockpit;
-    c.fillRect(2*sc, -10*sc, 14*sc, 9*sc);
-    c.fillStyle = 'rgba(200,240,255,0.5)';
-    c.fillRect(3*sc, -9*sc, 6*sc, 4*sc);
-
-    // Upper wing (above fuselage)
-    c.fillStyle = s.wing;
-    c.fillRect(-10*sc, -18*sc, 22*sc, 11*sc);
-    c.fillStyle = s.wingL;
-    c.fillRect(-10*sc, -18*sc, 22*sc, 3*sc);
-    // Wing tip
-    c.fillStyle = s.bodyD;
-    c.fillRect(12*sc, -18*sc, 2*sc, 11*sc);
-
-    // Lower wing (below fuselage)
-    c.fillStyle = s.wing;
-    c.fillRect(-10*sc,  7*sc, 22*sc, 11*sc);
-    c.fillStyle = s.wingL;
-    c.fillRect(-10*sc,  7*sc, 22*sc, 3*sc);
-    c.fillStyle = s.bodyD;
-    c.fillRect(12*sc,  7*sc, 2*sc, 11*sc);
-
-    // Tail fin (vertical, at back)
-    c.fillStyle = s.wing;
-    c.fillRect(-22*sc, -16*sc, 8*sc, 9*sc);
-    c.fillStyle = s.wingL;
-    c.fillRect(-22*sc, -16*sc, 8*sc, 3*sc);
-
-    // Tail stabiliser (horizontal, small, at back)
-    c.fillStyle = s.wing;
-    c.fillRect(-26*sc, -7*sc, 8*sc, 5*sc);
-    c.fillRect(-26*sc,  2*sc, 8*sc, 5*sc);
-
-    // Engine pod (under lower wing)
-    c.fillStyle = s.engine;
-    c.fillRect(-8*sc, 14*sc, 14*sc, 6*sc);
-    // Engine exhaust glow (LEFT side = back of plane)
-    c.fillStyle = '#ffffff';
-    c.fillRect(-26*sc, -4*sc, 5*sc, 8*sc);
-    // Engine flame hint
-    c.fillStyle = s.accent;
-    c.globalAlpha = 0.7;
-    c.fillRect(-30*sc, -3*sc, 5*sc, 6*sc);
-    c.globalAlpha = 1;
-
-    c.restore();
-  }
-
-  /* ── Draw seasonal background scenery in each band ── */
-  function drawBandBG(c, s, bandY, T) {
-    var grad = c.createLinearGradient(0, bandY, 0, bandY + BAND);
-    grad.addColorStop(0, s.bgGrad[0]);
-    grad.addColorStop(0.5, s.bgGrad[1]);
-    grad.addColorStop(1, s.bgGrad[2]);
-    c.fillStyle = grad;
-    c.fillRect(0, bandY, PW, BAND);
-
-    // Stars for night bands (Autumn / Winter)
-    if (s.name === 'AUTUMN' || s.name === 'WINTER') {
-      c.fillStyle = '#ffffff';
-      for (var si = 0; si < 20; si++) {
-        var sx = ((si * 157 + 43 + s.name.charCodeAt(0)) % PW);
-        var sy = bandY + ((si * 79 + 11) % (BAND * 0.7));
-        var sa = 0.3 + 0.3 * Math.sin(T * 1.1 + si * 0.7);
-        c.globalAlpha = sa;
-        c.fillRect(sx|0, sy|0, 1 + (si%2), 1 + (si%2));
-      }
-      c.globalAlpha = 1;
-    }
-
-    // Horizon glow
-    var horizGrad = c.createLinearGradient(0, bandY + BAND * 0.6, 0, bandY + BAND);
-    horizGrad.addColorStop(0, 'transparent');
-    horizGrad.addColorStop(1, s.accent + '22');
-    c.fillStyle = horizGrad;
-    c.fillRect(0, bandY + BAND * 0.6, PW, BAND * 0.4);
-
-    // Ground strip at bottom of band
-    c.fillStyle = s.groundCol;
-    c.fillRect(0, bandY + BAND - 8, PW, 8);
-    // Small ground detail lines
-    c.fillStyle = s.accent + '33';
-    c.fillRect(0, bandY + BAND - 8, PW, 2);
-
-    // Band divider line
-    if (s.name !== 'SPRING') {  // no top divider on first band
-      c.strokeStyle = 'rgba(255,255,255,0.07)';
-      c.lineWidth = 1;
-      c.beginPath(); c.moveTo(0, bandY); c.lineTo(PW, bandY); c.stroke();
-    }
-  }
-
-  function tickPlanes(ts) {
-    if (!t0p) t0p = ts;
-    var dt = Math.min((ts - (_last || ts)) / 1000, 0.05);
-    _last = ts;
-    var T = (ts - t0p) / 1000;
-
-    px2.clearRect(0, 0, PW, PH);
-
-    planes.forEach(function(pl, i) {
-      var s    = pl.s;
-      var bY   = pl.bandY;
-      var midY = bY + BAND / 2;
-
-      // ── Band background
-      drawBandBG(px2, s, bY, T);
-
-      // ── Move plane horizontally (left to right)
-      pl.x += s.speed * dt;
-
-      // ── Gentle sinusoidal vertical bob within the band
-      var bobY = midY + Math.sin(T * s.bobFreq + i * 1.1) * s.bobAmp;
-
-      // ── Trail: store last positions
-      pl.trail.push({ x: pl.x - 32, y: bobY, age: 0 });
-      if (pl.trail.length > 80) pl.trail.shift();
-
-      // ── Emit scatter particles
-      if (Math.random() < 0.4) {
-        var pcol = s.partCols[Math.floor(Math.random() * s.partCols.length)];
-        pl.particles.push({
-          x:    pl.x - 30 + (Math.random() - 0.5) * 10,
-          y:    bobY + (Math.random() - 0.5) * 16,
-          vx:   -(50 + Math.random() * 90),
-          vy:   (Math.random() - 0.5) * 50,
-          life: 0.7 + Math.random() * 0.7,
-          maxL: 0.7 + Math.random() * 0.7,
-          col:  pcol,
-          sz:   1.5 + Math.random() * 2.5,
-        });
-      }
-
-      // ── Draw trail
-      for (var ti = pl.trail.length - 1; ti >= 0; ti--) {
-        var tr = pl.trail[ti];
-        tr.age++;
-        var tf  = 1 - tr.age / 80;
-        var ta  = tf * 0.55;
-        var tw  = tf * 16;
-        var th  = tf * 6;
-        if (ta <= 0) continue;
-        px2.globalAlpha = ta;
-        var tcol = s.trailCols[ti % s.trailCols.length];
-        px2.fillStyle = tcol;
-        px2.fillRect((tr.x - tw / 2) | 0, (tr.y - th / 2) | 0, tw | 0, th | 0);
-      }
-      px2.globalAlpha = 1;
-
-      // ── Update + draw scatter particles
-      pl.particles = pl.particles.filter(function(p) {
-        p.x  += p.vx * dt;
-        p.y  += p.vy * dt;
-        p.vy += 30 * dt;   // slight gravity
-        p.life -= dt;
-        if (p.life <= 0) return false;
-        var pa = Math.max(0, p.life / p.maxL);
-        px2.globalAlpha = pa * 0.8;
-        px2.fillStyle = p.col;
-        px2.fillRect(p.x | 0, p.y | 0, p.sz | 0, p.sz | 0);
-        return true;
-      });
-      px2.globalAlpha = 1;
-
-      // ── Engine glow (radial halo behind the plane)
-      var gx = pl.x - 28;
-      var gy = bobY;
-      var glow = px2.createRadialGradient(gx, gy, 0, gx, gy, 36);
-      glow.addColorStop(0, s.accent + '55');
-      glow.addColorStop(1, 'transparent');
-      px2.fillStyle = glow;
-      px2.fillRect(gx - 36, gy - 36, 72, 72);
-
-      // ── Draw the plane
-      var scale = 1.6;
-      drawPlane(px2, pl.x, bobY, s, scale);
-
-      // ── Label: fade in once plane is far enough right
-      if (pl.x > PW * 0.25) {
-        pl.labelAlpha = Math.min(1, pl.labelAlpha + dt * 2.5);
-      }
-
-      if (pl.labelAlpha > 0) {
-        // Label position: left side of screen, vertically centred in band
-        px2.globalAlpha = pl.labelAlpha;
-
-        // Season name
-        px2.font = 'bold 26px "Courier New"';
-        px2.fillStyle = s.accent;
-        px2.textAlign = 'left';
-        px2.fillText(s.emoji + '  ' + s.name, 30, midY - 18);
-
-        // Subtitle
-        px2.font = '11px "Courier New"';
-        px2.fillStyle = 'rgba(255,255,255,0.5)';
-        px2.fillText(s.sub, 30, midY + 6);
-
-        // Accent underline
-        px2.fillStyle = s.accent + 'aa';
-        px2.fillRect(30, midY - 22, s.name.length * 16 + 46, 2);
-
-        px2.globalAlpha = 1;
-      }
-
-      // ── Wrap: when plane exits right, reset to left
-      if (pl.x > PW + 160) {
-        pl.x         = -200;
-        pl.trail     = [];
-        pl.labelAlpha = 0;
-      }
-    });
-
-    // ── Top title overlay
-    var titleAlpha = Math.min(1, T * 0.8);
-    px2.globalAlpha = titleAlpha;
-    px2.fillStyle = 'rgba(0,0,0,0.45)';
-    px2.fillRect(0, 0, PW, 52);
-    px2.font = 'bold 18px "Courier New"';
-    px2.fillStyle = '#ffffff';
-    px2.textAlign = 'center';
-    px2.fillText('✈  THE FOUR SEASONS TAKE FLIGHT  ✈', PW / 2, 32);
-    px2.globalAlpha = 1;
-
-    planesAnimID = requestAnimationFrame(tickPlanes);
-  }
-
-  if (planesAnimID) cancelAnimationFrame(planesAnimID);
-  planesAnimID = requestAnimationFrame(tickPlanes);
-}
-
-function showEarthStage() {
-  if (planesAnimID) { cancelAnimationFrame(planesAnimID); planesAnimID = null; }
-  document.getElementById('stage-planes').classList.remove('active');
-  document.getElementById('stage-earth').classList.add('active');
-  startEarthAnimation();
-}
-
-/* ═══════════════════════════════
-   EARTH CANVAS ANIMATION
-═══════════════════════════════ */
-function startEarthAnimation() {
-  var ec = document.getElementById('earth-canvas');
-  var ex = ec.getContext('2d');
-  var EW = 420, EH = 420;
-  var CX = EW/2, CY = EH/2, R = 170;
-
-  var PLANE_COLORS  = ['#ff88cc','#ffcc00','#ff6622','#88ccff'];
-  var PLANE_LABELS  = ['SPRING','SUMMER','AUTUMN','WINTER'];
-  var planes = PLANE_COLORS.map(function(col, i) {
-    return {
-      col:    col,
-      label:  PLANE_LABELS[i],
-      angle:  i * (Math.PI * 2 / 4),
-      speed:  0.42 + i * 0.07,
-      tilt:   i * 0.30,
-      orbitR: R + 28 + i * 16,
-      trail:  []
-    };
-  });
-
-  var CONTINENTS = [
-    {x:-0.12, y:-0.28, rx:0.14, ry:0.12, col:'#3a8a3a'},
-    {x:-0.08, y:0.10, rx:0.13, ry:0.22, col:'#5a9a4a'},
-    {x:0.22, y:-0.22, rx:0.26, ry:0.18, col:'#4a8a3a'},
-    {x:-0.36, y:-0.18, rx:0.18, ry:0.16, col:'#3a8855'},
-    {x:-0.28, y:0.18, rx:0.12, ry:0.20, col:'#4a9a44'},
-    {x:0.32, y:0.20, rx:0.10, ry:0.09, col:'#5a8838'},
-    {x:0.00, y:0.40, rx:0.20, ry:0.07, col:'#aaddee'},
-  ];
-
-  var earthAngle = 0;
-  var earthAnimID;
-
-  function drawEarth(T) {
-    ex.clearRect(0, 0, EW, EH);
-
-    ex.fillStyle = '#000810';
-    ex.fillRect(0, 0, EW, EH);
-
-    for (var si = 0; si < 60; si++) {
-      var sx = ((si * 137 + 42) % EW);
-      var sy = ((si * 89  + 17) % EH);
-      var sa = 0.4 + 0.3 * Math.sin(T * 1.2 + si);
-      ex.globalAlpha = sa;
-      ex.fillStyle = '#ffffff';
-      ex.fillRect(sx, sy, 0.6 + (si%3)*0.5, 0.6 + (si%3)*0.5);
-    }
-    ex.globalAlpha = 1;
-
-    var glow = ex.createRadialGradient(CX, CY, R*0.7, CX, CY, R*1.3);
-    glow.addColorStop(0, 'rgba(30,80,200,0.15)');
-    glow.addColorStop(1, 'rgba(0,20,80,0)');
-    ex.fillStyle = glow;
-    ex.beginPath(); ex.arc(CX, CY, R*1.3, 0, Math.PI*2); ex.fill();
-
-    ex.save();
-    ex.beginPath(); ex.arc(CX, CY, R, 0, Math.PI*2); ex.clip();
-    var oceanGrad = ex.createLinearGradient(CX-R, CY-R, CX+R, CY+R);
-    oceanGrad.addColorStop(0, '#1a4a9a');
-    oceanGrad.addColorStop(0.5, '#1a66cc');
-    oceanGrad.addColorStop(1, '#0a2866');
-    ex.fillStyle = oceanGrad;
-    ex.fillRect(CX-R, CY-R, R*2, R*2);
-
-    ex.translate(CX, CY);
-    ex.rotate(earthAngle);
-    CONTINENTS.forEach(function(c) {
-      ex.beginPath();
-      ex.ellipse(c.x * R, c.y * R, c.rx * R, c.ry * R, 0, 0, Math.PI * 2);
-      ex.fillStyle = c.col;
-      ex.fill();
-      ex.strokeStyle = 'rgba(0,0,0,0.25)';
-      ex.lineWidth = 1;
-      ex.stroke();
-    });
-
-    ex.strokeStyle = 'rgba(100,160,255,0.12)';
-    ex.lineWidth = 0.8;
-    for (var lat = -4; lat <= 4; lat++) {
-      var ly = lat * R / 5;
-      var lw = Math.sqrt(Math.max(0, R*R - ly*ly));
-      ex.beginPath(); ex.ellipse(0, ly, lw, lw*0.18, 0, 0, Math.PI*2); ex.stroke();
-    }
-    for (var lon = 0; lon < 6; lon++) {
-      ex.beginPath(); ex.ellipse(0, 0, R, R*0.18, lon*Math.PI/6, 0, Math.PI*2); ex.stroke();
-    }
-    ex.restore();
-
-    var atm = ex.createRadialGradient(CX, CY, R*0.92, CX, CY, R*1.05);
-    atm.addColorStop(0, 'rgba(80,140,255,0)');
-    atm.addColorStop(0.6,'rgba(80,160,255,0.18)');
-    atm.addColorStop(1,  'rgba(40,100,255,0)');
-    ex.fillStyle = atm;
-    ex.beginPath(); ex.arc(CX, CY, R*1.05, 0, Math.PI*2); ex.fill();
-
-    var shine = ex.createRadialGradient(CX-R*0.35, CY-R*0.35, 0, CX-R*0.3, CY-R*0.3, R*0.7);
-    shine.addColorStop(0, 'rgba(255,255,255,0.12)');
-    shine.addColorStop(1, 'rgba(255,255,255,0)');
-    ex.fillStyle = shine;
-    ex.beginPath(); ex.arc(CX, CY, R, 0, Math.PI*2); ex.fill();
-
-    planes.forEach(function(pl) {
-      pl.angle += pl.speed * 0.012;
-      var tiltFactor = 0.38 + pl.tilt * 0.08;
-      var px = CX + Math.cos(pl.angle) * pl.orbitR;
-      var py = CY + Math.sin(pl.angle) * pl.orbitR * tiltFactor;
-
-      pl.trail.push({x:px, y:py});
-      if (pl.trail.length > 28) pl.trail.shift();
-      for (var ti = 0; ti < pl.trail.length; ti++) {
-        var ta = (ti / pl.trail.length) * 0.5;
-        ex.globalAlpha = ta;
-        ex.fillStyle = pl.col;
-        ex.fillRect(pl.trail[ti].x - 1, pl.trail[ti].y - 1, 3, 3);
-      }
-      ex.globalAlpha = 1;
-
-      ex.beginPath();
-      ex.ellipse(CX, CY, pl.orbitR, pl.orbitR * tiltFactor, 0, 0, Math.PI*2);
-      ex.strokeStyle = pl.col + '22';
-      ex.lineWidth = 1;
-      ex.stroke();
-
-      ex.save();
-      ex.translate(px, py);
-      var heading = Math.atan2(
-        Math.sin(pl.angle + 0.01) * pl.orbitR * tiltFactor - Math.sin(pl.angle) * pl.orbitR * tiltFactor,
-        Math.cos(pl.angle + 0.01) * pl.orbitR - Math.cos(pl.angle) * pl.orbitR
-      );
-      ex.rotate(heading);
-      ex.fillStyle = pl.col;
-      ex.fillRect(-9, -3, 18, 6);
-      ex.beginPath(); ex.moveTo(9,-3); ex.lineTo(14,0); ex.lineTo(9,3); ex.fill();
-      ex.fillRect(-4, -9, 6, 6);
-      ex.fillRect(-4,  3, 6, 6);
-      ex.fillRect(-9, -5, 4, 4);
-      ex.fillRect(-9,  1, 4, 4);
-      ex.shadowBlur = 8;
-      ex.shadowColor = pl.col;
-      ex.fillStyle = '#ffffff';
-      ex.fillRect(10, -1, 3, 2);
-      ex.shadowBlur = 0;
-      ex.restore();
-
-      var lx = px + Math.cos(pl.angle) * 28;
-      var ly = py + Math.sin(pl.angle) * tiltFactor * 28;
-      ex.fillStyle = pl.col;
-      ex.font = 'bold 9px "Courier New"';
-      ex.textAlign = 'center';
-      ex.fillText(pl.label, lx, ly);
-    });
-
-    earthAngle += 0.003;
-    earthAnimID = requestAnimationFrame(function(ts) { drawEarth(ts / 1000); });
-  }
-
-  drawEarth(0);
-}
-
-function goToEnding() {
-  // Replace with actual ending page if it exists
-  document.getElementById('vic-overlay').classList.remove('show');
-  victoryCinematicStarted = false;
-}
-</script>
+    <style>
+        #vic-skip {
+            position: fixed;
+            top: 18px;
+            right: 24px;
+            z-index: 200;
+            padding: 8px 22px;
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.6);
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            letter-spacing: 3px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: background .2s, color .2s;
+        }
+
+        #vic-skip:hover {
+            background: rgba(255, 80, 0, 0.4);
+            color: #fff;
+        }
+
+        #vic-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+
+        #vic-overlay.show {
+            display: block;
+        }
+
+        .vic-stage {
+            display: none;
+            position: absolute;
+            inset: 0;
+        }
+
+        .vic-stage.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ── Stage 1: Flags ── */
+        #stage-flags {
+            background: #000820;
+        }
+
+        #flags-title {
+            color: #ffe066;
+            font-size: 22px;
+            letter-spacing: 5px;
+            font-weight: bold;
+            text-shadow: 0 0 20px #ffcc00;
+            margin-bottom: 14px;
+            flex-shrink: 0;
+            animation: flagTitlePulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes flagTitlePulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.7
+            }
+        }
+
+        #flags-canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            flex-shrink: 0;
+        }
+
+        #flags-sub {
+            color: #aac8ff;
+            font-size: 11px;
+            letter-spacing: 3px;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+
+        #flags-next-btn {
+            flex-shrink: 0;
+            margin-top: 16px;
+            padding: 10px 36px;
+            background: transparent;
+            border: 2px solid #ffe066;
+            color: #ffe066;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            letter-spacing: 4px;
+            cursor: pointer;
+            transition: background .2s, color .2s;
+        }
+
+        #flags-next-btn:hover {
+            background: #ffe066;
+            color: #000;
+        }
+
+        /* ── Stage 2: 4 Season Planes ── */
+        #stage-planes {
+            background: #000;
+            overflow: hidden;
+            position: absolute;
+            inset: 0;
+            padding: 0;
+        }
+
+        #stage-planes.active {
+            display: block;
+        }
+
+        #planes-canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #planes-next-btn {
+            position: absolute;
+            bottom: 28px;
+            right: 48px;
+            z-index: 10;
+            padding: 12px 36px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            letter-spacing: 4px;
+            cursor: pointer;
+            transition: background .2s, border-color .2s;
+            border-radius: 4px;
+        }
+
+        #planes-next-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #fff;
+        }
+
+        /* ── Stage 3: Earth ── */
+        #stage-earth {
+            background: radial-gradient(ellipse at center, #000820, #000);
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        #earth-title {
+            color: #88ccff;
+            font-size: 20px;
+            letter-spacing: 6px;
+            text-shadow: 0 0 16px #4488ff;
+        }
+
+        #earth-canvas {
+            border-radius: 50%;
+            box-shadow: 0 0 60px #2255ff55, 0 0 20px #4488ff44;
+        }
+
+        #earth-caption {
+            color: #aaccff;
+            font-size: 13px;
+            letter-spacing: 3px;
+            opacity: 0.75;
+        }
+
+        #earth-next-btn {
+            padding: 14px 48px;
+            background: linear-gradient(135deg, #1144cc, #2266ff);
+            border: 2px solid #88aaff;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            letter-spacing: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 20px #2255ff88;
+            transition: transform .15s, box-shadow .15s;
+            animation: endBtnPulse 2s ease-in-out infinite;
+            border-radius: 3px;
+        }
+
+        @keyframes endBtnPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px #2255ff88
+            }
+
+            50% {
+                box-shadow: 0 0 40px #4488ffcc
+            }
+        }
+
+        #earth-next-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+
+    <div id="vic-overlay">
+        <button id="vic-skip" onclick="goToEnding()">SKIP ⏭</button>
+
+        <!-- STAGE 1: Flags -->
+        <div id="stage-flags" class="vic-stage">
+            <div id="flags-title">∈ EUROPE SALUTES YOUR VICTORY ∈</div>
+            <canvas id="flags-canvas" width="1200" height="440"></canvas>
+            <div id="flags-sub">flag 1 / 43</div>
+            <button id="flags-next-btn" onclick="showPlanesStage()">CONTINUE →</button>
+        </div>
+
+        <!-- STAGE 2: 4 Season Planes -->
+        <div id="stage-planes" class="vic-stage">
+            <canvas id="planes-canvas"></canvas>
+            <button id="planes-next-btn" onclick="showEarthStage()">THE WORLD TOUR →</button>
+        </div>
+
+        <!-- STAGE 3: Earth + Planes -->
+        <div id="stage-earth" class="vic-stage">
+            <div id="earth-title">THE FOUR SEASONS FLY THE WORLD</div>
+            <canvas id="earth-canvas" width="420" height="420"></canvas>
+            <div id="earth-caption">4 SEASONS · 4 PLANES · ONE LEGEND</div>
+            <button id="earth-next-btn" onclick="goToEnding()">GO TO THE ENDING ✈</button>
+        </div>
+    </div>
+
+    <script>
+        /* ═══ PIXEL FLAG DRAWING ENGINE ═══ */
+        var FW = 60, FH = 40;
+
+        function drawFlag(ctx, name) {
+            var c = ctx;
+            function r(x, y, w, h, col) { c.fillStyle = col; c.fillRect(x, y, w, h); }
+            function stripe_h(cols) {
+                var sh = FH / cols.length | 0;
+                for (var i = 0; i < cols.length; i++) r(0, i * sh, FW, i === cols.length - 1 ? FH - i * sh : sh, cols[i]);
+            }
+            function stripe_v(cols) {
+                var sw = FW / cols.length | 0;
+                for (var i = 0; i < cols.length; i++) r(i * sw, 0, i === cols.length - 1 ? FW - i * sw : sw, FH, cols[i]);
+            }
+
+            switch (name) {
+                case 'ALBANIA': r(0, 0, FW, FH, '#e41e20'); c.fillStyle = '#111'; c.fillRect(FW / 2 - 8, FH / 2 - 8, 16, 4); c.fillRect(FW / 2 - 6, FH / 2 - 4, 12, 4); c.fillRect(FW / 2 - 4, FH / 2, 8, 4); c.fillRect(FW / 2 - 10, FH / 2 - 6, 4, 10); c.fillRect(FW / 2 + 6, FH / 2 - 6, 4, 10); break;
+                case 'ANDORRA': stripe_v(['#003DA5', '#FEDF00', '#D00C27']); break;
+                case 'AUSTRIA': stripe_h(['#ED2939', '#FFFFFF', '#ED2939']); break;
+                case 'BELARUS': r(0, 0, FW, FH * 0.6 | 0, '#CF101A'); r(0, FH * 0.6 | 0, FW, FH, '#009000'); r(0, 0, 8, FH, '#007520'); break;
+                case 'BELGIUM': stripe_v(['#1C1C1C', '#FAE042', '#EF3340']); break;
+                case 'BOSNIA': r(0, 0, FW, FH, '#002395'); r(20, 0, FW - 20, FH, '#FFCD00'); break;
+                case 'BULGARIA': stripe_h(['#FFFFFF', '#00966E', '#D62612']); break;
+                case 'CROATIA': stripe_h(['#FF0000', '#FFFFFF', '#0000CC']); break;
+                case 'CYPRUS': r(0, 0, FW, FH, '#FFFFFF'); c.fillStyle = '#FF8C00'; c.beginPath(); c.ellipse(FW / 2, FH / 2 - 2, 14, 8, 0, 0, Math.PI * 2); c.fill(); break;
+                case 'CZECHIA': r(0, 0, FW, FH / 2 | 0, '#FFFFFF'); r(0, FH / 2 | 0, FW, FH / 2, '#D7141A'); c.fillStyle = '#11457E'; c.beginPath(); c.moveTo(0, 0); c.lineTo(FW * 0.45, FH / 2); c.lineTo(0, FH); c.closePath(); c.fill(); break;
+                case 'DENMARK': r(0, 0, FW, FH, '#C60C30'); r(FW * 0.28 | 0, 0, 6, FH, '#FFFFFF'); r(0, FH * 0.42 | 0, FW, 6, '#FFFFFF'); break;
+                case 'ESTONIA': stripe_h(['#0072CE', '#000000', '#FFFFFF']); break;
+                case 'FINLAND': r(0, 0, FW, FH, '#FFFFFF'); r(FW * 0.28 | 0, 0, 7, FH, '#003580'); r(0, FH * 0.42 | 0, FW, 7, '#003580'); break;
+                case 'FRANCE': stripe_v(['#002395', '#FFFFFF', '#ED2939']); break;
+                case 'GERMANY': stripe_h(['#000000', '#DD0000', '#FFCE00']); break;
+                case 'GREECE': stripe_h(['#0D5EAF', '#FFFFFF', '#0D5EAF', '#FFFFFF', '#0D5EAF', '#FFFFFF', '#0D5EAF', '#FFFFFF', '#0D5EAF']); r(0, 0, FW * 0.38 | 0, FH * 0.44 | 0, '#0D5EAF'); r(FW * 0.38 * 0.4 | 0, 0, 5, FH * 0.44 | 0, '#FFFFFF'); r(0, FH * 0.44 * 0.45 | 0, FW * 0.38 | 0, 5, '#FFFFFF'); break;
+                case 'HUNGARY': stripe_h(['#CE2939', '#FFFFFF', '#477050']); break;
+                case 'ICELAND': r(0, 0, FW, FH, '#003897'); r(FW * 0.28 | 0, 0, 8, FH, '#FFFFFF'); r(0, FH * 0.40 | 0, FW, 8, '#FFFFFF'); r(FW * 0.28 + 2 | 0, 0, 4, FH, '#D72828'); r(0, FH * 0.40 + 2 | 0, FW, 4, '#D72828'); break;
+                case 'IRELAND': stripe_v(['#169B62', '#FFFFFF', '#FF883E']); break;
+                case 'ITALY': stripe_v(['#009246', '#FFFFFF', '#CE2B37']); break;
+                case 'LATVIA': r(0, 0, FW, FH, '#FFFFFF'); r(0, 0, FW, FH * 0.38 | 0, '#9E3039'); r(0, FH * 0.62 | 0, FW, FH - FH * 0.62 | 0, '#9E3039'); break;
+                case 'LIECHTENSTEIN': stripe_h(['#002B7F', '#CE1126']); r(3, 3, 12, 12, '#FFD700'); break;
+                case 'LITHUANIA': stripe_h(['#FDB913', '#006A44', '#C1272D']); break;
+                case 'LUXEMBOURG': stripe_h(['#EF3340', '#FFFFFF', '#00A3E0']); break;
+                case 'MALTA': stripe_v(['#FFFFFF', '#CF142B']); r(3, FH / 2 - 5, 10, 10, '#AAAAAA'); break;
+                case 'MOLDOVA': stripe_v(['#003DA5', '#FFD200', '#CC0001']); break;
+                case 'MONACO': stripe_h(['#CE1126', '#FFFFFF']); break;
+                case 'MONTENEGRO': r(0, 0, FW, FH, '#D4AF37'); r(4, 4, FW - 8, FH - 8, '#CC0000'); break;
+                case 'NETHERLANDS': stripe_h(['#AE1C28', '#FFFFFF', '#21468B']); break;
+                case 'N.MACEDONIA': r(0, 0, FW, FH, '#CE2028'); r(0, FH / 2 - 1, FW, 3, '#F7E400'); r(FW / 2 - 1, 0, 3, FH, '#F7E400'); break;
+                case 'NORWAY': r(0, 0, FW, FH, '#EF2B2D'); r(FW * 0.28 | 0, 0, 8, FH, '#FFFFFF'); r(0, FH * 0.38 | 0, FW, 8, '#FFFFFF'); r(FW * 0.28 + 2 | 0, 0, 4, FH, '#002868'); r(0, FH * 0.38 + 2 | 0, FW, 4, '#002868'); break;
+                case 'POLAND': stripe_h(['#FFFFFF', '#DC143C']); break;
+                case 'PORTUGAL': r(0, 0, FW * 0.38 | 0, FH, '#006600'); r(FW * 0.38 | 0, 0, FW - FW * 0.38 | 0, FH, '#FF0000'); break;
+                case 'ROMANIA': stripe_v(['#002B7F', '#FCD116', '#CE1126']); break;
+                case 'SERBIA': stripe_h(['#C6363C', '#0C4076', '#FFFFFF']); break;
+                case 'SLOVAKIA': stripe_h(['#FFFFFF', '#0B4EA2', '#EE1C25']); break;
+                case 'SLOVENIA': stripe_h(['#FFFFFF', '#003DA5', '#CE1126']); break;
+                case 'SPAIN': r(0, 0, FW, FH * 0.25 | 0, '#AA151B'); r(0, FH * 0.75 | 0, FW, FH - FH * 0.75 | 0, '#AA151B'); r(0, FH * 0.25 | 0, FW, FH * 0.5 | 0, '#F1BF00'); break;
+                case 'SWEDEN': r(0, 0, FW, FH, '#006AA7'); r(FW * 0.28 | 0, 0, 7, FH, '#FECC02'); r(0, FH * 0.42 | 0, FW, 7, '#FECC02'); break;
+                case 'SWITZERLAND': r(0, 0, FW, FH, '#FF0000'); r(FW / 2 - 4, FH / 2 - 10, 8, 20, '#FFFFFF'); r(FW / 2 - 10, FH / 2 - 4, 20, 8, '#FFFFFF'); break;
+                case 'UKRAINE': stripe_h(['#005BBB', '#FFD500']); break;
+                case 'UNITED KINGDOM':
+                    c.fillStyle = '#012169'; c.fillRect(0, 0, FW, FH);
+                    c.strokeStyle = '#FFFFFF'; c.lineWidth = 4; c.beginPath(); c.moveTo(0, 0); c.lineTo(FW, FH); c.stroke(); c.beginPath(); c.moveTo(FW, 0); c.lineTo(0, FH); c.stroke();
+                    c.strokeStyle = '#C8102E'; c.lineWidth = 2; c.beginPath(); c.moveTo(0, 0); c.lineTo(FW, FH); c.stroke(); c.beginPath(); c.moveTo(FW, 0); c.lineTo(0, FH); c.stroke();
+                    c.strokeStyle = '#FFFFFF'; c.lineWidth = 8; c.beginPath(); c.moveTo(FW / 2, 0); c.lineTo(FW / 2, FH); c.stroke(); c.beginPath(); c.moveTo(0, FH / 2); c.lineTo(FW, FH / 2); c.stroke();
+                    c.strokeStyle = '#C8102E'; c.lineWidth = 5; c.beginPath(); c.moveTo(FW / 2, 0); c.lineTo(FW / 2, FH); c.stroke(); c.beginPath(); c.moveTo(0, FH / 2); c.lineTo(FW, FH / 2); c.stroke();
+                    break;
+                case 'VATICAN': stripe_v(['#FFE000', '#FFFFFF']); r(FW / 2 + 5, FH / 2 - 6, 10, 12, '#FFE000'); break;
+                default: r(0, 0, FW, FH, '#555566');
+            }
+            c.strokeStyle = 'rgba(255,255,255,0.3)'; c.lineWidth = 1;
+            c.strokeRect(0.5, 0.5, FW - 1, FH - 1);
+        }
+
+        var EU_FLAGS = [
+            'ALBANIA', 'ANDORRA', 'AUSTRIA', 'BELARUS', 'BELGIUM', 'BOSNIA', 'BULGARIA',
+            'CROATIA', 'CYPRUS', 'CZECHIA', 'DENMARK', 'ESTONIA', 'FINLAND', 'FRANCE',
+            'GERMANY', 'GREECE', 'HUNGARY', 'ICELAND', 'IRELAND', 'ITALY', 'LATVIA',
+            'LIECHTENSTEIN', 'LITHUANIA', 'LUXEMBOURG', 'MALTA', 'MOLDOVA', 'MONACO',
+            'MONTENEGRO', 'NETHERLANDS', 'N.MACEDONIA', 'NORWAY', 'POLAND', 'PORTUGAL',
+            'ROMANIA', 'SERBIA', 'SLOVAKIA', 'SLOVENIA', 'SPAIN', 'SWEDEN', 'SWITZERLAND',
+            'UKRAINE', 'UNITED KINGDOM', 'VATICAN'
+        ];
+
+        var flagCanvases = [];
+        function preRenderFlags() {
+            EU_FLAGS.forEach(function (name) {
+                var oc = document.createElement('canvas');
+                oc.width = FW; oc.height = FH;
+                var ox = oc.getContext('2d');
+                ox.imageSmoothingEnabled = false;
+                drawFlag(ox, name);
+                flagCanvases.push({ name: name, canvas: oc });
+            });
+        }
+
+        var flagAnimID = null;
+
+        function startVictoryCinematic() {
+            preRenderFlags();
+            document.getElementById('vic-overlay').classList.add('show');
+            document.getElementById('stage-flags').classList.add('active');
+            startFlagAnimation();
+        }
+
+        function startFlagAnimation() {
+            var fc = document.getElementById('flags-canvas');
+            fc.width = Math.min(window.innerWidth - 40, 1200);
+            fc.height = 440;
+            var fx = fc.getContext('2d');
+            fx.imageSmoothingEnabled = false;
+
+            var CW = fc.width, CH = fc.height;
+            var COLS = 8, ROWS = 6;
+            var PAD = 8;
+            var cardW = (CW - PAD * (COLS + 1)) / COLS | 0;
+            var cardH = (CH - PAD * (ROWS + 1)) / ROWS | 0;
+            var flagW = cardW - 8, flagH = flagW * FH / FW | 0;
+
+            var t0f = null;
+            var APPEAR_DUR = 2600;
+
+            function tickFlags(ts) {
+                if (!t0f) t0f = ts;
+                var elapsed = ts - t0f;
+                var T = elapsed / 1000;
+
+                fx.clearRect(0, 0, CW, CH);
+                fx.fillStyle = '#000820';
+                fx.fillRect(0, 0, CW, CH);
+
+                for (var i = 0; i < EU_FLAGS.length; i++) {
+                    var col = i % COLS;
+                    var row = Math.floor(i / COLS);
+                    var delay = (row * COLS + col) * (APPEAR_DUR / (COLS * ROWS)) / 1000;
+                    var prog = Math.min(1, Math.max(0, (T - delay) / 0.55));
+                    var ep = 1 - Math.pow(1 - prog, 3);
+
+                    var cx = PAD + col * (cardW + PAD);
+                    var cy = PAD + row * (cardH + PAD);
+                    var slideX = cx + (1 - ep) * (CW - cx + 60);
+                    var waveY = ep >= 1 ? Math.sin(T * 2.2 + i * 0.45) * 3 : 0;
+                    var drawX = slideX | 0;
+                    var drawY = (cy + waveY) | 0;
+
+                    fx.globalAlpha = ep;
+                    fx.fillStyle = 'rgba(255,255,255,0.06)';
+                    fx.fillRect(drawX, drawY, cardW, cardH);
+                    fx.strokeStyle = 'rgba(255,220,80,' + (0.25 * ep) + ')';
+                    fx.lineWidth = 1;
+                    fx.strokeRect(drawX + 0.5, drawY + 0.5, cardW - 1, cardH - 1);
+
+                    var fc2 = flagCanvases[i];
+                    if (fc2) {
+                        var fX = drawX + ((cardW - flagW) / 2) | 0;
+                        var fY = drawY + 5;
+                        fx.imageSmoothingEnabled = false;
+                        fx.drawImage(fc2.canvas, fX, fY, flagW, flagH);
+                    }
+
+                    fx.fillStyle = 'rgba(180,210,255,' + ep + ')';
+                    fx.font = '8px "Courier New"';
+                    fx.textAlign = 'center';
+                    fx.fillText(EU_FLAGS[i], drawX + cardW / 2, drawY + cardH - 5);
+                    fx.globalAlpha = 1;
+                }
+
+                var shown = 0;
+                for (var j = 0; j < EU_FLAGS.length; j++) {
+                    var d2 = (Math.floor(j / COLS) * COLS + j % COLS) * (APPEAR_DUR / (COLS * ROWS)) / 1000;
+                    if (T > d2) shown++;
+                }
+                var sub = document.getElementById('flags-sub');
+                if (sub) sub.textContent = shown + ' / ' + EU_FLAGS.length + ' flags';
+
+                flagAnimID = requestAnimationFrame(tickFlags);
+            }
+
+            if (flagAnimID) cancelAnimationFrame(flagAnimID);
+            flagAnimID = requestAnimationFrame(tickFlags);
+        }
+
+        function showPlanesStage() {
+            if (flagAnimID) { cancelAnimationFrame(flagAnimID); flagAnimID = null; }
+            document.getElementById('stage-flags').classList.remove('active');
+            document.getElementById('stage-planes').classList.add('active');
+            startPlanesAnimation();
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           4 SEASON PLANES — FULL SCREEN HORIZONTAL FLIGHT
+           Each season has its own horizontal band filling the screen.
+           Planes are large (scale 2.8), clearly seasonal, left→right.
+        ═══════════════════════════════════════════════════════ */
+        var planesAnimID = null;
+
+        var SEASONS = [
+            {
+                name: 'SPRING',
+                icon: '&#x1F338;',
+                desc: 'Cherry blossoms bloom in your wake',
+                // Sky: soft dawn pink → lavender
+                skyTop: '#1a0820', skymid: '#2d1040', skyBot: '#1a0820',
+                // Ground
+                groundCol: '#0d0618', groundLine: '#cc66aa',
+                // Plane colors
+                fuselage: '#ff88cc', fuselageD: '#cc3388', fuselageL: '#ffccee',
+                wing: '#ff55aa', wingL: '#ffbbdd', wingD: '#cc2277',
+                cockpit: '#ffe8f5', nose: '#ff44aa',
+                engine: '#ffaadd', engineGlow: '#ff66bb',
+                stripe: '#ffffff', stripeB: '#ffddee',
+                // Trail
+                trailCols: ['#ffb3cc', '#ff88aa', '#ff66bb', '#ffddee', '#ffffff', '#ff99cc'],
+                // Particles (petals)
+                partCols: ['#ffb3cc', '#ff88aa', '#ffffff', '#ffe0ee', '#ff66aa', '#ffccdd'],
+                accent: '#ff88cc',
+                accentGlow: 'rgba(255,100,170,0.3)',
+                speed: 260,
+                bobAmp: 20, bobFreq: 1.3,
+                // Stars/bg elements
+                bgStars: false,
+                // Special particle shape (blossom = 5-point star)
+                partShape: 'petal',
+            },
+            {
+                name: 'SUMMER',
+                icon: '&#x2600;&#xFE0F;',
+                desc: 'Golden heat, cobalt skies, maximum altitude',
+                skyTop: '#060c00', skymid: '#101800', skyBot: '#060c00',
+                groundCol: '#0c1400', groundLine: '#aadd22',
+                fuselage: '#ffcc00', fuselageD: '#cc8800', fuselageL: '#ffee88',
+                wing: '#ff9900', wingL: '#ffee66', wingD: '#cc6600',
+                cockpit: '#fffde0', nose: '#ff8800',
+                engine: '#ffdd44', engineGlow: '#ffaa00',
+                stripe: '#ffffff', stripeB: '#fff8aa',
+                trailCols: ['#ffee66', '#ffcc00', '#ff9900', '#ffdd33', '#fff8aa', '#ffaa00'],
+                partCols: ['#ffee88', '#ffcc44', '#ffaa00', '#fff8aa', '#ffdd22', '#ff9900'],
+                accent: '#ffcc00',
+                accentGlow: 'rgba(255,200,0,0.3)',
+                speed: 300,
+                bobAmp: 12, bobFreq: 1.0,
+                bgStars: false,
+                partShape: 'spark',
+            },
+            {
+                name: 'AUTUMN',
+                icon: '&#x1F342;',
+                desc: 'Amber flames, crimson harvest winds',
+                skyTop: '#0e0400', skymid: '#1c0800', skyBot: '#0e0400',
+                groundCol: '#150600', groundLine: '#cc4400',
+                fuselage: '#ff6622', fuselageD: '#aa2200', fuselageL: '#ffaa66',
+                wing: '#dd4400', wingL: '#ff8844', wingD: '#882200',
+                cockpit: '#ffe8d0', nose: '#cc2200',
+                engine: '#ff8844', engineGlow: '#ff5500',
+                stripe: '#ffaa44', stripeB: '#ffcc88',
+                trailCols: ['#ff8844', '#ff6622', '#cc4400', '#ffaa44', '#ee3300', '#ff9955'],
+                partCols: ['#ff8844', '#ff6622', '#ffaa44', '#cc6633', '#dd4400', '#ffcc88'],
+                accent: '#ff7733',
+                accentGlow: 'rgba(255,80,0,0.3)',
+                speed: 280,
+                bobAmp: 24, bobFreq: 1.7,
+                bgStars: true,
+                partShape: 'leaf',
+            },
+            {
+                name: 'WINTER',
+                icon: '&#x2744;&#xFE0F;',
+                desc: 'Crystalline ice, bravest flight of all',
+                skyTop: '#000818', skymid: '#001030', skyBot: '#000818',
+                groundCol: '#000c20', groundLine: '#4488cc',
+                fuselage: '#88ccff', fuselageD: '#3366aa', fuselageL: '#cceeff',
+                wing: '#55aaee', wingL: '#bbddff', wingD: '#2255aa',
+                cockpit: '#eef8ff', nose: '#4499dd',
+                engine: '#aaddff', engineGlow: '#66aaee',
+                stripe: '#ffffff', stripeB: '#ddeeff',
+                trailCols: ['#aaddff', '#88ccff', '#55aaee', '#cceeff', '#ffffff', '#4488cc'],
+                partCols: ['#cceeff', '#aaddff', '#ffffff', '#88aacc', '#66bbee', '#ddeeff'],
+                accent: '#88ccff',
+                accentGlow: 'rgba(80,140,255,0.3)',
+                speed: 245,
+                bobAmp: 16, bobFreq: 2.0,
+                bgStars: true,
+                partShape: 'snowflake',
+            }
+        ];
+
+        function startPlanesAnimation() {
+            var pc = document.getElementById('planes-canvas');
+            var PW = window.innerWidth;
+            var PH = window.innerHeight;
+            pc.width = PW;
+            pc.height = PH;
+            var px = pc.getContext('2d');
+            px.imageSmoothingEnabled = false;
+
+            var BAND = Math.floor(PH / 4);
+            var SCALE = 2.8; // big planes!
+
+            // Staggered start positions so planes enter one by one
+            var planes = SEASONS.map(function (s, i) {
+                return {
+                    s: s,
+                    x: -300 - i * 320,
+                    bandY: i * BAND,
+                    trail: [],
+                    particles: [],
+                    labelAlpha: 0,
+                };
+            });
+
+            var t0 = null;
+            var lastT = null;
+
+            /* ── Draw a detailed plane facing RIGHT at (0,0), then ctx.restore() ── */
+            function drawPlane(c, s, sc) {
+                // Engine glow behind
+                c.globalAlpha = 0.5;
+                c.fillStyle = s.engineGlow;
+                c.fillRect(-sc * 38, -sc * 12, sc * 16, sc * 24);
+                c.globalAlpha = 0.3;
+                c.fillRect(-sc * 50, -sc * 8, sc * 16, sc * 16);
+                c.globalAlpha = 1;
+
+                // Main fuselage
+                c.fillStyle = s.fuselage;
+                c.fillRect(-sc * 30, -sc * 10, sc * 60, sc * 20);
+
+                // Fuselage underside shade
+                c.fillStyle = s.fuselageD;
+                c.fillRect(-sc * 30, sc * 4, sc * 60, sc * 6);
+
+                // Fuselage top highlight
+                c.fillStyle = s.fuselageL;
+                c.fillRect(-sc * 28, -sc * 10, sc * 56, sc * 4);
+
+                // Nose (pointing right)
+                c.fillStyle = s.nose;
+                c.beginPath();
+                c.moveTo(sc * 30, -sc * 10);
+                c.lineTo(sc * 50, 0);
+                c.lineTo(sc * 30, sc * 10);
+                c.closePath();
+                c.fill();
+                // Nose highlight
+                c.fillStyle = s.fuselageL;
+                c.beginPath();
+                c.moveTo(sc * 30, -sc * 10);
+                c.lineTo(sc * 48, -sc * 2);
+                c.lineTo(sc * 30, -sc * 2);
+                c.closePath();
+                c.fill();
+
+                // Cockpit windows (2 portholes)
+                c.fillStyle = s.cockpit;
+                c.fillRect(sc * 2, -sc * 14, sc * 20, sc * 12);
+                // Window shine
+                c.fillStyle = 'rgba(220,240,255,0.55)';
+                c.fillRect(sc * 4, -sc * 12, sc * 8, sc * 5);
+                c.fillRect(sc * 15, -sc * 12, sc * 5, sc * 5);
+
+                // Upper main wing
+                c.fillStyle = s.wing;
+                c.beginPath();
+                c.moveTo(-sc * 18, -sc * 10);
+                c.lineTo(sc * 16, -sc * 10);
+                c.lineTo(sc * 18, -sc * 32);
+                c.lineTo(-sc * 14, -sc * 32);
+                c.closePath();
+                c.fill();
+                // Wing top highlight
+                c.fillStyle = s.wingL;
+                c.beginPath();
+                c.moveTo(-sc * 18, -sc * 10);
+                c.lineTo(sc * 16, -sc * 10);
+                c.lineTo(sc * 15, -sc * 14);
+                c.lineTo(-sc * 17, -sc * 14);
+                c.closePath();
+                c.fill();
+                // Wing tip accent
+                c.fillStyle = s.wingD;
+                c.fillRect(sc * 14, -sc * 32, sc * 6, sc * 22);
+
+                // Lower main wing (mirror)
+                c.fillStyle = s.wing;
+                c.beginPath();
+                c.moveTo(-sc * 18, sc * 10);
+                c.lineTo(sc * 16, sc * 10);
+                c.lineTo(sc * 18, sc * 32);
+                c.lineTo(-sc * 14, sc * 32);
+                c.closePath();
+                c.fill();
+                c.fillStyle = s.wingL;
+                c.beginPath();
+                c.moveTo(-sc * 18, sc * 10);
+                c.lineTo(sc * 16, sc * 10);
+                c.lineTo(sc * 15, sc * 14);
+                c.lineTo(-sc * 17, sc * 14);
+                c.closePath();
+                c.fill();
+                c.fillStyle = s.wingD;
+                c.fillRect(sc * 14, sc * 10, sc * 6, sc * 22);
+
+                // Tail fin (vertical)
+                c.fillStyle = s.wing;
+                c.beginPath();
+                c.moveTo(-sc * 30, -sc * 10);
+                c.lineTo(-sc * 20, -sc * 10);
+                c.lineTo(-sc * 22, -sc * 28);
+                c.lineTo(-sc * 32, -sc * 28);
+                c.closePath();
+                c.fill();
+                c.fillStyle = s.wingL;
+                c.beginPath();
+                c.moveTo(-sc * 30, -sc * 10);
+                c.lineTo(-sc * 20, -sc * 10);
+                c.lineTo(-sc * 20, -sc * 14);
+                c.lineTo(-sc * 30, -sc * 14);
+                c.closePath();
+                c.fill();
+
+                // Tail stabilisers (small horizontal)
+                c.fillStyle = s.wing;
+                c.fillRect(-sc * 36, -sc * 14, sc * 12, sc * 8);
+                c.fillRect(-sc * 36, sc * 6, sc * 12, sc * 8);
+
+                // Engine pod under lower wing
+                c.fillStyle = s.engine;
+                c.fillRect(-sc * 14, sc * 20, sc * 20, sc * 10);
+                c.fillStyle = s.engineGlow;
+                c.fillRect(-sc * 16, sc * 22, sc * 6, sc * 6);
+
+                // Stripe decoration
+                c.fillStyle = s.stripe;
+                c.fillRect(-sc * 20, -sc * 3, sc * 46, sc * 3);
+                c.fillStyle = s.stripeB;
+                c.fillRect(-sc * 20, sc * 1, sc * 46, sc * 2);
+
+                // Exhaust glow (left = back)
+                c.fillStyle = '#ffffff';
+                c.globalAlpha = 0.9;
+                c.fillRect(-sc * 38, -sc * 6, sc * 8, sc * 12);
+                c.globalAlpha = 0.6;
+                c.fillStyle = s.engineGlow;
+                c.fillRect(-sc * 44, -sc * 5, sc * 8, sc * 10);
+                c.globalAlpha = 1;
+            }
+
+            /* ── Seasonal background for each band ── */
+            function drawBandBG(c, s, bY, T, PW, BAND) {
+                // Sky gradient (solid colors)
+                c.fillStyle = s.skyTop;
+                c.fillRect(0, bY, PW, BAND * 0.5);
+                c.fillStyle = s.skymid;
+                c.fillRect(0, bY + BAND * 0.5, PW, BAND * 0.5);
+
+                // Stars for dark bands
+                if (s.bgStars) {
+                    var seed = s.name.charCodeAt(0);
+                    for (var si = 0; si < 28; si++) {
+                        var sx = ((si * 173 + seed * 7 + 31) % PW);
+                        var sy = bY + ((si * 83 + seed * 3 + 11) % (BAND * 0.75));
+                        var sa = 0.2 + 0.25 * Math.sin(T * 0.9 + si * 0.6);
+                        c.globalAlpha = sa;
+                        c.fillStyle = '#ffffff';
+                        c.fillRect(sx | 0, sy | 0, 1 + (si % 3 === 0 ? 1 : 0), 1 + (si % 3 === 0 ? 1 : 0));
+                    }
+                    c.globalAlpha = 1;
+                }
+
+                // Horizon glow line
+                var hY = bY + BAND * 0.72;
+                c.globalAlpha = 0.18;
+                c.fillStyle = s.accent;
+                c.fillRect(0, hY, PW, 3);
+                c.globalAlpha = 0.06;
+                c.fillRect(0, hY + 3, PW, BAND * 0.15);
+                c.globalAlpha = 1;
+
+                // Ground strip
+                c.fillStyle = s.groundCol;
+                c.fillRect(0, bY + BAND - 12, PW, 12);
+                c.fillStyle = s.groundLine;
+                c.globalAlpha = 0.4;
+                c.fillRect(0, bY + BAND - 12, PW, 2);
+                c.globalAlpha = 1;
+
+                // Band separator
+                if (s !== SEASONS[0]) {
+                    c.strokeStyle = 'rgba(255,255,255,0.06)';
+                    c.lineWidth = 1;
+                    c.beginPath(); c.moveTo(0, bY); c.lineTo(PW, bY); c.stroke();
+                }
+            }
+
+            /* ── Emit seasonal particles ── */
+            function emitParticle(pl, x, y) {
+                var s = pl.s;
+                var col = s.partCols[Math.floor(Math.random() * s.partCols.length)];
+                pl.particles.push({
+                    x: x + (Math.random() - 0.5) * 18,
+                    y: y + (Math.random() - 0.5) * 24,
+                    vx: -(60 + Math.random() * 130),
+                    vy: (Math.random() - 0.5) * 70,
+                    life: 0.6 + Math.random() * 0.8,
+                    maxL: 0.6 + Math.random() * 0.8,
+                    col: col,
+                    sz: 2 + Math.random() * 4,
+                    rot: Math.random() * 6.28,
+                });
+            }
+
+            function tickPlanes(ts) {
+                if (!t0) t0 = ts;
+                var dt = Math.min((ts - (lastT || ts)) / 1000, 0.05);
+                lastT = ts;
+                var T = (ts - t0) / 1000;
+
+                px.globalAlpha = 1;
+                px.clearRect(0, 0, PW, PH);
+
+                // Draw all bands first (backgrounds)
+                planes.forEach(function (pl) {
+                    drawBandBG(px, pl.s, pl.bandY, T, PW, BAND);
+                });
+
+                // Draw each plane on its band
+                planes.forEach(function (pl, i) {
+                    var s = pl.s;
+                    var bY = pl.bandY;
+                    var midY = bY + BAND * 0.45; // slightly above center for visual balance
+
+                    // Move plane right
+                    pl.x += s.speed * dt;
+
+                    // Vertical bob
+                    var bobY = midY + Math.sin(T * s.bobFreq + i * 1.4) * s.bobAmp;
+
+                    // Add trail points (from behind the plane)
+                    var trailX = pl.x - SCALE * 44;
+                    pl.trail.push({ x: trailX, y: bobY, age: 0 });
+                    if (pl.trail.length > 90) pl.trail.shift();
+
+                    // Emit particles from exhaust
+                    if (Math.random() < 0.55) {
+                        emitParticle(pl, pl.x - SCALE * 44, bobY);
+                    }
+                    // Extra blossom/leaf particles from wings
+                    if (Math.random() < 0.25) {
+                        emitParticle(pl, pl.x + (Math.random() - 0.5) * SCALE * 40, bobY + (Math.random() - 0.5) * SCALE * 30);
+                    }
+
+                    // Draw trail (wide ribbon effect)
+                    for (var ti = 0; ti < pl.trail.length; ti++) {
+                        var tr = pl.trail[ti];
+                        tr.age++;
+                        var tf = 1 - tr.age / 90;
+                        if (tf <= 0) continue;
+                        var ta = tf * 0.55;
+                        var tw = Math.max(2, tf * 28);
+                        var th = Math.max(2, tf * 11);
+                        px.globalAlpha = ta;
+                        px.fillStyle = s.trailCols[ti % s.trailCols.length];
+                        px.fillRect((tr.x - tw * 0.5) | 0, (tr.y - th * 0.5) | 0, tw | 0, th | 0);
+                    }
+                    px.globalAlpha = 1;
+
+                    // Update + draw particles
+                    pl.particles = pl.particles.filter(function (p) {
+                        p.x += p.vx * dt;
+                        p.y += p.vy * dt;
+                        p.vy += 40 * dt;
+                        p.rot += dt * 4;
+                        p.life -= dt;
+                        if (p.life <= 0) return false;
+                        var pa = Math.max(0, p.life / p.maxL) * 0.85;
+                        px.globalAlpha = pa;
+                        px.fillStyle = p.col;
+                        var sz = Math.max(1, p.sz | 0);
+                        px.fillRect(p.x | 0, p.y | 0, sz, sz);
+                        return true;
+                    });
+                    px.globalAlpha = 1;
+
+                    // Engine glow halo
+                    px.globalAlpha = 0.22;
+                    px.fillStyle = s.accentGlow;
+                    px.fillRect((pl.x - SCALE * 60) | 0, (bobY - SCALE * 22) | 0, SCALE * 40 | 0, SCALE * 44 | 0);
+                    px.globalAlpha = 1;
+
+                    // Draw the plane itself
+                    px.save();
+                    px.translate(pl.x | 0, bobY | 0);
+                    drawPlane(px, s, SCALE);
+                    px.restore();
+
+                    // Label fades in once plane enters
+                    if (pl.x > PW * 0.18) {
+                        pl.labelAlpha = Math.min(1, pl.labelAlpha + dt * 2);
+                    }
+
+                    if (pl.labelAlpha > 0) {
+                        px.globalAlpha = pl.labelAlpha;
+
+                        // Season big name
+                        px.font = 'bold 32px "Courier New"';
+                        px.fillStyle = s.accent;
+                        px.textAlign = 'left';
+                        var labelX = 40;
+                        var labelY = midY - 22;
+                        px.fillText(s.name, labelX, labelY);
+
+                        // Accent bar under name
+                        px.fillStyle = s.accent;
+                        px.globalAlpha = pl.labelAlpha * 0.6;
+                        px.fillRect(labelX, labelY + 4, s.name.length * 20, 3);
+
+                        // Subtitle
+                        px.globalAlpha = pl.labelAlpha * 0.55;
+                        px.font = '13px "Courier New"';
+                        px.fillStyle = '#ffffff';
+                        px.fillText(s.desc, labelX, labelY + 24);
+
+                        px.globalAlpha = 1;
+                    }
+
+                    // Wrap: reset when fully off-screen right
+                    if (pl.x > PW + 200) {
+                        pl.x = -250;
+                        pl.trail = [];
+                        pl.labelAlpha = 0;
+                    }
+                });
+
+                // Top title bar
+                var titleA = Math.min(1, T * 1.2);
+                px.globalAlpha = titleA;
+                px.fillStyle = 'rgba(0,0,0,0.5)';
+                px.fillRect(0, 0, PW, 56);
+                px.font = 'bold 20px "Courier New"';
+                px.fillStyle = '#ffffff';
+                px.textAlign = 'center';
+                px.fillText('✈  THE FOUR SEASONS TAKE FLIGHT  ✈', PW / 2, 35);
+                px.globalAlpha = 1;
+
+                planesAnimID = requestAnimationFrame(tickPlanes);
+            }
+
+            if (planesAnimID) cancelAnimationFrame(planesAnimID);
+            planesAnimID = requestAnimationFrame(tickPlanes);
+        }
+
+        function showEarthStage() {
+            if (planesAnimID) { cancelAnimationFrame(planesAnimID); planesAnimID = null; }
+            document.getElementById('stage-planes').classList.remove('active');
+            document.getElementById('stage-earth').classList.add('active');
+            startEarthAnimation();
+        }
+
+        /* ═══════════════════════════════
+           EARTH CANVAS ANIMATION
+        ═══════════════════════════════ */
+        function startEarthAnimation() {
+            var ec = document.getElementById('earth-canvas');
+            var ex = ec.getContext('2d');
+            var EW = 420, EH = 420;
+            var CX = EW / 2, CY = EH / 2, R = 170;
+
+            var PLANE_COLORS = ['#ff88cc', '#ffcc00', '#ff6622', '#88ccff'];
+            var PLANE_LABELS = ['SPRING', 'SUMMER', 'AUTUMN', 'WINTER'];
+            var planes = PLANE_COLORS.map(function (col, i) {
+                return {
+                    col: col,
+                    label: PLANE_LABELS[i],
+                    angle: i * (Math.PI * 2 / 4),
+                    speed: 0.42 + i * 0.07,
+                    tilt: i * 0.30,
+                    orbitR: R + 28 + i * 16,
+                    trail: []
+                };
+            });
+
+            var CONTINENTS = [
+                { x: -0.12, y: -0.28, rx: 0.14, ry: 0.12, col: '#3a8a3a' },
+                { x: -0.08, y: 0.10, rx: 0.13, ry: 0.22, col: '#5a9a4a' },
+                { x: 0.22, y: -0.22, rx: 0.26, ry: 0.18, col: '#4a8a3a' },
+                { x: -0.36, y: -0.18, rx: 0.18, ry: 0.16, col: '#3a8855' },
+                { x: -0.28, y: 0.18, rx: 0.12, ry: 0.20, col: '#4a9a44' },
+                { x: 0.32, y: 0.20, rx: 0.10, ry: 0.09, col: '#5a8838' },
+                { x: 0.00, y: 0.40, rx: 0.20, ry: 0.07, col: '#aaddee' },
+            ];
+
+            var earthAngle = 0;
+            var earthAnimID;
+
+            function drawEarth(T) {
+                ex.clearRect(0, 0, EW, EH);
+
+                ex.fillStyle = '#000810';
+                ex.fillRect(0, 0, EW, EH);
+
+                for (var si = 0; si < 60; si++) {
+                    var sx = ((si * 137 + 42) % EW);
+                    var sy = ((si * 89 + 17) % EH);
+                    var sa = 0.4 + 0.3 * Math.sin(T * 1.2 + si);
+                    ex.globalAlpha = sa;
+                    ex.fillStyle = '#ffffff';
+                    ex.fillRect(sx, sy, 0.6 + (si % 3) * 0.5, 0.6 + (si % 3) * 0.5);
+                }
+                ex.globalAlpha = 1;
+
+                var glow = ex.createRadialGradient(CX, CY, R * 0.7, CX, CY, R * 1.3);
+                glow.addColorStop(0, 'rgba(30,80,200,0.15)');
+                glow.addColorStop(1, 'rgba(0,20,80,0)');
+                ex.fillStyle = glow;
+                ex.beginPath(); ex.arc(CX, CY, R * 1.3, 0, Math.PI * 2); ex.fill();
+
+                ex.save();
+                ex.beginPath(); ex.arc(CX, CY, R, 0, Math.PI * 2); ex.clip();
+                var oceanGrad = ex.createLinearGradient(CX - R, CY - R, CX + R, CY + R);
+                oceanGrad.addColorStop(0, '#1a4a9a');
+                oceanGrad.addColorStop(0.5, '#1a66cc');
+                oceanGrad.addColorStop(1, '#0a2866');
+                ex.fillStyle = oceanGrad;
+                ex.fillRect(CX - R, CY - R, R * 2, R * 2);
+
+                ex.translate(CX, CY);
+                ex.rotate(earthAngle);
+                CONTINENTS.forEach(function (c) {
+                    ex.beginPath();
+                    ex.ellipse(c.x * R, c.y * R, c.rx * R, c.ry * R, 0, 0, Math.PI * 2);
+                    ex.fillStyle = c.col;
+                    ex.fill();
+                    ex.strokeStyle = 'rgba(0,0,0,0.25)';
+                    ex.lineWidth = 1;
+                    ex.stroke();
+                });
+                ex.restore();
+
+                var atm = ex.createRadialGradient(CX, CY, R * 0.92, CX, CY, R * 1.05);
+                atm.addColorStop(0, 'rgba(80,140,255,0)');
+                atm.addColorStop(0.6, 'rgba(80,160,255,0.18)');
+                atm.addColorStop(1, 'rgba(40,100,255,0)');
+                ex.fillStyle = atm;
+                ex.beginPath(); ex.arc(CX, CY, R * 1.05, 0, Math.PI * 2); ex.fill();
+
+                var shine = ex.createRadialGradient(CX - R * 0.35, CY - R * 0.35, 0, CX - R * 0.3, CY - R * 0.3, R * 0.7);
+                shine.addColorStop(0, 'rgba(255,255,255,0.12)');
+                shine.addColorStop(1, 'rgba(255,255,255,0)');
+                ex.fillStyle = shine;
+                ex.beginPath(); ex.arc(CX, CY, R, 0, Math.PI * 2); ex.fill();
+
+                planes.forEach(function (pl) {
+                    pl.angle += pl.speed * 0.012;
+                    var tiltFactor = 0.38 + pl.tilt * 0.08;
+                    var px2 = CX + Math.cos(pl.angle) * pl.orbitR;
+                    var py2 = CY + Math.sin(pl.angle) * pl.orbitR * tiltFactor;
+
+                    pl.trail.push({ x: px2, y: py2 });
+                    if (pl.trail.length > 28) pl.trail.shift();
+                    for (var ti = 0; ti < pl.trail.length; ti++) {
+                        var ta = (ti / pl.trail.length) * 0.5;
+                        ex.globalAlpha = ta;
+                        ex.fillStyle = pl.col;
+                        ex.fillRect(pl.trail[ti].x - 1, pl.trail[ti].y - 1, 3, 3);
+                    }
+                    ex.globalAlpha = 1;
+
+                    ex.beginPath();
+                    ex.ellipse(CX, CY, pl.orbitR, pl.orbitR * tiltFactor, 0, 0, Math.PI * 2);
+                    ex.strokeStyle = pl.col + '22';
+                    ex.lineWidth = 1;
+                    ex.stroke();
+
+                    ex.save();
+                    ex.translate(px2, py2);
+                    var heading = Math.atan2(
+                        Math.sin(pl.angle + 0.01) * pl.orbitR * tiltFactor - Math.sin(pl.angle) * pl.orbitR * tiltFactor,
+                        Math.cos(pl.angle + 0.01) * pl.orbitR - Math.cos(pl.angle) * pl.orbitR
+                    );
+                    ex.rotate(heading);
+                    ex.fillStyle = pl.col;
+                    ex.fillRect(-9, -3, 18, 6);
+                    ex.beginPath(); ex.moveTo(9, -3); ex.lineTo(14, 0); ex.lineTo(9, 3); ex.fill();
+                    ex.fillRect(-4, -9, 6, 6);
+                    ex.fillRect(-4, 3, 6, 6);
+                    ex.fillRect(-9, -5, 4, 4);
+                    ex.fillRect(-9, 1, 4, 4);
+                    ex.shadowBlur = 8;
+                    ex.shadowColor = pl.col;
+                    ex.fillStyle = '#ffffff';
+                    ex.fillRect(10, -1, 3, 2);
+                    ex.shadowBlur = 0;
+                    ex.restore();
+
+                    var lx = px2 + Math.cos(pl.angle) * 28;
+                    var ly = py2 + Math.sin(pl.angle) * tiltFactor * 28;
+                    ex.fillStyle = pl.col;
+                    ex.font = 'bold 9px "Courier New"';
+                    ex.textAlign = 'center';
+                    ex.fillText(pl.label, lx, ly);
+                });
+
+                earthAngle += 0.003;
+                earthAnimID = requestAnimationFrame(function (ts) { drawEarth(ts / 1000); });
+            }
+
+            drawEarth(0);
+        }
+
+        function goToEnding() {
+            window.location.href = 'ending.html';
+        }
+    </script>
 </body>
+
 </html>

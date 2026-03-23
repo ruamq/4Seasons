@@ -151,7 +151,6 @@
     </div>
 
     <!-- ▼▼▼ Drop your .mp3 file in the same folder as this file ▼▼▼ -->
-    <audio id="bg-music" src="christmas.mp3" loop preload="auto"></audio>
     <script>
         const cv = document.getElementById('c');
         const cx = cv.getContext('2d');
@@ -841,34 +840,15 @@
             }
         });
 
-        // ── AUDIO — autoplay on load, fallback to button click ──
-        const music = document.getElementById('bg-music');
-        music.volume = 0.7;
-
-        function tryPlay() {
-            music.play().catch(() => {
-                // Browser blocked autoplay — show button as fallback
-                document.getElementById('play-btn').style.display = 'block';
-            });
-        }
-
-        // Attempt autoplay immediately
-        tryPlay();
-
-        // Also try on first user interaction (covers strict autoplay policies)
-        document.addEventListener('click', () => { music.play(); }, { once: true });
-
         // Play button → go to snowball game
         const playBtn = document.getElementById('play-btn');
         playBtn.addEventListener('click', () => {
-            music.play().catch(() => { });
             window.location.href = 'snowball.html';
         });
 
         // Title click → also go to snowball game
         const mainTitle = document.getElementById('main-title');
         mainTitle.addEventListener('click', () => {
-            music.play().catch(() => { });
             window.location.href = 'snowball.html';
         });
 
