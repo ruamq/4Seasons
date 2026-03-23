@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Christmas with Ha Linh</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #020814;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        #title-wrap {
+            position: fixed;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #main-title {
+            font-family: 'Mountains of Christmas', cursive;
+            font-size: clamp(40px, 7vw, 90px);
+            color: #fff;
+            line-height: 1;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0 #8b0000, 4px 4px 0 #5a0000, 0 0 40px #ff4444aa;
+            animation: tg 3s ease-in-out infinite alternate;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        @keyframes tg {
+            from {
+                text-shadow: 2px 2px 0 #8b0000, 4px 4px 0 #5a0000, 0 0 20px #ff444466;
+            }
+
+            to {
+                text-shadow: 2px 2px 0 #8b0000, 4px 4px 0 #5a0000, 0 0 60px #ff4444cc, 0 0 100px #ff000066;
+            }
+        }
+
+        #sub-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(6px, 1vw, 11px);
+            color: #88ddff;
+            letter-spacing: 4px;
+            margin-top: 8px;
+            animation: sp 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes sp {
+            from {
+                opacity: 0.4
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        .flake {
+            position: fixed;
+            top: -20px;
+            pointer-events: none;
+            z-index: 6;
+            animation: fl linear infinite;
+            color: #fff;
+        }
+
+        @keyframes fl {
+            0% {
+                transform: translateY(-20px) rotate(0deg);
+                opacity: 1
+            }
+
+            100% {
+                transform: translateY(110vh) rotate(720deg);
+                opacity: 0.2
+            }
+        }
+
+        #play-btn {
+            display: block;
+            margin: 18px auto 0;
+            background: linear-gradient(135deg, #cc1a1a, #ff4444);
+            color: #fff8e8;
+            border: none;
+            border-bottom: 4px solid #7a0000;
+            padding: 14px 44px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(8px, 1.2vw, 13px);
+            cursor: pointer;
+            letter-spacing: 2px;
+            box-shadow: 4px 4px 0 #7a0000, 8px 8px 0 #4a0000;
+            animation: pglow 2s ease-in-out infinite alternate;
+            transition: transform 0.08s;
+            pointer-events: auto;
+        }
+
+        #play-btn:hover {
+            filter: brightness(1.15);
+        }
+
+        #play-btn:active {
+            transform: translateY(3px);
+            border-bottom-width: 1px;
+        }
+
+        @keyframes pglow {
+            from {
+                box-shadow: 4px 4px 0 #7a0000, 8px 8px 0 #4a0000, 0 0 14px #ff444444;
+            }
+
+            to {
+                box-shadow: 4px 4px 0 #7a0000, 8px 8px 0 #4a0000, 0 0 34px #ff4444cc;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+    <div id="flk"></div>
+    <div id="title-wrap">
+        <div id="main-title">Christmas with Ha Linh</div>
+        <div id="sub-title">Paris • Winter 2025</div>
+        <button id="play-btn">▶ PLAY</button>
+    </div>
+
+    <!-- ▼▼▼ Drop your .mp3 file in the same folder as this file ▼▼▼ -->
+    <audio id="bg-music" src="christmas.mp3" loop preload="auto"></audio>
+    <script>
+        const cv = document.getElementById('c');
+        const cx = cv.getContext('2d');
+        cx.imageSmoothingEnabled = false;
+
+        let W, H, tick = 0;
+
+        function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
+        resize(); addEventListener('resize', resize);
+
+        // ground Y (60% down screen)
+        const GY = () => H * 0.62 | 0;
+
+        // draw filled rect in screen px
+        function r(x, y, w, h, col) { cx.fillStyle = col; cx.fillRect(x, y, w, h); }
+
+        // pixel size — scales with screen
+        const PS = () => Math.max(3, Math.floor(W / 280));
+
+        // seeded random for deterministic texture
+        function sr(s) { return ((s * 9301 + 49297) % 233280) / 233280; }
+
+        // ═══════════════════════════════════════
+        // SKY
+        // ═══════════════════════════════════════
+        function drawSky() {
+            // gradient bands
+            const steps = 30;
+            for (let i = 0; i < steps; i++) {
+                const t = i / steps;
+                const rv = 2 + t * 10 | 0, gv = 8 + t * 18 | 0, bv = 20 + t * 50 | 0;
+                cx.fillStyle = `rgb(${rv},${gv},${bv})`;
+                cx.fillRect(0, (H * t) | 0, W, (H / steps) | 0 + 2);
+            }
+            // stars
+            for (let i = 0; i < 120; i++) {
+                const sx = (i * 179.3) % W, sy = (i * 67.7) % (H * 0.55);
+                const br = 0.2 + Math.sin(tick * 0.03 + i) * 0.4;
+                cx.globalAlpha = Math.max(0, br);
+                cx.fillStyle = '#fff';
+                cx.fillRect(sx | 0, sy | 0, i % 7 === 0 ? 3 : 2, i % 7 === 0 ? 3 : 2);
+            }
+            cx.globalAlpha = 1;
+            // moon
+            const mx = W * 0.84 | 0, my = H * 0.07 | 0;
+            cx.fillStyle = '#fff8d0';
+            cx.beginPath(); cx.arc(mx, my, W * 0.028, 0, Math.PI * 2); cx.fill();
+            cx.fillStyle = 'rgba(255,248,160,0.07)';
+            cx.beginPath(); cx.arc(mx, my, W * 0.06, 0, Math.PI * 2); cx.fill();
+            cx.globalAlpha = 1;
+        }
+
+        // ═══════════════════════════════════════
+        // BACK BUILDINGS
+        // ═══════════════════════════════════════
+        function drawBuildings() {
+            const gy = GY();
+            const bldgs = [
+                [0.01, 0.06, 0.18], [0.08, 0.05, 0.14], [0.14, 0.07, 0.20], [0.22, 0.04, 0.12], [0.27, 0.05, 0.15],
+                [0.65, 0.05, 0.17], [0.71, 0.06, 0.13], [0.78, 0.07, 0.19], [0.86, 0.05, 0.14], [0.92, 0.07, 0.16],
+            ];
+            bldgs.forEach(([fx, fw, fh]) => {
+                const bx = W * fx | 0, bw = W * fw | 0, bh = H * fh | 0, by = gy - bh;
+                r(bx, by, bw, bh, '#050d18');
+                // windows
+                cx.fillStyle = '#ffeeaa33';
+                for (let wy = by + 4; wy < gy - 4; wy += 9) {
+                    for (let wx = bx + 4; wx < bx + bw - 4; wx += 9) {
+                        if (sr(wx * 37 + wy * 53) > 0.5) cx.fillRect(wx, wy, 4, 5);
+                    }
+                }
+                // snow roof
+                r(bx, by, bw, 4, '#c8d8ee');
+            });
+        }
+
+        // ═══════════════════════════════════════
+        // SNOW GROUND
+        // ═══════════════════════════════════════
+        function drawGround() {
+            const gy = GY();
+            // base snow
+            for (let y = gy; y < H; y++) {
+                const t = (y - gy) / (H - gy);
+                const v = 195 + t * 55 | 0;
+                cx.fillStyle = `rgb(${v},${v + 6},${v + 14})`;
+                cx.fillRect(0, y, W, 1);
+            }
+            // surface bumps
+            cx.fillStyle = '#ddeaf7';
+            for (let bx = 0; bx < W; bx += W / 18) {
+                const bh = 8 + sr(bx * 7) * 16 | 0;
+                cx.beginPath(); cx.ellipse(bx + W / 36, gy, W / 22, bh, 0, Math.PI, 0); cx.fill();
+            }
+            // road strip
+            cx.fillStyle = '#1a1a26'; cx.fillRect(0, gy + 14, W, 18);
+            cx.fillStyle = '#222234';
+            for (let x = 0; x < W; x += 14) cx.fillRect(x, (gy + 14 + sr(x * 3) * 4) | 0, 10, 7);
+            // snow on road edge
+            cx.fillStyle = 'rgba(200,220,240,0.28)'; cx.fillRect(0, gy + 14, W, 3);
+        }
+
+        // ═══════════════════════════════════════
+        // EIFFEL TOWER — clean, pixelated, copper
+        // ═══════════════════════════════════════
+        function drawEiffelTower() {
+            const gy = GY();
+            const cx0 = W * 0.23 | 0; // center x of tower
+            const p = PS();
+
+            // copper palette
+            const CA = '#5c3318'; // darkest shadow
+            const CB = '#7c4e2a'; // dark
+            const CC = '#9b6535'; // mid
+            const CD = '#b87d42'; // main copper
+            const CE = '#d4a060'; // highlight
+            const SN = '#ddeaf7'; // snow
+
+            function b(x, y, w, h, col) {
+                cx.fillStyle = col;
+                cx.fillRect((cx0 + x * p) | 0, (gy + y * p) | 0, w * p, h * p);
+            }
+
+            // ── BASE: 4 legs spreading out ──
+            // Each leg: series of horizontal slices getting narrower toward top
+            // Outer legs (very wide at base)
+            for (let i = 0; i < 16; i++) {
+                const spread = (15 - i) * 0.7 | 0;
+                b(-16 - spread, -i - 1, 4, 1, i < 5 ? CA : CB);  // left outer
+                b(12 + spread, -i - 1, 4, 1, i < 5 ? CA : CB);  // right outer
+            }
+            // Inner legs
+            for (let i = 0; i < 16; i++) {
+                const spread = (15 - i) * 0.3 | 0;
+                b(-7 - spread, -i - 1, 3, 1, CC);  // left inner
+                b(4 + spread, -i - 1, 3, 1, CC);  // right inner
+            }
+            // Horizontal arch braces at base (2 rows)
+            b(-14, -6, 28, 1, CB);
+            b(-12, -11, 24, 1, CB);
+            b(-10, -14, 20, 1, CC);
+
+            // ── FIRST PLATFORM ──
+            b(-10, -17, 20, 2, CD);
+            b(-10, -18, 20, 1, CE); // top edge highlight
+            b(-10, -18, 20, 1, SN); // snow
+            b(-10, -16, 20, 1, CA); // bottom shadow
+
+            // ── SECOND STAGE (pillars narrow) ──
+            for (let i = 0; i < 14; i++) {
+                const w = 1 + Math.max(0, (1 - i / 14) * 0.5) | 0;
+                b(-7 + 1, -18 - i - 1, 3, 1, CC);
+                b(4 - 1, -18 - i - 1, 3, 1, CC);
+                b(-5, -18 - i - 1, 2, 1, CD);
+                b(3, -18 - i - 1, 2, 1, CD);
+            }
+            // Diagonal X-braces second stage
+            for (let i = 0; i < 14; i += 4) {
+                b(-5 + i / 2, -19 - i, 10 - i, 1, CB);
+                b(-5 + (13 - i) / 2, -19 - (13 - i), 10 - (13 - i), 1, CB);
+            }
+
+            // ── SECOND PLATFORM ──
+            b(-6, -33, 12, 2, CD);
+            b(-6, -34, 12, 1, CE);
+            b(-6, -34, 12, 1, SN);
+            b(-6, -32, 12, 1, CA);
+
+            // ── THIRD STAGE (single shaft tapers) ──
+            for (let i = 0; i < 14; i++) {
+                const w = Math.max(2, 6 - i / 2.5 | 0);
+                b(-w / 2 | 0, -34 - i - 1, w, 1, i % 2 === 0 ? CC : CD);
+            }
+
+            // ── THIRD PLATFORM ──
+            b(-4, -49, 8, 2, CD);
+            b(-4, -50, 8, 1, CE);
+            b(-4, -50, 8, 1, SN);
+
+            // ── ANTENNA ──
+            b(-1, -51, 2, 22, CC);
+            b(0, -51, 1, 22, CE);
+
+            // ── ANTENNA TIP light ──
+            const ra = 0.5 + Math.sin(tick * 0.07) * 0.5;
+            cx.globalAlpha = ra;
+            cx.fillStyle = '#ff2222';
+            cx.fillRect((cx0 - 1 * p) | 0, (gy - 74 * p) | 0, p * 2, p * 2);
+            cx.globalAlpha = ra * 0.25;
+            cx.beginPath(); cx.arc((cx0) | 0, (gy - 73 * p) | 0, p * 4, 0, Math.PI * 2); cx.fill();
+            cx.globalAlpha = 1;
+
+            // ── TWINKLING LIGHTS on tower (just on the structure, no floaters) ──
+            const lcols = ['#ff3333', '#33ff55', '#3355ff', '#ffee33'];
+            // Only place lights on the actual first-stage legs
+            for (let i = 0; i < 16; i++) {
+                const spread = (15 - i) * 0.7 | 0;
+                // left outer leg position
+                const lx = (cx0 + (-16 - spread) * p + p * 2) | 0;
+                const ly = (gy + (-i - 1) * p) | 0;
+                const a = 0.4 + Math.sin(tick * 0.08 + i * 1.3) * 0.6;
+                cx.globalAlpha = a;
+                cx.fillStyle = lcols[i % 4];
+                cx.fillRect(lx, ly, p * 2, p * 2);
+                cx.globalAlpha = 0;
+            }
+            cx.globalAlpha = 1;
+        }
+
+        // ═══════════════════════════════════════
+        // CHRISTMAS TREE — HUGE
+        // ═══════════════════════════════════════
+        function drawChristmasTree() {
+            const gy = GY();
+            const tcx = W * 0.58 | 0;
+            const p = PS();
+
+            const D1 = '#063a0e', D2 = '#0a5a16', D3 = '#0e741e', D4 = '#12922a';
+            const SN = '#ddeaf7';
+
+            function t(x, y, w, h, col) {
+                cx.fillStyle = col;
+                cx.fillRect((tcx + x * p) | 0, (gy + y * p) | 0, w * p, h * p);
+            }
+
+            // trunk — tall and thick
+            t(-3, 0, 6, 7, '#5a3010'); t(-2, 0, 3, 7, '#7a4820');
+            t(-6, -1, 12, 2, SN); // snow at base
+
+            // Layers — very large, 8 tiers
+            const layers = [
+                { y: -9, w: 44, h: 9 },
+                { y: -18, w: 36, h: 9 },
+                { y: -27, w: 29, h: 9 },
+                { y: -36, w: 22, h: 9 },
+                { y: -45, w: 16, h: 9 },
+                { y: -53, w: 11, h: 8 },
+                { y: -61, w: 7, h: 8 },
+                { y: -69, w: 4, h: 8 },
+            ];
+            layers.forEach((l, i) => {
+                const hw = l.w / 2 | 0;
+                t(-hw, l.y, l.w, l.h, i % 2 === 0 ? D2 : D3);
+                t(-hw, l.y, l.w, 2, D4);         // top lighter
+                t(hw - 3, l.y, 3, l.h, D1);         // right shadow
+                t(-hw, l.y + l.h - 2, l.w, 2, SN);       // snow on each tier
+            });
+
+            // Star topper
+            t(-4, -78, 8, 8, '#ffd700');
+            t(-3, -80, 6, 6, '#ffe566');
+            t(-2, -81, 4, 4, '#ffffff');
+            cx.fillStyle = 'rgba(255,220,0,0.22)';
+            cx.beginPath(); cx.arc(tcx, (gy - 78 * p) | 0, p * 10, 0, Math.PI * 2); cx.fill();
+
+            // Ornament balls
+            const orns = [
+                { x: -17, y: -11, c: '#ff2222' }, { x: 11, y: -11, c: '#2244ff' },
+                { x: -14, y: -20, c: '#ffdd00' }, { x: 10, y: -21, c: '#ff2266' },
+                { x: -11, y: -29, c: '#22cc44' }, { x: 8, y: -30, c: '#aa22ff' },
+                { x: -8, y: -38, c: '#ff4400' }, { x: 6, y: -39, c: '#22ddff' },
+                { x: -6, y: -47, c: '#ff2222' }, { x: 5, y: -48, c: '#ffdd00' },
+                { x: -3, y: -55, c: '#22ff88' }, { x: 2, y: -56, c: '#ff4488' },
+                { x: 16, y: -14, c: '#ff88ff' }, { x: -18, y: -25, c: '#44ffaa' },
+            ];
+            orns.forEach(o => {
+                const ox = (tcx + o.x * p) | 0, oy = (gy + o.y * p) | 0;
+                const a = 0.5 + Math.sin(tick * 0.055 + o.x + o.y * 0.8) * 0.5;
+                cx.globalAlpha = a;
+                cx.fillStyle = o.c; cx.fillRect(ox, oy, p * 3, p * 3);
+                cx.fillStyle = '#ffffff88'; cx.fillRect(ox, oy, p, p);
+                cx.globalAlpha = a * 0.3;
+                cx.beginPath(); cx.arc(ox + p, oy + p, p * 4, 0, Math.PI * 2); cx.fill();
+            });
+            cx.globalAlpha = 1;
+
+            // STRING LIGHTS — zigzag across each layer
+            const lc = ['#ff2222', '#22ee44', '#2244ff', '#ffee22', '#ff44ff', '#22eeff'];
+            let li = 0;
+            layers.forEach(l => {
+                const hw = l.w / 2 | 0;
+                const steps = Math.max(5, l.w / 3);
+                for (let i = 0; i < steps; i++) {
+                    const fx = -hw + (i / (steps - 1)) * l.w;
+                    const fy = l.y + (i % 2 === 0 ? 2 : l.h - 3);
+                    const ox = (tcx + fx * p) | 0, oy = (gy + fy * p) | 0;
+                    const a = 0.35 + Math.sin(tick * 0.09 + li * 0.7) * 0.65;
+                    cx.globalAlpha = Math.max(0, a);
+                    cx.fillStyle = lc[li % lc.length];
+                    cx.fillRect(ox, oy, p * 2, p * 2);
+                    cx.globalAlpha = a * 0.2;
+                    cx.beginPath(); cx.arc(ox + p, oy + p, p * 3, 0, Math.PI * 2); cx.fill();
+                    li++;
+                }
+            });
+            cx.globalAlpha = 1;
+        }
+
+        // ═══════════════════════════════════════
+        // PRESENTS
+        // ═══════════════════════════════════════
+        function drawPresents() {
+            const gy = GY(), p = PS();
+            const ps = [
+                { fx: 0.47, s: 6, box: '#cc1a1a', rib: '#ffd700', bow: true },
+                { fx: 0.51, s: 5, box: '#1a44cc', rib: '#ff4488', bow: false },
+                { fx: 0.55, s: 7, box: '#1a8a1a', rib: '#ffdd00', bow: true },
+                { fx: 0.59, s: 5, box: '#aa1acc', rib: '#44ffaa', bow: false },
+                { fx: 0.63, s: 6, box: '#cc6600', rib: '#ffffff', bow: true },
+                { fx: 0.43, s: 5, box: '#cc1a44', rib: '#44ddff', bow: false },
+                { fx: 0.68, s: 4, box: '#aa2200', rib: '#88ff44', bow: true },
+                { fx: 0.18, s: 4, box: '#1a66cc', rib: '#ffaa00', bow: false },
+                { fx: 0.85, s: 5, box: '#226622', rib: '#ff4444', bow: true },
+            ];
+            ps.forEach(pr => {
+                const px = W * pr.fx | 0, py = gy, s = pr.s * p / 3 | 0;
+                cx.fillStyle = pr.box; cx.fillRect(px - s, py - s * 2, s * 2, s * 2);
+                cx.fillStyle = '#ffffff22'; cx.fillRect(px - s, py - s * 2, s * 2, 3);
+                cx.fillStyle = '#ddeaf7'; cx.fillRect(px - s, py - s * 2 - 2, s * 2, 2); // snow
+                cx.fillStyle = pr.rib; cx.fillRect(px - 2, py - s * 2, 4, s * 2); // vert ribbon
+                cx.fillStyle = pr.rib; cx.fillRect(px - s, py - s - 2, s * 2, 3); // horiz ribbon
+                if (pr.bow) {
+                    cx.fillStyle = pr.rib;
+                    cx.fillRect(px - 4, py - s * 2 - 6, 4, 6); cx.fillRect(px, py - s * 2 - 6, 4, 6);
+                    cx.fillStyle = '#ffffff88'; cx.fillRect(px - 2, py - s * 2 - 4, 3, 3);
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════
+        // SLEIGH ON GROUND + ONE REINDEER
+        // ═══════════════════════════════════════
+        function drawSleigh() {
+            const gy = GY();
+            const p = PS();
+            // position: right side, sitting ON the snow
+            const sx = W * 0.82 | 0;
+            const sy = gy; // feet/runners on ground
+
+            function sl(x, y, w, h, col) {
+                cx.fillStyle = col;
+                cx.fillRect((sx + x * p) | 0, (sy + y * p) | 0, w * p, h * p);
+            }
+
+            // ── REINDEER 1 (closer to sleigh) ──
+            sl(-20, -7, 10, 5, '#7a4520');
+            sl(-20, -7, 8, 3, '#9a5a30');
+            sl(-14, -10, 4, 4, '#9a6030');
+            sl(-13, -12, 5, 5, '#b87040');
+            sl(-12, -16, 2, 4, '#6a3818'); sl(-11, -17, 3, 2, '#6a3818'); sl(-10, -16, 2, 3, '#6a3818');
+            sl(-9, -14, 2, 2, '#6a3818'); sl(-8, -14, 3, 1, '#6a3818');
+            sl(-10, -11, 2, 2, '#111');
+            sl(-19, -2, 3, 2, '#6a3818'); sl(-16, -2, 3, 2, '#6a3818');
+            sl(-13, -2, 3, 2, '#6a3818'); sl(-10, -2, 3, 2, '#6a3818');
+            sl(-20, 0, 3, 2, '#3a2010'); sl(-17, 0, 3, 2, '#3a2010');
+            sl(-14, 0, 3, 2, '#3a2010'); sl(-11, 0, 3, 2, '#3a2010');
+            // Rudolph nose
+            const rna = 0.5 + Math.sin(tick * 0.1) * 0.5;
+            cx.globalAlpha = rna; cx.fillStyle = '#ff2222';
+            cx.fillRect((sx - 9 * p) | 0, (sy - 11 * p) | 0, p * 2, p * 2);
+            cx.globalAlpha = rna * 0.3;
+            cx.beginPath(); cx.arc((sx - 8 * p) | 0, (sy - 10 * p) | 0, p * 3, 0, Math.PI * 2); cx.fill();
+            cx.globalAlpha = 1;
+
+            // ── REINDEER 2 (further ahead) ──
+            const r2 = -34; // offset further left
+            sl(r2, -7, 10, 5, '#7a4520');
+            sl(r2, -7, 8, 3, '#9a5a30');
+            sl(r2 + 6, -10, 4, 4, '#9a6030');
+            sl(r2 + 7, -12, 5, 5, '#b87040');
+            sl(r2 + 8, -16, 2, 4, '#6a3818'); sl(r2 + 9, -17, 3, 2, '#6a3818'); sl(r2 + 10, -16, 2, 3, '#6a3818');
+            sl(r2 + 11, -14, 2, 2, '#6a3818'); sl(r2 + 12, -14, 3, 1, '#6a3818');
+            sl(r2 + 10, -11, 2, 2, '#111');
+            sl(r2 + 1, -2, 3, 2, '#6a3818'); sl(r2 + 4, -2, 3, 2, '#6a3818');
+            sl(r2 + 7, -2, 3, 2, '#6a3818'); sl(r2 + 10, -2, 3, 2, '#6a3818');
+            sl(r2, 0, 3, 2, '#3a2010'); sl(r2 + 3, 0, 3, 2, '#3a2010');
+            sl(r2 + 7, 0, 3, 2, '#3a2010'); sl(r2 + 10, 0, 3, 2, '#3a2010');
+
+            // harness ropes — both reindeer to sleigh
+            cx.strokeStyle = '#aa8844'; cx.lineWidth = 2;
+            // rope reindeer 1 to sleigh
+            cx.beginPath(); cx.moveTo((sx - 10 * p) | 0, (sy - 5 * p) | 0); cx.lineTo((sx - 2 * p) | 0, (sy - 5 * p) | 0); cx.stroke();
+            // rope reindeer 2 to reindeer 1
+            cx.beginPath(); cx.moveTo((sx + (r2 + 10) * p) | 0, (sy - 5 * p) | 0); cx.lineTo((sx - 20 * p) | 0, (sy - 5 * p) | 0); cx.stroke();
+
+            // ── SLEIGH — sits on ground ──
+            sl(-2, -8, 18, 7, '#cc1a1a');   // body
+            sl(-2, -8, 18, 2, '#ee3322');   // top highlight
+            sl(-2, -8, 3, 7, '#ee4422');   // front curve
+            sl(-1, -7, 2, 6, '#aa1111');   // inner curve shadow
+            sl(14, -8, 2, 7, '#aa1111');   // back
+            // gold trim
+            sl(-2, -7, 18, 1, '#ffd700');
+            // runners ON ground
+            sl(-3, 0, 20, 2, '#cc8800');   // runner L base
+            sl(-3, 0, 1, 2, '#ffaa22');   // runner highlight
+            sl(-2, -1, 4, 2, '#8a0a0a');   // front runner strut
+            sl(10, -1, 4, 2, '#8a0a0a');   // back runner strut
+            // Presents in sleigh
+            sl(1, -12, 4, 5, '#cc2244'); sl(1, -12, 4, 1, '#ff4466');
+            sl(5, -13, 5, 6, '#1a44cc'); sl(5, -13, 5, 1, '#2255dd');
+            sl(10, -11, 4, 4, '#22aa44'); sl(10, -11, 4, 1, '#33cc55');
+            // ribbons
+            sl(2, -12, 2, 5, '#ffdd00'); sl(6, -13, 2, 6, '#ff8800'); sl(11, -11, 2, 4, '#ff4488');
+            // snow on sleigh top
+            sl(-2, -8, 18, 1, '#ddeaf7');
+        }
+
+        // ═══════════════════════════════════════
+        // STREET LAMPS
+        // ═══════════════════════════════════════
+        function drawLamps() {
+            const gy = GY(), p = PS();
+            [[0.08], [0.38], [0.74], [0.93]].forEach(([fx]) => {
+                const lx = W * fx | 0;
+                cx.fillStyle = '#445566'; cx.fillRect(lx - p, gy - 18 * p, p * 2, 18 * p);
+                cx.fillStyle = '#667788'; cx.fillRect(lx, gy - 18 * p, p, 18 * p);
+                cx.fillStyle = '#445566'; cx.fillRect(lx, gy - 18 * p, p * 5, p);
+                cx.fillStyle = '#223344'; cx.fillRect(lx + 4 * p, gy - 19 * p, p * 5, p * 4);
+                cx.fillStyle = '#334455'; cx.fillRect(lx + 5 * p, gy - 19 * p, p * 3, p * 4);
+                const a = 0.5 + Math.sin(tick * 0.04 + lx) * 0.3;
+                cx.globalAlpha = a; cx.fillStyle = '#ffeeaa';
+                cx.fillRect(lx + 5 * p, gy - 18 * p, p * 2, p * 2);
+                cx.globalAlpha = a * 0.15;
+                cx.beginPath(); cx.arc(lx + 6 * p, gy - 17 * p, p * 12, 0, Math.PI * 2); cx.fill();
+                cx.globalAlpha = 1;
+                // snow on lamp
+                cx.fillStyle = '#ddeaf7'; cx.fillRect(lx + 3 * p, gy - 20 * p, p * 7, p * 2);
+            });
+        }
+
+        // ═══════════════════════════════════════
+        // CANVAS SNOW PIXELS
+        // ═══════════════════════════════════════
+        function drawSnowPixels() {
+            const p = PS();
+            for (let i = 0; i < 80; i++) {
+                const sx = ((sr(i * 7) * W + tick * (0.4 + sr(i) * 0.5)) % W) | 0;
+                const sy = ((sr(i * 11) * H + tick * (0.7 + sr(i * 3) * 0.6)) % H) | 0;
+                cx.globalAlpha = 0.35 + sr(i * 17) * 0.5;
+                cx.fillStyle = '#ffffff'; cx.fillRect(sx, sy, p, p);
+            }
+            cx.globalAlpha = 1;
+        }
+
+        // ═══════════════════════════════════════
+        // SKIING COUPLE
+        // ═══════════════════════════════════════
+        function drawSkiingCouple() {
+            const gy = GY();
+            const p = PS();
+
+            // slide both skiers gently left/right together
+            const drift = Math.sin(tick * 0.008) * W * 0.02 | 0;
+            const bx = (W * 0.22 + drift) | 0; // boy X
+            const gx = bx + 18 * p;            // girl X (right of boy)
+            const sy = gy;                      // standing on snow
+
+            function person(ox, isGirl) {
+                function px2(x, y, w, h, col) { cx.fillStyle = col; cx.fillRect((ox + x * p) | 0, (sy + y * p) | 0, w * p, h * p); }
+
+                // ── SKIS (long flat planks on ground) ──
+                const skiCol = isGirl ? '#cc2244' : '#1a44cc';
+                px2(-5, 1, 14, 2, skiCol);       // ski plank
+                px2(-6, 1, 2, 2, '#dddddd');    // ski tip left
+                px2(8, 1, 2, 2, '#dddddd');    // ski tail right
+                px2(-5, 0, 2, 1, skiCol);       // ski tip curve
+
+                // ── SKI POLES ──
+                const poleX = isGirl ? 6 : -4;
+                px2(poleX, -10, 1, 11, '#aaaaaa');  // pole shaft
+                px2(poleX - 1, 0, 3, 1, '#888888');  // basket at bottom
+                // handle grip at top
+                px2(poleX - 1, -11, 3, 2, '#555555');
+
+                // ── LEGS / SKI BOOTS ──
+                const legCol = isGirl ? '#cc2244' : '#1a3088';
+                px2(-2, -3, 2, 4, legCol);
+                px2(1, -3, 2, 4, legCol);
+                px2(-3, 0, 3, 2, '#3a2010'); // boot L
+                px2(1, 0, 3, 2, '#3a2010'); // boot R
+
+                // ── BODY (jacket) ──
+                const jacketCol = isGirl ? '#ff6600' : '#ff6600'; // both orange jackets
+                px2(-3, -9, 6, 6, jacketCol);
+                px2(-3, -9, 1, 6, '#dd4400'); // shadow left
+                px2(2, -9, 1, 6, '#dd4400'); // shadow right
+                px2(-1, -8, 1, 3, '#ffaa00'); // zipper
+
+                // ── HEAD ──
+                px2(-2, -13, 4, 4, '#f9c87a'); // face
+
+                // ── HAIR / HAT ──
+                if (isGirl) {
+                    // pink-red beanie
+                    px2(-3, -16, 6, 4, '#cc2244');
+                    px2(-3, -17, 6, 2, '#ffffff'); // white band
+                    px2(-1, -18, 2, 2, '#cc2244'); // pom pom
+                    // hair peeking out
+                    cx.fillStyle = '#3a2008'; cx.fillRect((ox - 2 * p) | 0, (sy - 13 * p) | 0, p, p * 3);
+                    cx.fillRect((ox + 4 * p) | 0, (sy - 13 * p) | 0, p, p * 3);
+                } else {
+                    // blue ski helmet
+                    px2(-3, -16, 6, 4, '#1a44cc');
+                    px2(-3, -17, 6, 2, '#2255dd');
+                    px2(-2, -13, 4, 1, '#ffffff'); // goggle band
+                    // goggles
+                    cx.fillStyle = '#ffdd0088';
+                    cx.fillRect((ox - 2 * p) | 0, (sy - 13 * p) | 0, p * 2, p * 2);
+                    cx.fillRect((ox + 1 * p) | 0, (sy - 13 * p) | 0, p * 2, p * 2);
+                }
+
+                // ── SCARF ──
+                const scarfCol = isGirl ? '#ffffff' : '#ff2222';
+                px2(-3, -10, 6, 2, scarfCol);
+                px2(2, -9, 1, 3, scarfCol); // scarf tail hanging
+
+                // ── ARMS out for balance ──
+                cx.fillStyle = '#f9c87a';
+                cx.fillRect((ox - 5 * p) | 0, (sy - 8 * p) | 0, p * 2, p * 2); // left arm
+                cx.fillRect((ox + 4 * p) | 0, (sy - 8 * p) | 0, p * 2, p * 2); // right arm
+            }
+
+            // draw boy then girl
+            person(bx, false);
+            person(gx, true);
+
+            // ── HEART between them ──
+            const hbob = Math.sin(tick * 0.08) * 2 | 0;
+            const hx = (bx + gx) / 2 | 0;
+            const hy = (sy - 18 * p + hbob) | 0;
+            cx.fillStyle = '#ff4488';
+            [[0, 1, 0, 1, 0], [1, 1, 1, 1, 1], [0, 1, 1, 1, 0], [0, 0, 1, 0, 0]].forEach((row, ri) =>
+                row.forEach((v, ci) => { if (v) { cx.fillRect(hx + (ci - 2) * p, hy + ri * p, p, p); } })
+            );
+        }
+
+        // ═══════════════════════════════════════
+        // DIRECTION SIGN
+        // ═══════════════════════════════════════
+        function drawSign() {
+            const gy = GY();
+            const p = PS();
+            const sx = (W * 0.10) | 0;
+            const sy = gy;
+
+            // post — extra tall
+            cx.fillStyle = '#5a3a10'; cx.fillRect(sx - p, sy - 46 * p, p * 2, 46 * p);
+            cx.fillStyle = '#7a5020'; cx.fillRect(sx, sy - 46 * p, p, 46 * p);
+            cx.fillStyle = '#ddeaf7'; cx.fillRect(sx - 2 * p, sy - 47 * p, p * 4, p * 2);
+
+            // sign board — taller
+            const sw = 58, sh = 28;
+            const signY = sy - 50 * p;
+            // board fill
+            cx.fillStyle = '#f5f0e0'; cx.fillRect(sx * 1 - p, signY, sw * p, sh * p);
+            // arrow point right
+            cx.fillStyle = '#f5f0e0';
+            cx.beginPath();
+            cx.moveTo((sx - p + sw * p) | 0, (signY) | 0);
+            cx.lineTo((sx - p + sw * p + 5 * p) | 0, (signY + sh / 2 * p) | 0);
+            cx.lineTo((sx - p + sw * p) | 0, (signY + sh * p) | 0);
+            cx.closePath(); cx.fill();
+            // border
+            cx.strokeStyle = '#8b6914'; cx.lineWidth = p;
+            cx.strokeRect(sx - p, signY, sw * p, sh * p);
+            // text
+            cx.fillStyle = '#3a1a00';
+            cx.font = `bold ${p * 4 | 0}px "Press Start 2P"`;
+            cx.textAlign = 'left';
+            cx.fillText('La Defense', sx + p * 2, signY + sh * p * 0.38);
+            cx.font = `${p * 3 | 0}px "Press Start 2P"`;
+            cx.fillStyle = '#cc2200';
+            cx.fillText('1km South', sx + p * 2, signY + sh * p * 0.72);
+        }
+
+        // ═══════════════════════════════════════
+        // THREE REINDEER ON RIGHT (on ground)
+        // ═══════════════════════════════════════
+        function drawThreeReindeer() {
+            const gy = GY();
+            const p = PS();
+
+            // 3 reindeer spaced out on the right side
+            const positions = [
+                { fx: 0.76, isRudolph: true },
+                { fx: 0.83, isRudolph: false },
+                { fx: 0.90, isRudolph: false },
+            ];
+
+            positions.forEach(({ fx, isRudolph }, idx) => {
+                const rx = W * fx | 0;
+                const ry = gy;
+                const legSwing = Math.sin(tick * 0.08 + idx * 1.2) * 2 | 0;
+
+                function rd(x, y, w, h, col) { cx.fillStyle = col; cx.fillRect((rx + x * p) | 0, (ry + y * p) | 0, w * p, h * p); }
+
+                // body
+                rd(-6, -6, 12, 5, '#7a4520');
+                rd(-6, -6, 10, 3, '#9a5a30'); // highlight
+
+                // neck
+                rd(-2, -10, 4, 5, '#9a6030');
+
+                // head
+                rd(-2, -13, 5, 5, '#b87040');
+
+                // eye
+                rd(1, -12, 2, 2, '#111');
+
+                // antlers
+                rd(-1, -17, 2, 4, '#6a3818');
+                rd(-2, -18, 4, 2, '#6a3818');
+                rd(-3, -17, 2, 2, '#6a3818');
+                rd(1, -16, 2, 3, '#6a3818');
+                rd(2, -17, 3, 2, '#6a3818');
+
+                // legs on ground
+                rd(-5, -1, 3, 2, '#6a3818'); // back left
+                rd(-2, -1, 3, 2, '#6a3818'); // back right
+                rd(1, -1 + legSwing, 3, 2, '#6a3818'); // front left
+                rd(4, -1 - legSwing, 3, 2, '#6a3818'); // front right
+                // hooves
+                rd(-6, 1, 3, 2, '#3a2010');
+                rd(-3, 1, 3, 2, '#3a2010');
+                rd(0, 1 + legSwing, 3, 2, '#3a2010');
+                rd(3, 1 - legSwing, 3, 2, '#3a2010');
+
+                // bell on collar
+                const belA = 0.5 + Math.sin(tick * 0.1 + idx) * 0.5;
+                cx.globalAlpha = belA; cx.fillStyle = '#ffd700';
+                cx.fillRect((rx + 0 * p) | 0, (ry - 7 * p) | 0, p * 2, p * 2);
+                cx.globalAlpha = 1;
+
+                // Rudolph nose
+                if (isRudolph) {
+                    const rna = 0.5 + Math.sin(tick * 0.1) * 0.5;
+                    cx.globalAlpha = rna; cx.fillStyle = '#ff2222';
+                    cx.fillRect((rx + 2 * p) | 0, (ry - 12 * p) | 0, p * 2, p * 2);
+                    cx.globalAlpha = rna * 0.3;
+                    cx.beginPath(); cx.arc((rx + 3 * p) | 0, (ry - 11 * p) | 0, p * 3, 0, Math.PI * 2); cx.fill();
+                    cx.globalAlpha = 1;
+                }
+
+                // harness rope connecting to next
+                if (idx < 2) {
+                    cx.strokeStyle = '#aa8844'; cx.lineWidth = 2;
+                    cx.beginPath();
+                    cx.moveTo((rx + 6 * p) | 0, (ry - 4 * p) | 0);
+                    cx.lineTo((W * (positions[idx + 1].fx) | 0 - 6 * p) | 0, (ry - 4 * p) | 0);
+                    cx.stroke();
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════
+        // MAIN LOOP
+        // ═══════════════════════════════════════
+        function draw() {
+            cx.clearRect(0, 0, W, H);
+            cx.imageSmoothingEnabled = false;
+            drawSky();
+            drawBuildings();
+            drawGround();
+            drawChristmasTree();
+            drawPresents();
+            drawSleigh();
+            drawSkiingCouple();
+            drawSign();
+            drawLamps();
+            drawSnowPixels();
+        }
+
+        function loop() { tick++; draw(); requestAnimationFrame(loop); }
+
+        // DOM snowflakes
+        const fc = document.getElementById('flk');
+        ['❄', '❅', '❆'].forEach((ch, ci) => {
+            for (let i = 0; i < 10; i++) {
+                const f = document.createElement('div'); f.className = 'flake';
+                f.textContent = ch;
+                f.style.left = `${(ci * 10 + i * 10 + 2) % 100}vw`;
+                f.style.fontSize = `${8 + Math.floor(Math.random() * 12)}px`;
+                f.style.animationDuration = `${6 + Math.random() * 9}s`;
+                f.style.animationDelay = `${-Math.random() * 14}s`;
+                fc.appendChild(f);
+            }
+        });
+
+        // ── AUDIO — autoplay on load, fallback to button click ──
+        const music = document.getElementById('bg-music');
+        music.volume = 0.7;
+
+        function tryPlay() {
+            music.play().catch(() => {
+                // Browser blocked autoplay — show button as fallback
+                document.getElementById('play-btn').style.display = 'block';
+            });
+        }
+
+        // Attempt autoplay immediately
+        tryPlay();
+
+        // Also try on first user interaction (covers strict autoplay policies)
+        document.addEventListener('click', () => { music.play(); }, { once: true });
+
+        // Play button → go to snowball game
+        const playBtn = document.getElementById('play-btn');
+        playBtn.addEventListener('click', () => {
+            music.play().catch(() => { });
+            window.location.href = 'snowball.html';
+        });
+
+        // Title click → also go to snowball game
+        const mainTitle = document.getElementById('main-title');
+        mainTitle.addEventListener('click', () => {
+            music.play().catch(() => { });
+            window.location.href = 'snowball.html';
+        });
+
+        resize(); loop();
+    </script>
+</body>
+
+</html>

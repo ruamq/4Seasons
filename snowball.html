@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snowball Battle</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Mountains+of+Christmas:wght@700&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#020814;overflow:hidden;width:100vw;height:100vh;font-family:'Press Start 2P',monospace;}
+    #game-canvas{display:block;position:absolute;top:0;left:0;image-rendering:pixelated;}
+
+    .overlay{display:none;position:fixed;inset:0;z-index:30;align-items:center;justify-content:center;flex-direction:column;padding:20px;}
+    .overlay.show{display:flex;}
+
+    /* VIDEO */
+    #video-screen{background:#000820;}
+    .vid-box{
+      width:min(96vw,900px); aspect-ratio:16/9;
+      background:#000820; border:4px solid #4488ff;
+      box-shadow:0 0 60px #4488ffaa,inset 0 0 80px #00113388;
+      position:relative; display:flex; align-items:center; justify-content:center;
+    }
+    .vid-box video{width:100%;height:100%;object-fit:cover;display:block;}
+    .vid-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#000820;}
+    .vid-ph span{font-size:72px;opacity:0.4;}
+    .vid-ph p{color:#4488ff;font-size:9px;text-align:center;line-height:2;}
+    #vid-cont{
+      display:none;position:absolute;bottom:28px;right:28px;
+      background:linear-gradient(135deg,#1144cc,#4488ff);color:#fff;
+      border:none;border-bottom:4px solid #0a2a88;
+      padding:14px 36px;font-family:'Press Start 2P',monospace;font-size:10px;
+      cursor:pointer;letter-spacing:2px;
+      box-shadow:0 0 20px #4488ff66;
+    }
+
+    /* GIFT */
+    #gift-screen{
+      background:radial-gradient(circle at 50% 50%,#0d1a0d 0%,#020814 100%);
+    }
+    #gift-screen h2{
+      font-family:'Mountains of Christmas',cursive;
+      font-size:clamp(36px,6vw,64px);color:#ffd700;
+      text-shadow:0 0 40px #ffd700cc,0 0 80px #ffaa0066;
+      margin-bottom:10px;text-align:center;
+      animation:gs 2s ease-in-out infinite alternate;
+    }
+    @keyframes gs{from{text-shadow:0 0 20px #ffd70088}to{text-shadow:0 0 60px #ffd700ff,0 0 100px #ffaa0088}}
+    #gift-screen .sub{color:#88ddff;font-size:9px;margin-bottom:28px;text-align:center;letter-spacing:2px;}
+    #gift-canvas{cursor:pointer;image-rendering:pixelated;border-radius:8px;filter:drop-shadow(0 0 30px #ffd70066);display:block;margin:0 auto;}
+    #gift-hint{color:#ffffff99;font-size:8px;margin-top:20px;animation:blink 0.9s step-end infinite;text-align:center;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+    /* ACQUIRE */
+    #acquire-screen{background:radial-gradient(circle at 50% 45%,#001a2a 0%,#020814 100%);}
+    #acquire-screen h2{font-family:'Mountains of Christmas',cursive;font-size:clamp(36px,6vw,64px);color:#88ddff;text-shadow:0 0 40px #88ddffcc;text-align:center;margin-bottom:6px;animation:ag 2s ease-in-out infinite alternate;}
+    @keyframes ag{from{text-shadow:0 0 20px #88ddff55}to{text-shadow:0 0 60px #88ddffff,0 0 100px #4488ff88}}
+    .item-name{color:#ffd700;font-size:clamp(14px,2.5vw,22px);margin:14px 0;text-align:center;letter-spacing:2px;text-shadow:0 0 20px #ffd700aa;}
+    #acquire-canvas{image-rendering:pixelated;filter:drop-shadow(0 0 40px #88ddff88);margin:8px auto;display:block;}
+    .item-desc{color:#aaaaaa;font-size:8px;margin-top:6px;text-align:center;line-height:2;}
+    .pxbtn{
+      background:linear-gradient(135deg,#cc1a1a,#ff4444);color:#fff8e8;
+      border:none;border-bottom:4px solid #7a0000;
+      padding:16px 50px;font-family:'Press Start 2P',monospace;font-size:11px;
+      cursor:pointer;letter-spacing:2px;transition:transform 0.08s;margin-top:20px;
+      box-shadow:4px 4px 0 #7a0000,0 0 20px #ff444444;
+      position:relative;z-index:10;
+    }
+    .pxbtn:hover{filter:brightness(1.15);}
+    .pxbtn:active{transform:translateY(3px);}
+
+    /* HUD */
+    #game-ui{position:fixed;top:0;left:0;right:0;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;z-index:20;pointer-events:none;background:linear-gradient(to bottom,#000000bb,transparent);}
+    .ui-side{display:flex;flex-direction:column;gap:5px;}
+    .ui-name{font-size:8px;letter-spacing:1px;}
+    .ui-hearts{font-size:18px;letter-spacing:3px;}
+    #turn-banner{text-align:center;font-size:9px;color:#ffdd44;text-shadow:0 0 10px #ffd700;}
+
+    #power-wrap{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:20;text-align:center;display:none;flex-direction:column;align-items:center;gap:6px;}
+    #power-wrap.show{display:flex;}
+    #power-label{color:#fff;font-size:7px;letter-spacing:2px;}
+    #power-bg{width:220px;height:16px;background:#ffffff22;border:2px solid #88ddff;}
+    #power-fill{height:100%;width:0%;background:linear-gradient(90deg,#4488ff,#ff88cc);}
+    #angle-disp{color:#88ddff;font-size:8px;}
+    #fire-hint{color:#ffdd44;font-size:7px;animation:blink 0.8s step-end infinite;}
+
+    #result-screen{background:#000000ee;text-align:center;gap:22px;}
+    #result-title{font-family:'Mountains of Christmas',cursive;font-size:clamp(40px,7vw,80px);}
+    #result-sub{color:#ffcc88;font-size:9px;}
+
+    /* WIN SCENES */
+    #skate-screen{background:radial-gradient(circle at 50% 60%,#0a1a3a 0%,#020814 100%);}
+    #skate-screen h2{font-family:'Mountains of Christmas',cursive;font-size:clamp(28px,5vw,52px);color:#ff88cc;text-shadow:0 0 30px #ff88ccaa;margin-bottom:8px;text-align:center;}
+    #skate-screen .scene-sub{color:#88ddff;font-size:8px;margin-bottom:12px;text-align:center;letter-spacing:2px;}
+    #skate-canvas{image-rendering:pixelated;border-radius:8px;filter:drop-shadow(0 0 30px #88ddff44);display:block;margin:0 auto;}
+
+    #house-screen{background:radial-gradient(circle at 50% 50%,#1a0a00 0%,#020814 100%);}
+    #house-screen h2{font-family:'Mountains of Christmas',cursive;font-size:clamp(28px,5vw,52px);color:#ffd700;text-shadow:0 0 30px #ffd700aa;margin-bottom:8px;text-align:center;}
+    #house-screen .scene-sub{color:#ffcc88;font-size:8px;margin-bottom:12px;text-align:center;letter-spacing:2px;}
+    #house-canvas{image-rendering:pixelated;border-radius:8px;filter:drop-shadow(0 0 30px #ffd70044);display:block;margin:0 auto;}
+    #spring-btn{margin-top:20px;}
+
+    #skip-btn{
+      position:fixed;bottom:16px;right:16px;z-index:50;
+      background:#ffffff22;color:#ffffff88;border:1px solid #ffffff44;
+      padding:8px 18px;font-family:'Press Start 2P',monospace;font-size:7px;
+      cursor:pointer;letter-spacing:1px;transition:all 0.2s;
+    }
+    #skip-btn:hover{background:#ffffff44;color:#fff;}
+  </style>
+</head>
+<body>
+
+<button id="skip-btn">SKIP ▶▶</button>
+
+<!-- VIDEO -->
+<div class="overlay show" id="video-screen">
+  <div class="vid-box">
+    <video id="intro-vid" src="christmas-intro.mp4"
+      onerror="this.style.display='none';document.getElementById('vid-ph').style.display='flex'">
+    </video>
+    <div class="vid-ph" id="vid-ph" style="display:none">
+      <span>🎄</span>
+      <p>[ christmas-intro.mp4 ]<br/>Drop your video in the same folder</p>
+    </div>
+    <button id="vid-cont">CONTINUE ▶</button>
+  </div>
+</div>
+
+<!-- GIFT -->
+<div class="overlay" id="gift-screen">
+  <h2>A Gift Awaits... 🎁</h2>
+  <div class="sub">Click the present to unwrap it!</div>
+  <canvas id="gift-canvas" width="320" height="320"></canvas>
+  <div id="gift-hint">▼ CLICK TO OPEN ▼</div>
+</div>
+
+<!-- ACQUIRE -->
+<div class="overlay" id="acquire-screen">
+  <h2>Item Acquired! ✨</h2>
+  <div class="item-name">❄️ SNOWBALL SHOOTER ❄️</div>
+  <canvas id="acquire-canvas" width="300" height="220"></canvas>
+  <div class="item-desc">A legendary weapon of winter warfare</div>
+  <button class="pxbtn" id="cont-btn">LET'S BATTLE ▶</button>
+</div>
+
+<!-- GAME -->
+<canvas id="game-canvas" style="display:none;"></canvas>
+<div id="game-ui" style="display:none;">
+  <div class="ui-side">
+    <div class="ui-name" style="color:#ff88cc;">💗 GIRL (YOU)</div>
+    <div class="ui-hearts" id="girl-hearts">❤️❤️❤️</div>
+  </div>
+  <div><div id="turn-banner">YOUR TURN</div></div>
+  <div class="ui-side" style="align-items:flex-end;">
+    <div class="ui-name" style="color:#88ccff;">💙 BOY (AI)</div>
+    <div class="ui-hearts" id="boy-hearts">❤️❤️❤️</div>
+  </div>
+</div>
+<div id="power-wrap">
+  <div id="power-label">POWER</div>
+  <div id="power-bg"><div id="power-fill"></div></div>
+  <div id="angle-disp">Angle: 45°</div>
+  <div id="fire-hint">↑↓ AIM &nbsp;|&nbsp; SPACE / CLICK = FIRE</div>
+</div>
+<div class="overlay" id="result-screen">
+  <div id="result-title"></div>
+  <div id="result-sub"></div>
+  <button class="pxbtn" onclick="location.reload()">↺ PLAY AGAIN</button>
+</div>
+
+<!-- SKATING SCENE -->
+<div class="overlay" id="skate-screen">
+  <h2>A Winter Date... 💕</h2>
+  <div class="scene-sub">✨ Ice Skating Together ✨</div>
+  <canvas id="skate-canvas" width="600" height="400"></canvas>
+</div>
+
+<!-- HOUSE SCENE -->
+<div class="overlay" id="house-screen">
+  <h2>Building a Future... 🏠</h2>
+  <div class="scene-sub">💕 Their First Home Together 💕</div>
+  <canvas id="house-canvas" width="600" height="400"></canvas>
+  <button class="pxbtn" id="spring-btn" style="display:none;">CONTINUE TO SPRING ▶</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// VIDEO PHASE
+// ═══════════════════════════════════════════
+const introVid = document.getElementById('intro-vid');
+const vidCont  = document.getElementById('vid-cont');
+
+function showVidButton(){ vidCont.style.display='block'; }
+introVid.addEventListener('play',   showVidButton);
+introVid.addEventListener('ended',  showVidButton);
+introVid.addEventListener('error',  showVidButton);
+setTimeout(showVidButton, 1500);
+introVid.play().catch(showVidButton);
+
+vidCont.onclick = ()=>{
+  document.getElementById('video-screen').classList.remove('show');
+  document.getElementById('gift-screen').classList.add('show');
+  startGiftAnim();
+};
+
+// ═══════════════════════════════════════════
+// GIFT BOX — centered, big, animated
+// ═══════════════════════════════════════════
+const gc  = document.getElementById('gift-canvas');
+const gg  = gc.getContext('2d');
+gg.imageSmoothingEnabled = false;
+
+let giftTick=0, giftOpened=false, openProgress=0;
+let giftRaf;
+
+function drawGift(){
+  const W=gc.width, H=gc.height;
+  gg.clearRect(0,0,W,H);
+
+  // background glow
+  const grad=gg.createRadialGradient(W/2,H/2,20,W/2,H/2,W*0.6);
+  grad.addColorStop(0,'rgba(255,215,0,0.12)'); grad.addColorStop(1,'rgba(0,0,0,0)');
+  gg.fillStyle=grad; gg.fillRect(0,0,W,H);
+
+  const cx=W/2, bob = giftOpened?0:Math.sin(giftTick*0.06)*5;
+  const lidY = giftOpened ? -openProgress*55 : 0;
+
+  // shadow
+  gg.fillStyle='rgba(0,0,0,0.4)';
+  gg.beginPath(); gg.ellipse(cx,230+bob,80,12,0,0,Math.PI*2); gg.fill();
+
+  // BOX BODY (big, center-stage)
+  const bx=cx-90, by=130+bob, bw=180, bh=110;
+  gg.fillStyle='#cc1a1a'; gg.fillRect(bx,by,bw,bh);
+  gg.fillStyle='#ee3322'; gg.fillRect(bx,by,bw,22); // top highlight
+  gg.fillStyle='#aa1111'; gg.fillRect(bx+bw-22,by,22,bh); // right shadow
+  // gloss
+  gg.fillStyle='rgba(255,255,255,0.10)';
+  gg.fillRect(bx+8,by+8,50,40);
+
+  // ribbon vertical
+  gg.fillStyle='#ffd700'; gg.fillRect(cx-12,by,24,bh);
+  gg.fillStyle='#ffee44'; gg.fillRect(cx-6,by,8,bh);
+  // ribbon horizontal
+  gg.fillStyle='#ffd700'; gg.fillRect(bx,by+45,bw,22);
+  gg.fillStyle='#ffee44'; gg.fillRect(bx,by+49,bw,8);
+
+  // LID
+  const lbx=bx-8, lby=100+bob+lidY, lbw=bw+16, lbh=38;
+  gg.fillStyle='#cc1a1a'; gg.fillRect(lbx,lby,lbw,lbh);
+  gg.fillStyle='#ee3322'; gg.fillRect(lbx,lby,lbw,12);
+  gg.fillStyle='#aa1111'; gg.fillRect(lbx+lbw-18,lby,18,lbh);
+  gg.fillStyle='#ffd700'; gg.fillRect(cx-12,lby,24,lbh);
+  gg.fillStyle='rgba(255,255,255,0.08)'; gg.fillRect(lbx+8,lby+6,45,14);
+
+  // BOW (big poofy bow)
+  const bowY=lby-28;
+  // left loop
+  gg.fillStyle='#ffd700';
+  gg.beginPath(); gg.ellipse(cx-28,bowY,26,20,Math.PI*0.2,0,Math.PI*2); gg.fill();
+  gg.fillStyle='#ffee44';
+  gg.beginPath(); gg.ellipse(cx-26,bowY-4,14,10,Math.PI*0.2,0,Math.PI*2); gg.fill();
+  // right loop
+  gg.fillStyle='#ffd700';
+  gg.beginPath(); gg.ellipse(cx+28,bowY,26,20,-Math.PI*0.2,0,Math.PI*2); gg.fill();
+  gg.fillStyle='#ffee44';
+  gg.beginPath(); gg.ellipse(cx+26,bowY-4,14,10,-Math.PI*0.2,0,Math.PI*2); gg.fill();
+  // center knot
+  gg.fillStyle='#ffc400';
+  gg.beginPath(); gg.ellipse(cx,bowY,14,14,0,0,Math.PI*2); gg.fill();
+  gg.fillStyle='#ffee44';
+  gg.beginPath(); gg.ellipse(cx-2,bowY-2,6,6,0,0,Math.PI*2); gg.fill();
+
+  // sparkles when open
+  if(giftOpened){
+    const sc=['#ffd700','#ff4488','#44aaff','#88ff44','#ffffff','#ff8800'];
+    for(let i=0;i<8;i++){
+      const ang=(i/8)*Math.PI*2+giftTick*0.1;
+      const dist=20+openProgress*3.5;
+      gg.fillStyle=sc[i%sc.length];
+      gg.globalAlpha=Math.min(1,openProgress/20);
+      const sx2=(cx+Math.cos(ang)*dist)|0, sy2=(90+bob+Math.sin(ang)*dist)|0;
+      gg.fillRect(sx2-4,sy2-4,8,8);
+      gg.fillRect(sx2-1,sy2-8,2,16);
+      gg.fillRect(sx2-8,sy2-1,16,2);
+    }
+    gg.globalAlpha=1;
+  }
+
+  giftTick++;
+}
+
+function startGiftAnim(){
+  function loop(){
+    drawGift();
+    giftRaf=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+gc.onclick=()=>{
+  if(giftOpened) return;
+  giftOpened=true;
+  document.getElementById('gift-hint').style.display='none';
+  const timer=setInterval(()=>{
+    openProgress+=2;
+    if(openProgress>=55){
+      clearInterval(timer);
+      cancelAnimationFrame(giftRaf);
+      setTimeout(()=>{
+        document.getElementById('gift-screen').classList.remove('show');
+        document.getElementById('acquire-screen').classList.add('show');
+        drawAcquire();
+      },500);
+    }
+  },30);
+};
+
+// ═══════════════════════════════════════════
+// ACQUIRE SCREEN — big, center-stage shooter
+// ═══════════════════════════════════════════
+function drawAcquire(){
+  const ac=document.getElementById('acquire-canvas');
+  const ag=ac.getContext('2d');
+  ag.imageSmoothingEnabled=false;
+  const W=ac.width, H=ac.height;
+  ag.clearRect(0,0,W,H);
+  const cx=W/2, cy=H/2;
+
+  // background glow
+  const g=ag.createRadialGradient(cx,cy,10,cx,cy,120);
+  g.addColorStop(0,'rgba(136,221,255,0.25)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  ag.fillStyle=g; ag.fillRect(0,0,W,H);
+
+  const p=6; // pixel size — large and clear
+
+  // CANNON BODY
+  ag.fillStyle='#334a5a'; ag.fillRect(cx-80,cy-20,100,45);
+  ag.fillStyle='#4a6a7a'; ag.fillRect(cx-80,cy-20,100,14);
+  ag.fillStyle='#223344'; ag.fillRect(cx+14,cy-20,6,45);
+
+  // BARREL
+  ag.fillStyle='#3a5a70'; ag.fillRect(cx+18,cy-10,80,28);
+  ag.fillStyle='#5a8aaa'; ag.fillRect(cx+18,cy-10,80,9);
+  ag.fillStyle='#223344'; ag.fillRect(cx+92,cy-14,10,36);
+  ag.fillStyle='#2a4455'; ag.fillRect(cx+92,cy-2,14,14); // muzzle
+
+  // WHEELS
+  ag.fillStyle='#223344';
+  ag.beginPath(); ag.arc(cx-52,cy+30,22,0,Math.PI*2); ag.fill();
+  ag.fillStyle='#3a5a70';
+  ag.beginPath(); ag.arc(cx-52,cy+30,13,0,Math.PI*2); ag.fill();
+  ag.fillStyle='#5a8aaa';
+  ag.beginPath(); ag.arc(cx-52,cy+30,5,0,Math.PI*2); ag.fill();
+
+  ag.fillStyle='#223344';
+  ag.beginPath(); ag.arc(cx+10,cy+30,22,0,Math.PI*2); ag.fill();
+  ag.fillStyle='#3a5a70';
+  ag.beginPath(); ag.arc(cx+10,cy+30,13,0,Math.PI*2); ag.fill();
+  ag.fillStyle='#5a8aaa';
+  ag.beginPath(); ag.arc(cx+10,cy+30,5,0,Math.PI*2); ag.fill();
+
+  // SNOWBALL in barrel
+  ag.fillStyle='#ddeeff';
+  ag.beginPath(); ag.arc(cx+88,cy+4,14,0,Math.PI*2); ag.fill();
+  ag.fillStyle='#ffffff';
+  ag.beginPath(); ag.arc(cx+83,cy,6,0,Math.PI*2); ag.fill();
+  ag.fillStyle='rgba(136,221,255,0.3)';
+  ag.beginPath(); ag.arc(cx+88,cy+4,14,0,Math.PI*2); ag.fill();
+
+  // decorative snowflakes
+  ag.fillStyle='#aaddff'; ag.font='20px serif';
+  [[30,18],[240,18],[30,150],[240,150]].forEach(([x,y])=>{
+    ag.fillText('❄',x,y);
+  });
+
+  // star sparkles
+  ag.fillStyle='#ffd700';
+  [[20,100],[270,100],[145,10],[145,185]].forEach(([x,y])=>{
+    ag.fillRect(x-2,y-8,4,16); ag.fillRect(x-8,y-2,16,4);
+    ag.fillRect(x-4,y-4,4,4,45); ag.fillRect(x,y,4,4);
+  });
+}
+
+document.getElementById('cont-btn').onclick=()=>{
+  document.getElementById('acquire-screen').classList.remove('show');
+  startGame();
+};
+
+// ═══════════════════════════════════════════
+// SNOWBALL BATTLE GAME
+// BOY = player (YOU), GIRL = AI (10% miss)
+// ═══════════════════════════════════════════
+const canvas=document.getElementById('game-canvas');
+const ctx=canvas.getContext('2d');
+
+const HIT_RADIUS=55; // large hitbox
+let terrain=[];
+
+function buildTerrain(){
+  terrain=[];
+  const W=canvas.width, H=canvas.height, baseY=H*0.70;
+  for(let x=0;x<W;x++){
+    const t=x/W;
+    let y=baseY;
+    y-=Math.sin(t*Math.PI*2.2)*H*0.07;
+    y-=Math.sin(t*Math.PI*4.5+1.2)*H*0.035;
+    y-=Math.sin(t*Math.PI*7+2.5)*H*0.018;
+    terrain.push(y|0);
+  }
+}
+function tY(x){ return terrain[Math.max(0,Math.min(canvas.width-1,x|0))]; }
+
+let boyX,boyY,girlX,girlY;
+let boyHP=3, girlHP=3;
+let isGirlTurn=true;  // GIRL = player, BOY = AI
+let angle=45, power=0, powerDir=1;
+let animState='aiming';
+let projectile=null;
+let particles=[], explosions=[];
+let aiWait=0;
+let boyShotsTaken=0; // track how many shots the boy (AI) has taken
+
+function placeChars(){
+  girlX = canvas.width*0.12|0;  girlY = tY(girlX); // girl LEFT = player
+  boyX  = canvas.width*0.88|0;  boyY  = tY(boyX);  // boy RIGHT = AI
+}
+
+function startGame(){
+  canvas.width=innerWidth; canvas.height=innerHeight;
+  canvas.style.display='block';
+  document.getElementById('game-ui').style.display='flex';
+  buildTerrain(); placeChars();
+  boyHP=3; girlHP=3; isGirlTurn=true;
+  angle=45; power=0; powerDir=1;
+  animState='aiming'; projectile=null; particles=[]; explosions=[];
+  updateHUD(); gameLoop();
+}
+
+function updateHUD(){
+  const h=n=>'❤️'.repeat(n)+'🖤'.repeat(3-n);
+  document.getElementById('girl-hearts').textContent=h(girlHP);
+  document.getElementById('boy-hearts').textContent=h(boyHP);
+  document.getElementById('turn-banner').textContent=isGirlTurn?'💗 YOUR TURN':'💙 BOY\'S TURN';
+  const pw=document.getElementById('power-wrap');
+  if(isGirlTurn && animState==='aiming') pw.classList.add('show'); else pw.classList.remove('show');
+}
+
+// ── DRAW BG ──────────────────────────────────────────
+function drawBg(){
+  const W=canvas.width,H=canvas.height;
+  const g=ctx.createLinearGradient(0,0,0,H*0.68);
+  g.addColorStop(0,'#02080f'); g.addColorStop(1,'#08203a');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H*0.68);
+  for(let i=0;i<90;i++){
+    const sx=(i*179.3)%W,sy=(i*67.7)%(H*0.55);
+    ctx.globalAlpha=0.2+Math.sin(Date.now()/500+i)*0.35;
+    ctx.fillStyle='#fff';ctx.fillRect(sx|0,sy|0,2,2);
+  }
+  ctx.globalAlpha=1;
+  ctx.fillStyle='#fff8e0';ctx.beginPath();ctx.arc(W*0.78,H*0.07,W*0.022,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#060e1e';
+  [[0.08,0.45,0.22],[0.28,0.38,0.24],[0.52,0.40,0.22],[0.72,0.37,0.26],[0.90,0.43,0.20]].forEach(([fx,fh,fw])=>{
+    ctx.beginPath();ctx.moveTo(W*(fx-fw/2),H);ctx.lineTo(W*fx,H*fh);ctx.lineTo(W*(fx+fw/2),H);ctx.closePath();ctx.fill();
+  });
+  ctx.fillStyle='#c8d8ee';
+  [[0.08,0.45,0.07],[0.28,0.38,0.07],[0.52,0.40,0.07],[0.72,0.37,0.07],[0.90,0.43,0.07]].forEach(([fx,fh,fw])=>{
+    ctx.beginPath();ctx.moveTo(W*(fx-fw*0.5),H*(fh+0.04));ctx.lineTo(W*fx,H*fh);ctx.lineTo(W*(fx+fw*0.5),H*(fh+0.04));ctx.closePath();ctx.fill();
+  });
+  [[0.03,0.66],[0.14,0.65],[0.24,0.67],[0.76,0.66],[0.86,0.65],[0.97,0.66]].forEach(([fx,fy])=>{
+    const tx=W*fx|0,ty=H*fy|0,th=H*0.10|0;
+    ctx.fillStyle='#0a3a12';ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx-th*0.42,ty+th);ctx.lineTo(tx+th*0.42,ty+th);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#0d4e18';ctx.beginPath();ctx.moveTo(tx,ty-th*0.28);ctx.lineTo(tx-th*0.33,ty+th*0.65);ctx.lineTo(tx+th*0.33,ty+th*0.65);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#ddeaf7';ctx.fillRect(tx-2,ty-th*0.06,4,4);
+  });
+}
+
+function drawTerrain(){
+  const W=canvas.width,H=canvas.height;
+  ctx.fillStyle='#ddeaf7';
+  ctx.beginPath();ctx.moveTo(0,H);
+  for(let x=0;x<W;x++) ctx.lineTo(x,terrain[x]);
+  ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#ffffff';ctx.lineWidth=3;
+  ctx.beginPath();for(let x=0;x<W;x++) x===0?ctx.moveTo(x,terrain[x]):ctx.lineTo(x,terrain[x]);ctx.stroke();
+}
+
+// ── CHARACTER ─────────────────────────────────────────
+const CHAR_P=4;
+function drawChar(x,y,isGirl,hp){
+  if(hp<=0) return;
+  const flash=explosions.some(e=>e.tgt===(isGirl?'girl':'boy')&&e.age<10);
+  if(flash) ctx.globalAlpha=0.3+Math.sin(Date.now()/40)*0.7;
+  const p=CHAR_P;
+  function r(dx,dy,w,h,c){ ctx.fillStyle=c; ctx.fillRect((x+dx*p)|0,(y+dy*p)|0,w*p,h*p); }
+  r(-2,0,2,2,'#3a1a00'); r(1,0,2,2,'#3a1a00');
+  r(-2,-3,2,3,'#f9c87a'); r(1,-3,2,3,'#f9c87a');
+  r(-3,-5,6,2,'#cc2244');
+  r(-3,-9,6,4,'#ff6600'); r(-1,-8,1,3,'#ffaa00');
+  r(-2,-13,4,4,'#f9c87a');
+  if(isGirl){
+    r(-3,-16,6,4,'#cc2244'); r(-3,-17,6,2,'#ffffff');
+    ctx.fillStyle='#3a2008';ctx.fillRect((x-2*p)|0,(y-13*p)|0,p,p*3);
+    ctx.fillRect((x+3*p)|0,(y-13*p)|0,p,p*3);
+  } else {
+    r(-3,-16,6,3,'#1a44cc'); r(-3,-17,6,2,'#2255dd');
+    ctx.fillStyle='#ffdd0066';ctx.fillRect((x-2*p)|0,(y-13*p)|0,p*2,p*2);
+    ctx.fillRect((x+1*p)|0,(y-13*p)|0,p*2,p*2);
+  }
+  r(-5,-8,2,2,'#f9c87a'); r(3,-8,2,2,'#f9c87a');
+
+  // aim indicator — girl is player (fires right), boy is AI (fires left)
+  const myTurn=(isGirl&&isGirlTurn)||((!isGirl)&&!isGirlTurn);
+  if(myTurn && animState==='aiming'){
+    const dir=isGirl?1:-1;
+    const rad=angle*Math.PI/180;
+    ctx.save();
+    ctx.translate(x+dir*5*p,y-7*p);
+    ctx.rotate(isGirl?-rad:Math.PI+rad);
+    ctx.fillStyle='#5577aa'; ctx.fillRect(0,-p/2|0,p*6,p);
+    ctx.fillStyle='#ddeeff'; ctx.beginPath(); ctx.arc(p*6,0,p*1.5,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    // trajectory preview (only for girl/player)
+    if(isGirl){
+      const speed=4+power*0.22;
+      const vx0=Math.cos(rad)*speed*dir;
+      const vy0=-Math.sin(rad)*speed;
+      ctx.setLineDash([4,8]); ctx.strokeStyle='rgba(255,136,204,0.4)'; ctx.lineWidth=2;
+      ctx.beginPath();
+      let px2=x+dir*5*p, py2=y-7*p, vx2=vx0, vy2=vy0;
+      ctx.moveTo(px2,py2);
+      for(let i=0;i<50;i++){
+        px2+=vx2; py2+=vy2; vy2+=0.18;
+        if(py2>tY(px2)||px2<0||px2>canvas.width) break;
+        ctx.lineTo(px2,py2);
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+  }
+  ctx.globalAlpha=1;
+}
+
+// ── FIRE ─────────────────────────────────────────────
+function fire(fromX,fromY,ang,pwr,fromGirl){
+  const speed=4+pwr*0.22, rad=ang*Math.PI/180;
+  const dir=fromGirl?1:-1;  // girl fires right, boy fires left
+  projectile={
+    x:fromX+dir*20, y:fromY-7*CHAR_P,
+    vx:Math.cos(rad)*speed*dir,
+    vy:-Math.sin(rad)*speed,
+    fromGirl, trail:[]
+  };
+  animState='flying'; updateHUD();
+}
+
+function updateProjectile(){
+  if(!projectile) return;
+  projectile.trail.push({x:projectile.x,y:projectile.y});
+  if(projectile.trail.length>24) projectile.trail.shift();
+  projectile.vy+=0.18;
+  projectile.x+=projectile.vx;
+  projectile.y+=projectile.vy;
+
+  const W=canvas.width;
+  if(projectile.y>=tY(projectile.x)||projectile.x<0||projectile.x>W||projectile.y>canvas.height){
+    spawnExplosion(projectile.x,Math.min(projectile.y,tY(projectile.x)),null);
+    projectile=null; endTurn(); return;
+  }
+  const hitOffsetY=HIT_RADIUS*0.5;
+  if(projectile.fromGirl){
+    // girl's shot — hits boy on right
+    if(Math.hypot(projectile.x-boyX, projectile.y-(boyY-hitOffsetY))<HIT_RADIUS){
+      boyHP--; spawnExplosion(boyX,boyY,'boy'); projectile=null;
+      updateHUD(); if(boyHP<=0){endGame('girl');return;} endTurn(); return;
+    }
+  } else {
+    // boy's shot — hits girl on left
+    if(Math.hypot(projectile.x-girlX, projectile.y-(girlY-hitOffsetY))<HIT_RADIUS){
+      girlHP--; spawnExplosion(girlX,girlY,'girl'); projectile=null;
+      updateHUD(); if(girlHP<=0){endGame('boy');return;} endTurn(); return;
+    }
+  }
+}
+
+function drawProjectile(){
+  if(!projectile) return;
+  projectile.trail.forEach((pt,i)=>{
+    ctx.globalAlpha=(i/projectile.trail.length)*0.5;
+    ctx.fillStyle=projectile.fromGirl?'#ffaacc':'#aaddff';
+    ctx.fillRect(pt.x-3,pt.y-3,6,6);
+  });
+  ctx.globalAlpha=1;
+  ctx.fillStyle='#ddeeff'; ctx.beginPath(); ctx.arc(projectile.x,projectile.y,12,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(projectile.x-3,projectile.y-3,5,0,Math.PI*2); ctx.fill();
+}
+
+function spawnExplosion(x,y,tgt){
+  for(let i=0;i<24;i++){
+    const a=Math.random()*Math.PI*2,s=2+Math.random()*6;
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-3,life:50,
+      col:tgt==='girl'?['#ff4488','#ffaacc','#fff'][i%3]:['#aaddff','#88ccff','#fff'][i%3],
+      sz:4+Math.random()*6|0});
+  }
+  explosions.push({x,y,tgt,age:0});
+}
+function updateParticles(){
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.22;p.life--;});
+  explosions=explosions.filter(e=>e.age<20);
+  explosions.forEach(e=>e.age++);
+}
+function drawParticles(){
+  particles.forEach(p=>{
+    ctx.globalAlpha=p.life/50;
+    ctx.fillStyle=p.col;ctx.fillRect(p.x-p.sz/2,p.y-p.sz/2,p.sz,p.sz);
+  });
+  ctx.globalAlpha=1;
+}
+
+// ── POWER BAR (girl = player) ─────────────────────────
+function updatePower(){
+  if(!isGirlTurn||animState!=='aiming') return;
+  power=Math.max(0,Math.min(100,power+powerDir*1.8));
+  if(power>=100||power<=0) powerDir*=-1;
+  document.getElementById('power-fill').style.width=power+'%';
+  document.getElementById('angle-disp').textContent=`Angle: ${angle}°`;
+}
+
+// ── BOY AI — physics heuristic, 80% hit ──
+function scheduleAI(){ aiWait=70+Math.random()*50|0; }
+
+// Simulate a shot and return how close it lands to the target
+function simShot(fromX, fromY, ang, pwr, targetX, targetY){
+  const speed=4+pwr*0.22, rad=ang*Math.PI/180;
+  let sx=fromX-20, sy=fromY-7*CHAR_P; // boy fires left (dir=-1)
+  let vx=-Math.cos(rad)*speed, vy=-Math.sin(rad)*speed;
+  for(let i=0;i<500;i++){
+    vy+=0.18; sx+=vx; sy+=vy;
+    if(sy>=tY(sx)||sx<0||sx>canvas.width||sy>canvas.height){
+      return Math.hypot(sx-targetX, sy-targetY);
+    }
+    // Check if passing near target
+    const dist=Math.hypot(sx-targetX, sy-targetY);
+    if(dist<HIT_RADIUS) return 0; // would hit
+  }
+  return 9999;
+}
+
+function tickAI(){
+  if(isGirlTurn||animState!=='aiming'||aiWait<=0) return;
+  aiWait--;
+  if(aiWait>0) return;
+
+  boyShotsTaken++;
+
+  // Find best angle+power using physics simulation
+  const targetX=girlX, targetY=girlY-HIT_RADIUS*0.5;
+  let bestAng=45, bestPwr=60, bestDist=Infinity;
+
+  for(let a=15;a<=75;a+=3){
+    for(let p=40;p<=95;p+=5){
+      const d=simShot(boyX,boyY,a,p,targetX,targetY);
+      if(d<bestDist){ bestDist=d; bestAng=a; bestPwr=p; }
+    }
+  }
+
+  const hit = Math.random() < 0.80;
+  let ang, pwr;
+  if(hit){
+    // Use the best aim with tiny noise
+    ang = bestAng + (Math.random()*4-2);
+    pwr = bestPwr + (Math.random()*4-2);
+  } else {
+    // Deliberately miss — offset angle significantly
+    ang = bestAng + (Math.random()>0.5?1:-1)*(15+Math.random()*15);
+    pwr = bestPwr + (Math.random()*20-10);
+  }
+  ang=Math.max(5,Math.min(85,ang));
+  pwr=Math.max(10,Math.min(100,pwr));
+
+  fire(boyX, boyY, ang, pwr, false);
+}
+
+function endTurn(){
+  setTimeout(()=>{
+    isGirlTurn=!isGirlTurn;
+    animState='aiming'; power=0; powerDir=1; updateHUD();
+    if(!isGirlTurn) scheduleAI();
+  },700);
+}
+
+function endGame(winner){
+  animState='done';
+  document.getElementById('power-wrap').classList.remove('show');
+
+  if(winner==='girl'){
+    // Girl wins → show skating animation
+    canvas.style.display='none';
+    document.getElementById('game-ui').style.display='none';
+    document.getElementById('skate-screen').classList.add('show');
+    startSkatingAnim();
+    return;
+  }
+
+  const rs=document.getElementById('result-screen');
+  const rt=document.getElementById('result-title');
+  const rsub=document.getElementById('result-sub');
+  rt.textContent='Boy Wins! ☃️'; rt.style.color='#88ccff';
+  rsub.textContent = boyShotsTaken<=2
+    ? 'He got you early! Keep trying... ❄️'
+    : 'He got lucky this time! ❄️';
+  rs.classList.add('show');
+}
+
+// ═══════════════════════════════════════════
+// SKATING SCENE — couple ice skating + kiss
+// ═══════════════════════════════════════════
+function startSkatingAnim(){
+  const sc=document.getElementById('skate-canvas');
+  const sx=sc.getContext('2d');
+  sx.imageSmoothingEnabled=false;
+  const W=sc.width, H=sc.height;
+  let tick=0, kissing=false, kissStart=0;
+
+  function drawSkate(){
+    sx.clearRect(0,0,W,H);
+    tick++;
+
+    // Night sky
+    const skyG=sx.createLinearGradient(0,0,0,H*0.55);
+    skyG.addColorStop(0,'#020818'); skyG.addColorStop(1,'#0a2044');
+    sx.fillStyle=skyG; sx.fillRect(0,0,W,H*0.55);
+
+    // Stars
+    for(let i=0;i<30;i++){
+      const stx=(i*97.3)%W, sty=(i*43.7)%(H*0.45);
+      sx.globalAlpha=0.3+Math.sin(tick*0.05+i)*0.4;
+      sx.fillStyle='#fff'; sx.fillRect(stx|0,sty|0,2,2);
+    }
+    sx.globalAlpha=1;
+
+    // Moon
+    sx.fillStyle='#fff8d0'; sx.beginPath(); sx.arc(W*0.82,H*0.1,18,0,Math.PI*2); sx.fill();
+    sx.fillStyle='#fffbe8'; sx.beginPath(); sx.arc(W*0.81,H*0.09,8,0,Math.PI*2); sx.fill();
+
+    // Snow trees in background
+    [0.08,0.18,0.82,0.92].forEach(fx=>{
+      const tx=W*fx|0, ty=H*0.38|0, th=50;
+      sx.fillStyle='#0a3a12'; sx.beginPath(); sx.moveTo(tx,ty); sx.lineTo(tx-18,ty+th); sx.lineTo(tx+18,ty+th); sx.closePath(); sx.fill();
+      sx.fillStyle='#0d5518'; sx.beginPath(); sx.moveTo(tx,ty-15); sx.lineTo(tx-14,ty+th*0.6); sx.lineTo(tx+14,ty+th*0.6); sx.closePath(); sx.fill();
+      sx.fillStyle='#ddeeff'; sx.fillRect(tx-2,ty-2,4,4);
+    });
+
+    // Ice rink (oval)
+    const rinkY=H*0.65, rinkRx=W*0.38, rinkRy=H*0.18;
+    sx.fillStyle='#a8d8ea'; sx.beginPath(); sx.ellipse(W/2,rinkY,rinkRx,rinkRy,0,0,Math.PI*2); sx.fill();
+    sx.fillStyle='#c8eeff55'; sx.beginPath(); sx.ellipse(W/2,rinkY-5,rinkRx*0.7,rinkRy*0.5,0,0,Math.PI*2); sx.fill();
+    // Rink border
+    sx.strokeStyle='#5588aa'; sx.lineWidth=3;
+    sx.beginPath(); sx.ellipse(W/2,rinkY,rinkRx,rinkRy,0,0,Math.PI*2); sx.stroke();
+    // Ice scratches
+    sx.strokeStyle='#ffffff44'; sx.lineWidth=1;
+    for(let i=0;i<6;i++){
+      const ix=W*0.3+i*40, iy=rinkY-10+i*5;
+      sx.beginPath(); sx.moveTo(ix,iy); sx.lineTo(ix+25,iy+8); sx.stroke();
+    }
+
+    // Couple skating in a circle
+    const skateAngle = tick*0.018;
+    const cx=W/2, cy=rinkY;
+    const orbitRx=rinkRx*0.5, orbitRy=rinkRy*0.45;
+
+    // Transition to kissing after ~5 seconds
+    if(tick>300 && !kissing){ kissing=true; kissStart=tick; }
+
+    let gx, gy, bx, by;
+    if(!kissing){
+      gx = cx + Math.cos(skateAngle)*orbitRx;
+      gy = cy + Math.sin(skateAngle)*orbitRy;
+      bx = cx + Math.cos(skateAngle+0.4)*orbitRx;
+      by = cy + Math.sin(skateAngle+0.4)*orbitRy;
+    } else {
+      // Glide together to center
+      const t = Math.min(1, (tick-kissStart)/80);
+      const skating_gx = cx + Math.cos(skateAngle)*orbitRx;
+      const skating_gy = cy + Math.sin(skateAngle)*orbitRy;
+      gx = skating_gx*(1-t) + (cx-12)*t;
+      gy = skating_gy*(1-t) + cy*t;
+      bx = (cx + Math.cos(skateAngle+0.4)*orbitRx)*(1-t) + (cx+12)*t;
+      by = (cy + Math.sin(skateAngle+0.4)*orbitRy)*(1-t) + cy*t;
+    }
+
+    // Draw characters — detailed boy and girl
+    function drawPerson(px2,py2,isG){
+      if(isG){
+        // === GIRL ===
+        // Ice skates
+        sx.fillStyle='#eee'; sx.fillRect(px2-6,py2+20,5,3); sx.fillRect(px2+1,py2+20,5,3);
+        sx.fillStyle='#ddeeff'; sx.fillRect(px2-7,py2+23,8,1); sx.fillRect(px2,py2+23,8,1);
+        // Legs (tights)
+        sx.fillStyle='#222'; sx.fillRect(px2-3,py2+10,3,10); sx.fillRect(px2,py2+10,3,10);
+        // Skirt (pink, flared)
+        sx.fillStyle='#ff6699'; sx.beginPath();
+        sx.moveTo(px2-3,py2+2); sx.lineTo(px2+3,py2+2);
+        sx.lineTo(px2+7,py2+12); sx.lineTo(px2-7,py2+12); sx.closePath(); sx.fill();
+        sx.fillStyle='#ff88aa'; sx.fillRect(px2-2,py2+3,4,4);
+        // Body (fitted top)
+        sx.fillStyle='#cc2255'; sx.fillRect(px2-5,py2-8,10,10);
+        sx.fillStyle='#dd3366'; sx.fillRect(px2-5,py2-8,10,3);
+        // Arms
+        sx.fillStyle='#f9c87a'; sx.fillRect(px2-8,py2-5,4,3); sx.fillRect(px2+4,py2-5,4,3);
+        // Scarf
+        sx.fillStyle='#ffaacc'; sx.fillRect(px2-4,py2-9,8,3);
+        sx.fillStyle='#ff88aa'; sx.fillRect(px2+3,py2-8,3,8);
+        // Head
+        sx.fillStyle='#f9c87a'; sx.fillRect(px2-4,py2-16,8,7);
+        // Eyes
+        sx.fillStyle='#2a1500'; sx.fillRect(px2-2,py2-13,2,2); sx.fillRect(px2+1,py2-13,2,2);
+        // Eyelashes
+        sx.fillStyle='#2a1500'; sx.fillRect(px2-3,py2-14,1,1); sx.fillRect(px2+3,py2-14,1,1);
+        // Blush
+        sx.fillStyle='#ffaaaa44'; sx.fillRect(px2-3,py2-12,2,2); sx.fillRect(px2+2,py2-12,2,2);
+        // Lips
+        sx.fillStyle='#ee4466'; sx.fillRect(px2-1,py2-11,2,1);
+        // Long hair (flowing down both sides)
+        sx.fillStyle='#3a1a08'; sx.fillRect(px2-5,py2-18,10,4);
+        sx.fillRect(px2-5,py2-16,2,12); sx.fillRect(px2+4,py2-16,2,12);
+        sx.fillRect(px2-6,py2-14,2,10); sx.fillRect(px2+5,py2-14,2,10);
+        // Hair top wave
+        sx.fillStyle='#4a2a10'; sx.fillRect(px2-4,py2-19,8,2);
+        // Beanie
+        sx.fillStyle='#ff6699'; sx.fillRect(px2-5,py2-20,10,4);
+        sx.fillStyle='#fff'; sx.fillRect(px2-5,py2-21,10,2);
+        // Pom-pom
+        sx.fillStyle='#fff'; sx.beginPath(); sx.arc(px2,py2-22,3,0,Math.PI*2); sx.fill();
+      } else {
+        // === BOY ===
+        // Ice skates
+        sx.fillStyle='#555'; sx.fillRect(px2-6,py2+20,5,3); sx.fillRect(px2+1,py2+20,5,3);
+        sx.fillStyle='#ddeeff'; sx.fillRect(px2-7,py2+23,8,1); sx.fillRect(px2,py2+23,8,1);
+        // Legs (jeans)
+        sx.fillStyle='#1a1a55'; sx.fillRect(px2-4,py2+8,4,12); sx.fillRect(px2,py2+8,4,12);
+        // Body (blue jacket, broader)
+        sx.fillStyle='#2244aa'; sx.fillRect(px2-6,py2-8,12,16);
+        sx.fillStyle='#3355bb'; sx.fillRect(px2-6,py2-8,12,4);
+        // Jacket detail
+        sx.fillStyle='#1a3388'; sx.fillRect(px2-1,py2-6,2,12);
+        // Arms
+        sx.fillStyle='#2244aa'; sx.fillRect(px2-9,py2-6,4,4); sx.fillRect(px2+5,py2-6,4,4);
+        sx.fillStyle='#f9c87a'; sx.fillRect(px2-9,py2-2,3,3); sx.fillRect(px2+6,py2-2,3,3);
+        // Scarf
+        sx.fillStyle='#4488ff'; sx.fillRect(px2-5,py2-9,10,3);
+        sx.fillStyle='#3366dd'; sx.fillRect(px2-5,py2-8,3,6);
+        // Head (slightly higher = taller)
+        sx.fillStyle='#f9c87a'; sx.fillRect(px2-4,py2-17,8,8);
+        // Eyes
+        sx.fillStyle='#1a1a1a'; sx.fillRect(px2-2,py2-14,2,2); sx.fillRect(px2+1,py2-14,2,2);
+        // Smile
+        sx.fillStyle='#c47a50'; sx.fillRect(px2-1,py2-11,3,1);
+        // Short hair
+        sx.fillStyle='#1a1000'; sx.fillRect(px2-4,py2-19,8,3);
+        sx.fillRect(px2-5,py2-18,1,3); sx.fillRect(px2+4,py2-18,1,3);
+        // Beanie
+        sx.fillStyle='#2244aa'; sx.fillRect(px2-5,py2-21,10,4);
+        sx.fillStyle='#3366cc'; sx.fillRect(px2-5,py2-22,10,2);
+      }
+    }
+    drawPerson(gx,gy,true);
+    drawPerson(bx,by,false);
+
+    // Kiss heart
+    if(kissing && (tick-kissStart)>80){
+      const ht=tick-kissStart-80;
+      const hy= Math.min(cy-30, cy - ht*0.3);
+      sx.globalAlpha=Math.min(1,ht/30);
+      sx.fillStyle='#ff4488'; sx.font='24px serif';
+      sx.fillText('💕',cx-12,hy);
+      // Extra floating hearts
+      for(let i=0;i<3;i++){
+        const hx2=cx-30+i*30, hy2=hy-20-Math.sin(tick*0.06+i)*10;
+        sx.font='14px serif'; sx.fillText('❤️',hx2,hy2);
+      }
+      sx.globalAlpha=1;
+    }
+
+    // Sparkle particles on ice
+    for(let i=0;i<8;i++){
+      const ssx=W*0.25+(i*67)%((W*0.5)|0), ssy=rinkY-rinkRy*0.3+(i*31)%(rinkRy|0);
+      sx.globalAlpha=0.3+Math.sin(tick*0.08+i*2)*0.4;
+      sx.fillStyle='#fff'; sx.fillRect(ssx,ssy,2,2);
+    }
+    sx.globalAlpha=1;
+
+    // Transition to house scene after kiss
+    if(kissing && (tick-kissStart)>250){
+      cancelAnimationFrame(skateRaf);
+      setTimeout(()=>{
+        document.getElementById('skate-screen').classList.remove('show');
+        document.getElementById('house-screen').classList.add('show');
+        startHouseAnim();
+      },500);
+      return;
+    }
+
+    skateRaf=requestAnimationFrame(drawSkate);
+  }
+  let skateRaf;
+  drawSkate();
+}
+
+// ═══════════════════════════════════════════
+// HOUSE SCENE — couple buying their first home
+// ═══════════════════════════════════════════
+function startHouseAnim(){
+  const hc=document.getElementById('house-canvas');
+  const hx=hc.getContext('2d');
+  hx.imageSmoothingEnabled=false;
+  const W=hc.width, H=hc.height;
+  let tick=0;
+
+  function drawHouse(){
+    hx.clearRect(0,0,W,H);
+    tick++;
+
+    // Sky — warm sunset
+    const skyG=hx.createLinearGradient(0,0,0,H*0.55);
+    skyG.addColorStop(0,'#1a0a2e'); skyG.addColorStop(0.4,'#cc4400'); skyG.addColorStop(1,'#ffaa44');
+    hx.fillStyle=skyG; hx.fillRect(0,0,W,H*0.55);
+
+    // Sun
+    hx.fillStyle='#ffdd44'; hx.beginPath(); hx.arc(W*0.75,H*0.15,25,0,Math.PI*2); hx.fill();
+    hx.fillStyle='#ffee88'; hx.beginPath(); hx.arc(W*0.74,H*0.14,12,0,Math.PI*2); hx.fill();
+
+    // Clouds
+    [[W*0.2,H*0.1],[W*0.5,H*0.08],[W*0.85,H*0.18]].forEach(([cx2,cy2])=>{
+      hx.fillStyle='#ffddaa55';
+      hx.beginPath(); hx.ellipse(cx2,cy2,35,12,0,0,Math.PI*2); hx.fill();
+      hx.beginPath(); hx.ellipse(cx2+15,cy2-5,20,10,0,0,Math.PI*2); hx.fill();
+    });
+
+    // Ground
+    hx.fillStyle='#2d5a1e'; hx.fillRect(0,H*0.55,W,H*0.45);
+    hx.fillStyle='#3a7a28'; hx.fillRect(0,H*0.55,W,8);
+
+    // BACKGROUND HOUSES (far away, smaller, muted — neighbourhood feel)
+    const bgHouses=[
+      {x:W*0.02, w:35, h:28, wall:'#8a7a6a', roof:'#554433', rh:14},
+      {x:W*0.12, w:40, h:35, wall:'#7a8a7a', roof:'#334433', rh:16},
+      {x:W*0.24, w:32, h:25, wall:'#8a8a9a', roof:'#444455', rh:12},
+      {x:W*0.55, w:38, h:32, wall:'#9a8a7a', roof:'#554440', rh:15},
+      {x:W*0.68, w:42, h:38, wall:'#7a7a8a', roof:'#3a3a4a', rh:17},
+      {x:W*0.82, w:30, h:24, wall:'#8a8a7a', roof:'#443a33', rh:11},
+      {x:W*0.93, w:36, h:30, wall:'#7a8a8a', roof:'#334444', rh:14},
+    ];
+    const bgBuildT=Math.min(1, tick/80);
+    hx.globalAlpha=0.5*bgBuildT;
+    bgHouses.forEach(bh=>{
+      const baseY=H*0.56, bH=bh.h*bgBuildT;
+      // Wall
+      hx.fillStyle=bh.wall; hx.fillRect(bh.x,baseY-bH,bh.w,bH);
+      // Roof
+      hx.fillStyle=bh.roof; hx.beginPath();
+      hx.moveTo(bh.x-4,baseY-bH); hx.lineTo(bh.x+bh.w/2,baseY-bH-bh.rh*bgBuildT);
+      hx.lineTo(bh.x+bh.w+4,baseY-bH); hx.closePath(); hx.fill();
+      // Tiny window
+      hx.fillStyle='#ffdd8866'; hx.fillRect(bh.x+bh.w/2-4,baseY-bH+6,8,6);
+      hx.fillStyle='#ffeeaa44'; hx.fillRect(bh.x+bh.w/2-3,baseY-bH+7,3,4);
+    });
+    hx.globalAlpha=1;
+
+    // Path to house
+    hx.fillStyle='#c4a46c';
+    hx.beginPath(); hx.moveTo(W*0.4,H); hx.lineTo(W*0.6,H);
+    hx.lineTo(W*0.55,H*0.72); hx.lineTo(W*0.45,H*0.72); hx.closePath(); hx.fill();
+    hx.fillStyle='#b0935a';
+    hx.beginPath(); hx.moveTo(W*0.42,H); hx.lineTo(W*0.58,H);
+    hx.lineTo(W*0.54,H*0.74); hx.lineTo(W*0.46,H*0.74); hx.closePath(); hx.fill();
+
+    // HOUSE — builds up over time
+    const buildT=Math.min(1, tick/120);
+    const houseX=W*0.3, houseW=W*0.4, houseTop=H*0.32;
+    const houseH=(H*0.72-houseTop)*buildT;
+    const roofH=60*buildT;
+
+    if(buildT>0.1){
+      // Walls
+      hx.fillStyle='#e8d4b0'; hx.fillRect(houseX, H*0.72-houseH, houseW, houseH);
+      hx.fillStyle='#d4c0a0'; hx.fillRect(houseX, H*0.72-houseH, houseW, 6);
+      hx.fillStyle='#f0e0c8'; hx.fillRect(houseX+4, H*0.72-houseH+4, houseW*0.3, houseH*0.4);
+    }
+    if(buildT>0.4){
+      // Roof
+      const roofY=H*0.72-houseH;
+      hx.fillStyle='#8b2500'; hx.beginPath();
+      hx.moveTo(houseX-15, roofY); hx.lineTo(houseX+houseW/2, roofY-roofH);
+      hx.lineTo(houseX+houseW+15, roofY); hx.closePath(); hx.fill();
+      hx.fillStyle='#aa3300'; hx.beginPath();
+      hx.moveTo(houseX-10, roofY); hx.lineTo(houseX+houseW/2, roofY-roofH+5);
+      hx.lineTo(houseX+houseW+10, roofY); hx.closePath(); hx.fill();
+    }
+    if(buildT>0.6){
+      // Door
+      const doorW=30, doorH=50;
+      const doorX=houseX+houseW/2-doorW/2, doorY=H*0.72-doorH;
+      hx.fillStyle='#5a2d0c'; hx.fillRect(doorX, doorY, doorW, doorH);
+      hx.fillStyle='#7a4020'; hx.fillRect(doorX+3, doorY+3, doorW-6, doorH-3);
+      hx.fillStyle='#ffd700'; hx.beginPath(); hx.arc(doorX+doorW-8, doorY+doorH/2, 3, 0, Math.PI*2); hx.fill();
+      // Windows
+      [[houseX+20,H*0.72-houseH+20],[houseX+houseW-50,H*0.72-houseH+20]].forEach(([wx,wy])=>{
+        hx.fillStyle='#445566'; hx.fillRect(wx,wy,30,25);
+        hx.fillStyle='#88ccff'; hx.fillRect(wx+3,wy+3,11,19);
+        hx.fillStyle='#aaddff'; hx.fillRect(wx+16,wy+3,11,19);
+        hx.fillStyle='#ffdd88'; hx.fillRect(wx+5,wy+8,7,10); // warm light
+      });
+    }
+    if(buildT>0.8){
+      // Chimney
+      const chX=houseX+houseW*0.7, chY=H*0.72-houseH-roofH*0.5;
+      hx.fillStyle='#884422'; hx.fillRect(chX,chY,16,roofH*0.7);
+      hx.fillStyle='#993322'; hx.fillRect(chX,chY,16,4);
+      // Smoke
+      for(let i=0;i<3;i++){
+        const st=tick*0.03+i*1.5;
+        const smX=chX+8+Math.sin(st)*8, smY=chY-10-i*15-tick*0.05%20;
+        hx.globalAlpha=0.3-i*0.08;
+        hx.fillStyle='#aaa'; hx.beginPath(); hx.ellipse(smX,smY,6+i*3,4+i*2,0,0,Math.PI*2); hx.fill();
+      }
+      hx.globalAlpha=1;
+    }
+
+    // Neighbouring houses (drawn behind main house)
+    if(buildT>0.3){
+      const nbT=Math.min(1,(buildT-0.3)/0.7);
+      hx.globalAlpha=nbT;
+
+      // LEFT neighbour — small blue cottage
+      const ln=W*0.05, lnW=W*0.18, lnH=55*nbT, lnY=H*0.72;
+      hx.fillStyle='#b8c8d8'; hx.fillRect(ln,lnY-lnH,lnW,lnH);
+      hx.fillStyle='#a0b0c0'; hx.fillRect(ln,lnY-lnH,lnW,4);
+      // Roof
+      hx.fillStyle='#445566'; hx.beginPath();
+      hx.moveTo(ln-8,lnY-lnH); hx.lineTo(ln+lnW/2,lnY-lnH-35*nbT); hx.lineTo(ln+lnW+8,lnY-lnH); hx.closePath(); hx.fill();
+      // Door
+      hx.fillStyle='#5a3a1a'; hx.fillRect(ln+lnW/2-8,lnY-30,16,30);
+      hx.fillStyle='#ffd700'; hx.beginPath(); hx.arc(ln+lnW/2+4,lnY-15,2,0,Math.PI*2); hx.fill();
+      // Window
+      hx.fillStyle='#334455'; hx.fillRect(ln+8,lnY-lnH+12,20,16);
+      hx.fillStyle='#88bbdd'; hx.fillRect(ln+10,lnY-lnH+14,7,12);
+      hx.fillStyle='#99ccee'; hx.fillRect(ln+19,lnY-lnH+14,7,12);
+      // Fence
+      for(let f=0;f<4;f++){
+        hx.fillStyle='#ddd'; hx.fillRect(ln+f*14,lnY-10,3,10);
+        hx.fillRect(ln,lnY-8,lnW*0.6,2);
+      }
+
+      // RIGHT neighbour — warm yellow house
+      const rn=W*0.78, rnW=W*0.18, rnH=60*nbT, rnY=H*0.72;
+      hx.fillStyle='#f0dca0'; hx.fillRect(rn,rnY-rnH,rnW,rnH);
+      hx.fillStyle='#e0cc90'; hx.fillRect(rn,rnY-rnH,rnW,4);
+      // Roof
+      hx.fillStyle='#884422'; hx.beginPath();
+      hx.moveTo(rn-8,rnY-rnH); hx.lineTo(rn+rnW/2,rnY-rnH-38*nbT); hx.lineTo(rn+rnW+8,rnY-rnH); hx.closePath(); hx.fill();
+      hx.fillStyle='#aa5533'; hx.beginPath();
+      hx.moveTo(rn-4,rnY-rnH); hx.lineTo(rn+rnW/2,rnY-rnH-33*nbT); hx.lineTo(rn+rnW+4,rnY-rnH); hx.closePath(); hx.fill();
+      // Door
+      hx.fillStyle='#6a3a1a'; hx.fillRect(rn+rnW/2-10,rnY-35,18,35);
+      hx.fillStyle='#7a4a2a'; hx.fillRect(rn+rnW/2-7,rnY-32,12,32);
+      hx.fillStyle='#ffd700'; hx.beginPath(); hx.arc(rn+rnW/2+4,rnY-18,2,0,Math.PI*2); hx.fill();
+      // Windows
+      [[rn+8,rnY-rnH+14],[rn+rnW-30,rnY-rnH+14]].forEach(([wx,wy])=>{
+        hx.fillStyle='#445566'; hx.fillRect(wx,wy,22,18);
+        hx.fillStyle='#88ccff'; hx.fillRect(wx+2,wy+2,8,14);
+        hx.fillStyle='#aaddff'; hx.fillRect(wx+12,wy+2,8,14);
+        hx.fillStyle='#ffdd8866'; hx.fillRect(wx+4,wy+6,5,8);
+      });
+      // Tree in right yard
+      hx.fillStyle='#2a5a12'; hx.beginPath(); hx.moveTo(rn+rnW+15,rnY-40); hx.lineTo(rn+rnW+5,rnY); hx.lineTo(rn+rnW+25,rnY); hx.closePath(); hx.fill();
+      hx.fillStyle='#3a2008'; hx.fillRect(rn+rnW+13,rnY,4,8);
+      // Mailbox in right yard
+      hx.fillStyle='#4444bb'; hx.fillRect(rn-12,rnY-14,10,8);
+      hx.fillStyle='#333'; hx.fillRect(rn-9,rnY-6,4,12);
+
+      hx.globalAlpha=1;
+    }
+
+    // Couple standing in front (appear after house is built)
+    if(buildT>=1){
+      const coupleT=Math.min(1,(tick-120)/40);
+      hx.globalAlpha=coupleT;
+      const cpx=W/2, cpy=H*0.72;
+
+      // === GIRL (detailed) ===
+      const gx2=cpx-14, gy2=cpy;
+      // Shoes
+      hx.fillStyle='#cc2255'; hx.fillRect(gx2-5,gy2+12,5,3); hx.fillRect(gx2,gy2+12,5,3);
+      // Legs
+      hx.fillStyle='#222'; hx.fillRect(gx2-3,gy2+2,3,10); hx.fillRect(gx2,gy2+2,3,10);
+      // Dress
+      hx.fillStyle='#ff4477';
+      hx.beginPath(); hx.moveTo(gx2-3,gy2-4); hx.lineTo(gx2+3,gy2-4);
+      hx.lineTo(gx2+6,gy2+4); hx.lineTo(gx2-6,gy2+4); hx.closePath(); hx.fill();
+      // Top
+      hx.fillStyle='#cc2255'; hx.fillRect(gx2-5,gy2-12,10,8);
+      hx.fillStyle='#dd3366'; hx.fillRect(gx2-5,gy2-12,10,3);
+      // Arms
+      hx.fillStyle='#f9c87a'; hx.fillRect(gx2-7,gy2-9,3,3); hx.fillRect(gx2+4,gy2-9,3,3);
+      // Scarf
+      hx.fillStyle='#ffaacc'; hx.fillRect(gx2-4,gy2-13,8,3);
+      // Head
+      hx.fillStyle='#f9c87a'; hx.fillRect(gx2-3,gy2-20,6,7);
+      // Eyes
+      hx.fillStyle='#1a1a1a'; hx.fillRect(gx2-2,gy2-18,2,2); hx.fillRect(gx2+1,gy2-18,2,2);
+      // Eyelashes
+      hx.fillStyle='#1a1a1a'; hx.fillRect(gx2-3,gy2-19,1,1); hx.fillRect(gx2+3,gy2-19,1,1);
+      // Lips
+      hx.fillStyle='#ee4466'; hx.fillRect(gx2-1,gy2-15,2,1);
+      // Long hair
+      hx.fillStyle='#3a1a08'; hx.fillRect(gx2-4,gy2-22,8,4);
+      hx.fillRect(gx2-5,gy2-20,2,14); hx.fillRect(gx2+4,gy2-20,2,14);
+      // Bow
+      hx.fillStyle='#ff6699'; hx.fillRect(gx2-4,gy2-24,8,3);
+      hx.fillStyle='#fff'; hx.fillRect(gx2-4,gy2-25,8,2);
+
+      // === BOY (detailed) ===
+      const bx2=cpx+14, by2=cpy;
+      // Shoes
+      hx.fillStyle='#333'; hx.fillRect(bx2-5,by2+12,5,3); hx.fillRect(bx2,by2+12,5,3);
+      // Legs (jeans)
+      hx.fillStyle='#1a1a55'; hx.fillRect(bx2-4,by2+2,4,10); hx.fillRect(bx2,by2+2,4,10);
+      // Body (jacket)
+      hx.fillStyle='#2244aa'; hx.fillRect(bx2-6,by2-12,12,14);
+      hx.fillStyle='#3355bb'; hx.fillRect(bx2-6,by2-12,12,4);
+      hx.fillStyle='#1a3388'; hx.fillRect(bx2-1,by2-10,2,10);
+      // Arms
+      hx.fillStyle='#2244aa'; hx.fillRect(bx2-8,by2-10,3,4); hx.fillRect(bx2+5,by2-10,3,4);
+      hx.fillStyle='#f9c87a'; hx.fillRect(bx2-8,by2-6,3,3); hx.fillRect(bx2+5,by2-6,3,3);
+      // Scarf
+      hx.fillStyle='#4488ff'; hx.fillRect(bx2-5,by2-13,10,3);
+      // Head (taller)
+      hx.fillStyle='#f9c87a'; hx.fillRect(bx2-3,by2-21,6,8);
+      // Eyes
+      hx.fillStyle='#1a1a1a'; hx.fillRect(bx2-2,by2-19,2,2); hx.fillRect(bx2+1,by2-19,2,2);
+      // Smile
+      hx.fillStyle='#c47a50'; hx.fillRect(bx2-1,by2-15,3,1);
+      // Short hair
+      hx.fillStyle='#1a1000'; hx.fillRect(bx2-4,by2-23,8,3);
+      // Beanie
+      hx.fillStyle='#2244aa'; hx.fillRect(bx2-4,by2-25,8,4);
+      hx.fillStyle='#3366cc'; hx.fillRect(bx2-4,by2-26,8,2);
+
+      // Holding hands
+      hx.fillStyle='#f9c87a'; hx.fillRect(cpx-3,cpy-6,6,3);
+      // Heart above
+      const ht2=Math.sin(tick*0.04)*5;
+      hx.font='16px serif'; hx.fillText('❤️',cpx-8,cpy-32+ht2);
+      hx.globalAlpha=1;
+
+      // "SOLD" sign
+      if(tick>180){
+        const signT=Math.min(1,(tick-180)/30);
+        hx.globalAlpha=signT;
+        hx.fillStyle='#fff'; hx.fillRect(houseX-40,H*0.55,3,50);
+        hx.fillStyle='#cc1a1a'; hx.fillRect(houseX-55,H*0.52,35,22);
+        hx.fillStyle='#fff'; hx.font='bold 10px monospace'; hx.fillText('SOLD',houseX-53,H*0.52+15);
+        hx.globalAlpha=1;
+      }
+
+      // Show continue button
+      if(tick>220){
+        document.getElementById('spring-btn').style.display='inline-block';
+      }
+    }
+
+    // Flower garden
+    if(buildT>0.9){
+      ['#ff4488','#ffaa44','#ff6688','#ffdd44','#ff88aa'].forEach((c,i)=>{
+        const fx2=houseX+10+i*45, fy2=H*0.72+5;
+        hx.fillStyle='#2a6a12'; hx.fillRect(fx2+3,fy2,2,8);
+        hx.fillStyle=c; hx.beginPath(); hx.arc(fx2+4,fy2-2,4,0,Math.PI*2); hx.fill();
+      });
+    }
+
+    // Swimming pool (backyard, behind house)
+    if(buildT>0.7){
+      const poolT=Math.min(1,(buildT-0.7)/0.3);
+      hx.globalAlpha=poolT;
+      const poolX=houseX+houseW+15, poolY=H*0.78, poolW=houseW*0.55, poolH=30;
+
+      // Pool deck (concrete surround)
+      hx.fillStyle='#c8bfaa'; hx.fillRect(poolX-6,poolY-4,poolW+12,poolH+8);
+      hx.fillStyle='#b8af9a'; hx.fillRect(poolX-4,poolY-2,poolW+8,poolH+4);
+
+      // Pool water
+      hx.fillStyle='#44aadd'; hx.fillRect(poolX,poolY,poolW,poolH);
+      hx.fillStyle='#55bbee'; hx.fillRect(poolX,poolY,poolW,8);
+      // Water shimmer/ripples
+      for(let r=0;r<4;r++){
+        const rx=poolX+15+r*(poolW/4), ry=poolY+8+Math.sin(tick*0.06+r*2)*3;
+        hx.fillStyle='#88ddffa0'; hx.fillRect(rx,ry,poolW/6,2);
+        hx.fillStyle='#aaeeffaa'; hx.fillRect(rx+5,ry+4,poolW/8,1);
+      }
+      // Pool edge lines
+      hx.strokeStyle='#3399bb'; hx.lineWidth=1;
+      hx.strokeRect(poolX,poolY,poolW,poolH);
+      // Lane line
+      hx.strokeStyle='#ffffff55'; hx.lineWidth=1;
+      hx.setLineDash([4,4]);
+      hx.beginPath(); hx.moveTo(poolX+poolW/2,poolY+2); hx.lineTo(poolX+poolW/2,poolY+poolH-2); hx.stroke();
+      hx.setLineDash([]);
+
+      // Diving board (right side)
+      hx.fillStyle='#887766'; hx.fillRect(poolX+poolW-4,poolY-8,4,10);
+      hx.fillStyle='#aaa'; hx.fillRect(poolX+poolW-2,poolY-12,18,4);
+      hx.fillStyle='#ccc'; hx.fillRect(poolX+poolW+12,poolY-14,6,3);
+
+      // Pool ladder (left side)
+      hx.fillStyle='#bbb'; hx.fillRect(poolX+4,poolY-6,2,10); hx.fillRect(poolX+10,poolY-6,2,10);
+      hx.fillRect(poolX+4,poolY-4,8,2); hx.fillRect(poolX+4,poolY,8,2);
+
+      hx.globalAlpha=1;
+    }
+
+    houseRaf=requestAnimationFrame(drawHouse);
+  }
+  let houseRaf;
+  drawHouse();
+}
+
+document.getElementById('spring-btn').onclick=()=>{
+  window.location.href='spring.html';
+};
+
+document.getElementById('skip-btn').onclick=()=>{
+  // Hide everything, go straight to skating scene
+  document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));
+  document.getElementById('game-ui').style.display='none';
+  document.getElementById('power-wrap').classList.remove('show');
+  canvas.style.display='none';
+  document.getElementById('skip-btn').style.display='none';
+  document.getElementById('skate-screen').classList.add('show');
+  startSkatingAnim();
+};
+
+// ── GAME LOOP ─────────────────────────────────────────
+function gameLoop(){
+  if(canvas.style.display==='none'){ requestAnimationFrame(gameLoop); return; }
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.imageSmoothingEnabled=false;
+  drawBg(); drawTerrain();
+  drawChar(girlX,girlY,true, girlHP);   // girl LEFT
+  drawChar(boyX, boyY, false,boyHP);    // boy RIGHT
+  if(projectile) updateProjectile();
+  drawProjectile();
+  updateParticles(); drawParticles();
+  updatePower(); tickAI();
+  requestAnimationFrame(gameLoop);
+}
+
+// ── INPUT (girl = player, fires RIGHT toward boy) ─────
+addEventListener('keydown',e=>{
+  if(!isGirlTurn||animState!=='aiming') return;
+  if(e.key==='ArrowUp'  ||e.key==='w'||e.key==='W'){ angle=Math.min(85,angle+3); }
+  if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){ angle=Math.max(5, angle-3); }
+  if(e.code==='Space'||e.key==='Enter'){ e.preventDefault(); fire(girlX,girlY,angle,power,true); }
+});
+
+canvas.addEventListener('mousemove',e=>{
+  if(!isGirlTurn||animState!=='aiming') return;
+  angle=Math.max(5,Math.min(85,(1-(e.clientY/canvas.height))*90)|0);
+});
+
+canvas.addEventListener('click',e=>{
+  if(!isGirlTurn||animState!=='aiming') return;
+  angle=Math.max(5,Math.min(85,(1-(e.clientY/canvas.height))*90)|0);
+  fire(girlX,girlY,angle,power,true);
+});
+
+addEventListener('resize',()=>{
+  if(canvas.style.display==='none') return;
+  canvas.width=innerWidth; canvas.height=innerHeight;
+  buildTerrain(); placeChars();
+});
+</script>
+</body>
+</html>

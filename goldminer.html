@@ -593,19 +593,23 @@ function drawRopeAndHook(){
     ctx.fillRect(rx,ry,4,4);
   }
 
-  // Arrow pointer — always points straight down, fixed
+  // C-shaped grappling hook at hook position (180° flipped)
   if(!grabbed){
     const hx=hookX()|0, hy=hookY()|0;
-    ctx.fillStyle='#dddddd';
+    ctx.strokeStyle='#cccccc';
+    ctx.lineWidth=4;
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+    // Draw C-shape flipped 180 degrees
     ctx.beginPath();
-    ctx.moveTo(hx,    hy+18);  // tip
-    ctx.lineTo(hx-8,  hy+4);   // left wing
-    ctx.lineTo(hx-3,  hy+4);   // inner left
-    ctx.lineTo(hx-3,  hy-6);   // shaft top left
-    ctx.lineTo(hx+3,  hy-6);   // shaft top right
-    ctx.lineTo(hx+3,  hy+4);   // inner right
-    ctx.lineTo(hx+8,  hy+4);   // right wing
-    ctx.closePath();
+    ctx.moveTo(hx-8, hy-6);   // Start top-left
+    ctx.quadraticCurveTo(hx-12, hy+4, hx-6, hy+12);  // Curve bottom-left
+    ctx.quadraticCurveTo(hx+6, hy+14, hx+10, hy+6);  // Curve to bottom-right
+    ctx.stroke();
+    // Connection point at middle
+    ctx.fillStyle='#999999';
+    ctx.beginPath();
+    ctx.arc(hx, hy, 3, 0, Math.PI*2);
     ctx.fill();
   }
 }
