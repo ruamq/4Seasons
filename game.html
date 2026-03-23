@@ -109,7 +109,7 @@
 <div class="overlay show" id="start-screen">
   <h1>Sky Glider ✈️</h1>
   <p>Soar above Da Nang with your partner!<br/>
-     Dodge incoming planes across 3 lanes.<br/>
+     Dodge incoming drones across 3 lanes.<br/>
      Collect 🍜 Cao Lau to win!<br/>
      You have 3 lives. Fly safe!</p>
   <button class="pxbtn" id="start-btn">▶ FLY NOW</button>
@@ -529,7 +529,7 @@ const FAREWELL_LINES = [
   { speaker:'BOY',  text:"Hey... I need to tell\nyou something." },
   { speaker:'BOY',  text:"I have to fly to Melbourne\ntomorrow morning." },
   { speaker:'GIRL', text:"Melbourne...?" },
-  { speaker:'GIRL', text:"That's okay.\nI'm going to Paris anyway." },
+  { speaker:'GIRL', text:"That's okay.\nI'm going to Paris too." },
   { speaker:'BOY',  text:"Paris? Of course you are." },
   { speaker:'BOY',  text:"No matter where we go...\nwe'll get through it all together." },
   { speaker:'GIRL', text:"Always. ❤\nNow go catch your plane." },
@@ -566,9 +566,15 @@ function runFarewellScene(){
       else{
         typing=false;
         if(idx<FAREWELL_LINES.length-1){ arrowEl.style.display='block'; }
-        else{ planePhase=true; startPlanes(); }
+        else { 
+        // Wait 2 seconds before starting the animation
+        setTimeout(() => {
+          planePhase = true; 
+          startPlanes(); 
+        }, 2000); 
       }
     }
+  }
     tick();
   }
 

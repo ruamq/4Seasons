@@ -270,29 +270,19 @@
         <div id="video-overlay">
             <div class="vlab" id="vlab-top">◆ WATCH THE STORY ◆</div>
 
-            <!-- STEP 0: video -->
-            <div id="panel-video">
-                <div id="video-frame">
-                    <video id="story-video" controls>
-                        <!-- <source src="story.mp4" type="video/mp4"> -->
-                    </video>
-                    <div id="video-placeholder">
-                        <span>▶</span>
-                        PLACE YOUR VIDEO HERE
-                    </div>
-                </div>
+            <!-- STEP 0: kfc.mp4 -->
+            <div id="panel-video" style="display:none; width:90vw; height:80vh; max-width:1000px; background:#000;">
+                <video id="story-video" src="public/kfc.mp4" controls style="width:100%;height:100%;object-fit:contain;"></video>
             </div>
 
-            <!-- STEP 1: story text -->
-            <div id="story-textbox">
-                <div class="nametag">◆ THE THREAT APPROACHES ◆</div>
-                <div class="story-line" id="story-line-text"><span class="cursor"></span></div>
+            <!-- STEP 1: kfc.jpg -->
+            <div id="panel-img1" style="display:none; width:90vw; height:80vh; max-width:1000px; background:#000;">
+                <img src="public/kfc.jpg" style="width:100%; height:100%; object-fit:contain; border:4px solid #ccaa77; box-shadow:0 0 20px rgba(0,0,0,0.6);" />
             </div>
 
-            <!-- STEP 2: Wall of KFC reveal -->
-            <div id="wkfc-panel">
-                <canvas id="wkfc-canvas" width="560" height="320"></canvas>
-                <div id="wkfc-caption">⚠ THE WALL OF KFC APPROACHES ⚠</div>
+            <!-- STEP 2: angry.jpg -->
+            <div id="panel-img2" style="display:none; width:90vw; height:80vh; max-width:1000px; background:#000;">
+                <img src="public/angry.jpg" style="width:100%; height:100%; object-fit:contain; border:4px solid #ff4422; box-shadow:0 0 30px rgba(255,0,0,0.6);" />
             </div>
 
             <button id="btn-continue" onclick="handleContinue()">CONTINUE ▶</button>
@@ -1036,22 +1026,19 @@
             overlayStep = 0;
             updateOverlayPanels();
             var v = document.getElementById('story-video');
-            var hasSrc = v.querySelector('source') || v.getAttribute('src');
-            document.getElementById('video-placeholder').style.display = hasSrc ? 'none' : 'flex';
-            if (hasSrc) v.play();
+            v.play();
         }
 
         var overlayStep = 0;
 
         function handleContinue() {
-            if (storyTimer) { clearTimeout(storyTimer); storyTimer = null; }
+            var v = document.getElementById('story-video');
+            v.pause();
             overlayStep++;
             if (overlayStep === 1) {
                 updateOverlayPanels();
-                startStoryText();
             } else if (overlayStep === 2) {
                 updateOverlayPanels();
-                drawWKFCReveal();
             } else {
                 goToGame();
             }
@@ -1059,166 +1046,16 @@
 
         function updateOverlayPanels() {
             document.getElementById('panel-video').style.display = overlayStep === 0 ? 'block' : 'none';
-            document.getElementById('story-textbox').style.display = overlayStep === 1 ? 'block' : 'none';
-            document.getElementById('wkfc-panel').style.display = overlayStep === 2 ? 'flex' : 'none';
+            document.getElementById('panel-img1').style.display  = overlayStep === 1 ? 'block' : 'none';
+            document.getElementById('panel-img2').style.display  = overlayStep === 2 ? 'block' : 'none';
+
             document.getElementById('vlab-top').textContent =
-                overlayStep === 0 ? '◆ WATCH THE STORY ◆' :
-                    overlayStep === 1 ? '◆ THE STORY SO FAR ◆' :
-                        '◆ YOUR ENEMY ◆';
+                overlayStep === 0 ? '◆ WATCH THE INCIDENT ◆' :
+                overlayStep === 1 ? '◆ THE AFTERMATH ◆' :
+                                    '◆ TIME TO FIGHT ◆';
+            
             var btnLabel = overlayStep < 2 ? 'CONTINUE ▶' : 'FIGHT! ▶';
             document.getElementById('btn-continue').textContent = btnLabel;
-        }
-
-        var storyLines = [
-            "It was a peaceful spring day...",
-            "The couple stood outside their beloved home,",
-            "watching the blossoms drift in the warm breeze.",
-            " ",
-            "But from the east, a dark shadow loomed.",
-            "An ancient, greasy evil was on the march —",
-            " ",
-            "The WALL OF KFC.",
-            " ",
-            "Three vicious chicken heads. Endless eggs.",
-            "A wall of red and white, unstoppable in hunger.",
-            " ",
-            "It wants to engulf their home.",
-            "It wants to consume everything they love.",
-            " ",
-            "Only YOU can stop it.",
-            "Shoot it. Freeze it. Destroy it.",
-            " ",
-            "Protect. Our. Home."
-        ];
-
-        var storyFlat = '';
-        var storyLineIdx = 0;
-        var storyCharIdx = 0;
-        var storyTimer = null;
-
-        function startStoryText() {
-            storyFlat = '';
-            storyLineIdx = 0;
-            storyCharIdx = 0;
-            document.getElementById('story-line-text').innerHTML = '<span class="cursor"></span>';
-            typeNextChar();
-        }
-
-        function typeNextChar() {
-            if (overlayStep !== 1) return;
-            if (storyLineIdx >= storyLines.length) return;
-            var line = storyLines[storyLineIdx];
-            if (storyCharIdx < line.length) {
-                storyFlat += line[storyCharIdx];
-                storyCharIdx++;
-                renderStoryText();
-                var delay = (line[storyCharIdx - 1] === '.') ? 60 : 26;
-                storyTimer = setTimeout(typeNextChar, delay);
-            } else {
-                storyFlat += '\n';
-                storyLineIdx++;
-                storyCharIdx = 0;
-                renderStoryText();
-                var pause = (storyLines[storyLineIdx - 1].trim() === '') ? 80 : 120;
-                storyTimer = setTimeout(typeNextChar, pause);
-            }
-        }
-
-        function renderStoryText() {
-            var el = document.getElementById('story-line-text');
-            var html = '';
-            var lines = storyFlat.split('\n');
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                line = line.replace(/WALL OF KFC/g, '<span style="color:#ff3300;font-weight:bold;letter-spacing:2px">WALL OF KFC</span>');
-                line = line.replace(/Protect\. Our\. Home\./g, '<span style="color:#ffdd44;font-weight:bold;letter-spacing:3px">Protect. Our. Home.</span>');
-                line = line.replace(/YOU/g, '<span style="color:#88ddff;font-weight:bold">YOU</span>');
-                html += line + (i < lines.length - 1 ? '<br>' : '');
-            }
-            html += '<span class="cursor"></span>';
-            el.innerHTML = html;
-        }
-
-        function drawWKFCReveal() {
-            var c = document.getElementById('wkfc-canvas');
-            var cx = c.getContext('2d');
-            cx.imageSmoothingEnabled = false;
-            var cW = 560, cH = 320;
-            function rr(x, y, w, h, col) { cx.fillStyle = col; cx.fillRect(x | 0, y | 0, w, h); }
-
-            // Dark sky
-            var bg = cx.createLinearGradient(0, 0, 0, cH);
-            bg.addColorStop(0, '#120008'); bg.addColorStop(1, '#2a0010');
-            cx.fillStyle = bg; cx.fillRect(0, 0, cW, cH);
-
-            // Ground
-            rr(0, cH - 40, cW, 40, '#2a1a08');
-            rr(0, cH - 42, cW, 4, '#3a2a10');
-
-            // Wall of KFC (right side, looming tall)
-            var wx = cW - 140;
-            for (var sy = 0; sy < cH; sy += 28) {
-                rr(wx, sy, cW - wx + 4, 28, (sy / 28 | 0) % 2 === 0 ? '#cc1100' : '#f5f0e8');
-            }
-            cx.fillStyle = 'rgba(0,0,0,0.18)';
-            for (var sy = 0; sy < cH; sy += 5) cx.fillRect(wx, sy, cW - wx, 2);
-            rr(wx, 0, 12, cH, '#440000');
-            rr(wx + 12, 0, 6, cH, 'rgba(0,0,0,0.28)');
-
-            // Bucket
-            var bkx = wx + 14, bky = cH / 2 - 52;
-            rr(bkx, bky, 48, 56, '#cc1100');
-            rr(bkx - 4, bky - 3, 56, 10, '#ee1100');
-            rr(bkx + 4, bky + 15, 40, 3, '#ff9977');
-            rr(bkx + 4, bky + 27, 40, 3, '#ff9977');
-            rr(bkx + 4, bky + 37, 40, 2, '#ff9977');
-            rr(bkx + 6, bky + 40, 3, 13, '#fff'); rr(bkx + 9, bky + 43, 4, 4, '#fff');
-            rr(bkx + 13, bky + 40, 3, 5, '#fff'); rr(bkx + 13, bky + 47, 3, 7, '#fff');
-            rr(bkx + 19, bky + 40, 3, 13, '#fff'); rr(bkx + 22, bky + 40, 6, 3, '#fff'); rr(bkx + 22, bky + 45, 5, 3, '#fff');
-            rr(bkx + 31, bky + 40, 3, 13, '#fff'); rr(bkx + 34, bky + 40, 6, 3, '#fff'); rr(bkx + 34, bky + 51, 6, 3, '#fff');
-            rr(bkx, bky, 6, 56, 'rgba(255,255,255,0.1)');
-
-            // 3 Chicken heads
-            var headYs = [cH * 0.2, cH * 0.5, cH * 0.78];
-            for (var hi = 0; hi < 3; hi++) {
-                var hx = wx - 48, hy = headYs[hi] | 0;
-                rr(hx + 10, hy, 14, 12, '#f0ead0'); rr(hx + 12, hy, 10, 4, '#c8b870');
-                rr(hx, hy - 30, 36, 30, '#f0ead0');
-                rr(hx + 5, hy - 22, 10, 10, '#e8e0c8'); rr(hx + 6, hy - 21, 9, 9, '#fff');
-                rr(hx + 7, hy - 19, 6, 6, '#111'); rr(hx + 7, hy - 19, 2, 2, 'rgba(255,255,255,0.5)');
-                rr(hx - 12, hy - 19, 14, 6, '#ffaa22'); rr(hx - 8, hy - 14, 10, 5, '#ffaa22');
-                rr(hx - 12, hy - 19, 14, 2, '#bb7010'); rr(hx - 8, hy - 14, 10, 2, '#bb7010');
-                rr(hx + 3, hy - 36, 8, 8, '#ee2222'); rr(hx + 12, hy - 40, 9, 10, '#ee2222'); rr(hx + 23, hy - 35, 8, 8, '#ee2222');
-                rr(hx + 12, hy - 43, 5, 4, '#ff5555');
-                rr(hx + 2, hy - 5, 8, 13, '#cc1818'); rr(hx + 4, hy - 3, 5, 10, '#ff4444');
-                rr(hx + 3, hy - 25, 13, 2, '#886622');
-                cx.fillStyle = 'rgba(255,40,0,0.35)'; cx.fillRect(hx + 5, hy - 23, 10, 12);
-            }
-
-            // Wall of KFC without red glow
-
-            // House silhouette
-            var hhx = 130, hhy = cH - 40;
-            rr(hhx, hhy - 50, 60, 50, '#0e0a06');
-            for (var ri = 0; ri < 20; ri++) rr(hhx - ri, hhy - 50 - ri * 0.6, 60 + ri * 2, 4, '#0e0a06');
-            rr(hhx + 20, hhy - 12, 18, 14, 'rgba(255,200,60,0.28)');
-            rr(hhx + 22, hhy - 50, 8, 22, '#0e0a06');
-
-            // Couple silhouettes (scared, leaning away from wall)
-            var cpx = 55, cpy = cH - 40;
-            rr(cpx, cpy - 58, 10, 58, '#1a0a14');
-            rr(cpx - 3, cpy - 40, 16, 24, '#1a0a14');
-            rr(cpx + 2, cpy - 73, 8, 16, '#1a0a14');
-            rr(cpx + 14, cpy - 62, 12, 62, '#0a0a1a');
-            rr(cpx + 12, cpy - 78, 14, 17, '#0a0a1a');
-            rr(cpx + 8, cpy - 44, 8, 4, '#1a0a14');
-
-            // Embers drifting
-            for (var ei = 0; ei < 22; ei++) {
-                var ex = 15 + ei * 24, ey = 20 + ((ei * 43) % 240);
-                var ec = ei % 3 === 0 ? 'rgba(255,80,0,0.65)' : ei % 3 === 1 ? 'rgba(255,160,0,0.45)' : 'rgba(200,40,0,0.38)';
-                rr(ex, ey, 3, 3, ec); rr(ex + 1, ey + 6, 2, 2, ec);
-            }
         }
 
         function goToGame() { window.location.href = 'wall_of_kfc.html'; }

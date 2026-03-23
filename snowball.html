@@ -16,22 +16,23 @@
     /* VIDEO */
     #video-screen{background:#000820;}
     .vid-box{
-      width:min(96vw,900px); aspect-ratio:16/9;
+      height: 50vh; aspect-ratio:16/9;
       background:#000820; border:4px solid #4488ff;
-      box-shadow:0 0 60px #4488ffaa,inset 0 0 80px #00113388;
+      box-shadow:0 0 40px #4488ffaa,inset 0 0 60px #00113388;
       position:relative; display:flex; align-items:center; justify-content:center;
+      margin: 0 auto;
     }
-    .vid-box video{width:100%;height:100%;object-fit:cover;display:block;}
+    .vid-box video{width:100%;height:100%;object-fit:contain;display:block;}
     .vid-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#000820;}
     .vid-ph span{font-size:72px;opacity:0.4;}
     .vid-ph p{color:#4488ff;font-size:9px;text-align:center;line-height:2;}
     #vid-cont{
-      display:none;position:absolute;bottom:28px;right:28px;
+      display:none;position:fixed;bottom:24px;right:24px;z-index:99;
       background:linear-gradient(135deg,#1144cc,#4488ff);color:#fff;
       border:none;border-bottom:4px solid #0a2a88;
-      padding:14px 36px;font-family:'Press Start 2P',monospace;font-size:10px;
+      padding:16px 36px;font-family:'Press Start 2P',monospace;font-size:12px;
       cursor:pointer;letter-spacing:2px;
-      box-shadow:0 0 20px #4488ff66;
+      box-shadow:0 0 30px #4488ffaa;
     }
 
     /* GIFT */
@@ -116,12 +117,12 @@
 <!-- VIDEO -->
 <div class="overlay show" id="video-screen">
   <div class="vid-box">
-    <video id="intro-vid" src="christmas-intro.mp4"
+    <video id="intro-vid" src="public/snow.mp4" controls style="cursor:pointer;"
       onerror="this.style.display='none';document.getElementById('vid-ph').style.display='flex'">
     </video>
     <div class="vid-ph" id="vid-ph" style="display:none">
       <span>🎄</span>
-      <p>[ christmas-intro.mp4 ]<br/>Drop your video in the same folder</p>
+      <p>[ public/snow.mp4 ]<br/>Drop your video in the same folder</p>
     </div>
     <button id="vid-cont">CONTINUE ▶</button>
   </div>
@@ -199,6 +200,7 @@ setTimeout(showVidButton, 1500);
 introVid.play().catch(showVidButton);
 
 vidCont.onclick = ()=>{
+  introVid.pause();
   document.getElementById('video-screen').classList.remove('show');
   document.getElementById('gift-screen').classList.add('show');
   startGiftAnim();
